@@ -1,5 +1,5 @@
 <template>
-  <div class="pdm-siderbar_inner">
+  <div>
     <el-menu
       :collapseTransition="false"
       class="pdm-sidebar_menu"
@@ -19,9 +19,9 @@
           <el-icon>
             <document />
           </el-icon>
-          <span slot="title">组织管理1</span>
+          <span slot="title">组织管理</span>
         </template>
-        <el-menu-item index="admin" @click="$router.push({ name: 'admin' })">
+        <el-menu-item index="list" @click="$router.push({ path: '/list' })">
           <el-icon>
             <document />
           </el-icon>
@@ -51,6 +51,78 @@
           </el-icon>
           <span slot="title">组织管理3</span>
         </template>
+        <el-menu-item index="Misdept" @click="$router.push({ name: 'MisDept' })">
+          <el-icon>
+            <document />
+          </el-icon>
+          <span slot="title">部门管理</span>
+        </el-menu-item>
+        <el-menu-item index="Misdept" @click="$router.push({ name: 'MisDept' })">
+          <el-icon>
+            <document />
+          </el-icon>
+          <span slot="title">部门管理</span>
+        </el-menu-item>
+        <el-menu-item index="Misdept" @click="$router.push({ name: 'MisDept' })">
+          <el-icon>
+            <document />
+          </el-icon>
+          <span slot="title">部门管理</span>
+        </el-menu-item>
+        <el-menu-item index="Misdept" @click="$router.push({ name: 'MisDept' })">
+          <el-icon>
+            <document />
+          </el-icon>
+          <span slot="title">部门管理</span>
+        </el-menu-item>
+        <el-menu-item index="Misdept" @click="$router.push({ name: 'MisDept' })">
+          <el-icon>
+            <document />
+          </el-icon>
+          <span slot="title">部门管理</span>
+        </el-menu-item>
+        <el-menu-item index="Misdept" @click="$router.push({ name: 'MisDept' })">
+          <el-icon>
+            <document />
+          </el-icon>
+          <span slot="title">部门管理</span>
+        </el-menu-item>
+        <el-menu-item index="Misdept" @click="$router.push({ name: 'MisDept' })">
+          <el-icon>
+            <document />
+          </el-icon>
+          <span slot="title">部门管理</span>
+        </el-menu-item>
+        <el-menu-item index="Misdept" @click="$router.push({ name: 'MisDept' })">
+          <el-icon>
+            <document />
+          </el-icon>
+          <span slot="title">部门管理</span>
+        </el-menu-item>
+        <el-menu-item index="Misdept" @click="$router.push({ name: 'MisDept' })">
+          <el-icon>
+            <document />
+          </el-icon>
+          <span slot="title">部门管理</span>
+        </el-menu-item>
+        <el-menu-item index="Misdept" @click="$router.push({ name: 'MisDept' })">
+          <el-icon>
+            <document />
+          </el-icon>
+          <span slot="title">部门管理</span>
+        </el-menu-item>
+        <el-menu-item index="Misdept" @click="$router.push({ name: 'MisDept' })">
+          <el-icon>
+            <document />
+          </el-icon>
+          <span slot="title">部门管理</span>
+        </el-menu-item>
+        <el-menu-item index="Misdept" @click="$router.push({ name: 'MisDept' })">
+          <el-icon>
+            <document />
+          </el-icon>
+          <span slot="title">部门管理</span>
+        </el-menu-item>
         <el-menu-item index="Misdept" @click="$router.push({ name: 'MisDept' })">
           <el-icon>
             <document />
