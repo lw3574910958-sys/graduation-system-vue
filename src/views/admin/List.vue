@@ -32,7 +32,11 @@
       <el-table-column prop="name" label="姓名" header-align="center" align="center" />
       <el-table-column prop="sex" label="性别" header-align="center" align="center" />
       <el-table-column prop="phone" label="电话" header-align="center" align="center" />
-      <el-table-column prop="avatar" label="头像" header-align="center" align="center" />
+      <el-table-column label="头像" header-align="center" align="center">
+        <template #default="scope">
+          <el-avatar :src="getFileUrl(scope.row.avatar)" :size="50" />
+        </template>
+      </el-table-column>
 
       <el-table-column label="操作" width="160" header-align="center" align="center">
         <template #default="scope">
@@ -63,6 +67,7 @@ import { adminApi } from '@/api/admin-api'
 import constants from '@/utils/constants'
 import AddOrUpdate from '@/views/admin/AddOrUpdate.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { getFileUrl } from '@/utils/utils'
 
 // 管理员数据结构
 type AdminRow = {

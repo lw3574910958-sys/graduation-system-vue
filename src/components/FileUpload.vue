@@ -10,7 +10,7 @@
       :class="{ disabled: maxLimit }"
       :http-request="handleUpload"
       :before-upload="beforeUpload"
-      :auto-upload="false"
+      :auto-upload="true"
       multiple
     >
       <template v-if="listType === 'picture-card'">
@@ -74,7 +74,7 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  //上传文件列表 "tetx" | "picture-card" | "picture"
+  //上传文件列表 "text" | "picture-card" | "picture"
   listType: {
     type: String,
     default: 'picture-card',
@@ -106,7 +106,6 @@ const beforeUpload = (file: any) => {
 // 处理文件变化
 const handleChange = (file: any, fileListParam: any) => {
   fileList.value = fileListParam
-  updateValue()
 }
 
 // 处理文件移除
@@ -117,10 +116,12 @@ const handleRemove = (file: any, fileListParam: any) => {
 
 // 更新值方法
 const updateValue = () => {
-  const urls = fileList.value.map((file: any) => file.url).join(',')
+  const urls = fileList.value
+    .filter((file) => file.url && !file.url.startsWith('blob:'))
+    .map((file) => file.url)
+    .join(',')
   emit('update:value', urls)
 }
-
 const emit = defineEmits(['update:value'])
 
 const fileList = ref<any[]>([])
@@ -154,8 +155,10 @@ const handleUpload = async (options: any) => {
   const formData = new FormData()
   formData.append('file', file)
 
+  let loadingInstance: any = null
+
   try {
-    const loading = ElLoading.service({
+    loadingInstance = ElLoading.service({
       lock: true,
       text: '上传中...',
       background: 'rgba(0, 0, 0, 0.7)',
@@ -163,18 +166,17 @@ const handleUpload = async (options: any) => {
 
     const response: any = await uploadFileApi.uploadFile(formData)
 
-    loading.close()
+    loadingInstance.close()
 
     // 检查响应数据结构
     if (response && response.code === 200 && response.data) {
-      // 使用后端返回的真实URL
+      // 使用后端返回的真实URL，而不是使用file.raw等本地URL
       const newFile = {
         uid: file.uid,
         name: file.name,
-        url: response.data.url, // 使用后端返回的URL
+        url: response.data.name, // 使用相对路径
         status: 'success',
       }
-
       fileList.value.push(newFile)
       updateValue()
       onSuccess(response)
@@ -184,8 +186,8 @@ const handleUpload = async (options: any) => {
       ElMessage.error(response?.msg || response?.message || '上传失败')
     }
   } catch (error: any) {
-    if (error.loading) {
-      error.loading.close()
+    if (loadingInstance) {
+      loadingInstance.close()
     }
     onError(error)
     ElMessage.error(error?.msg || error?.message || '上传失败')
@@ -194,6 +196,9 @@ const handleUpload = async (options: any) => {
 
 defineExpose({
   clear,
+  getValidFiles() {
+    return fileList.value.filter((file) => file.url && !file.url.startsWith('blob:'))
+  },
 })
 
 // 监听默认文件列表变化

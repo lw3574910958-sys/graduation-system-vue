@@ -14,6 +14,10 @@ export const clearLocalStorage = () => {
 }
 
 export const getFileUrl = (url: string) => {
+  if (!url) return ''
+  if (url.startsWith('http')) {
+    return url
+  }
   return `${constants.BASE_URL}/${url}`
 }
 

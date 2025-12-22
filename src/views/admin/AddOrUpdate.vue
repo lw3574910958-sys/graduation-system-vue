@@ -32,6 +32,7 @@
         <file-upload
           :max-upload-size="1"
           :default-file-list="defaultFileList"
+          ref="uploadRef"
           accept="jpg,jpeg,png,gif"
           button-text="上传头像"
           list-type="picture-card"
@@ -115,8 +116,17 @@ function handleAvatarUpdate(value: string) {
   formData.avatar = value
 }
 
+//文件上传组件
+const uploadRef = ref<any>(null)
+
 //提交表单
 function onSubmit() {
+  const validFiles = uploadRef.value?.getValidFiles()
+  if (validFiles.length === 0) {
+    ElMessage.warning('头像尚未上传成功，请等待上传完成后再提交')
+    return
+  }
+
   formRef.value
     .validate()
     .then(async () => {
