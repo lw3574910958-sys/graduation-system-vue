@@ -168,9 +168,8 @@ const handleUpload = async (options: any) => {
 
     loadingInstance.close()
 
-    // 检查响应数据结构
     if (response && response.code === 200 && response.data) {
-      // 使用后端返回的真实URL，而不是使用file.raw等本地URL
+      // ✅ 返回上传成功后的文件信息，让 el-upload 自动更新
       const newFile = {
         uid: file.uid,
         name: file.name,
@@ -178,7 +177,7 @@ const handleUpload = async (options: any) => {
         status: 'success',
       }
       fileList.value.push(newFile)
-      updateValue()
+      updateValue() // 触发父组件更新
       onSuccess(response)
       ElMessage.success('上传成功')
     } else {

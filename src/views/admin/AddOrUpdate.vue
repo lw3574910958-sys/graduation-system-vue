@@ -30,13 +30,13 @@
 
       <el-form-item label="头像" prop="avatar">
         <file-upload
-          :max-upload-size="1"
+          :max-upload-size="2"
           :default-file-list="defaultFileList"
           ref="uploadRef"
           accept="jpg,jpeg,png,gif"
           button-text="上传头像"
           list-type="picture-card"
-          @update:value="handleAvatarUpdate"
+          @change="handleAvatarUpdate"
         />
       </el-form-item>
     </el-form>
@@ -112,8 +112,13 @@ function showModel(row?: any) {
 /**
  * 头像上传后触发的回调
  */
-function handleAvatarUpdate(value: string) {
-  formData.avatar = value
+function handleAvatarUpdate(fileList: any) {
+  if (fileList && fileList.length > 0) {
+    formData.avatar = fileList.map((o: { name: any }) => o.name).toString()
+  } else {
+    formData.avatar = '' as any
+    defaultFileList.value = []
+  }
 }
 
 //文件上传组件

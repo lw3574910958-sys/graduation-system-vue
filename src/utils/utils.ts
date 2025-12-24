@@ -26,7 +26,7 @@ export const urls2FileList = (url: any) => {
   if (url) {
     url.split(',').map((item: string) => {
       let url = getFileUrl(item)
-      let file = {
+      const file = {
         name: item,
         url: url,
       }

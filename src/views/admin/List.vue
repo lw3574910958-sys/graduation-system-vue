@@ -13,7 +13,7 @@
         <el-button @click="onSearch()" type="primary" plain>查询</el-button>
         <el-button @click="add()" type="primary" plain>新增</el-button>
         <el-button @click="confirmDel()" type="danger" plain>批量删除</el-button>
-        <el-button>重置</el-button>
+        <el-button @click="onClick()">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -56,7 +56,7 @@
       style="float: right; margin: 10px 20px 20px 0px"
     />
 
-    <add-or-update @refresh-list="getList" ref="operateRef"></add-or-update>
+    <add-or-update @refresh-list="getList" ref="operateRef" />
   </div>
 </template>
 
@@ -177,6 +177,8 @@ async function del(id: any) {
     listLoading.value = false
   }
 }
+
+//删除
 function confirmDel(id?: any) {
   ElMessageBox.confirm('确定删除该管理员吗？', '确认删除', {
     confirmButtonText: '确定',
@@ -201,5 +203,15 @@ function confirmDel(id?: any) {
  */
 const handleSelectionChange = (val: AdminRow[]) => {
   multipeSelection.value = val
+}
+
+/**
+ * 重置查询条件
+ */
+function onClick() {
+  queryForm.name = ''
+  queryForm.phone = ''
+  queryForm.pageNum = 1
+  getList()
 }
 </script>
