@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-dashboard">
+  <div class="admin-dashboard dashboard-container">
     <h2 class="dashboard-title">管理员 Dashboard</h2>
     <div class="dashboard-content">
       <div class="stats-card">
@@ -49,58 +49,5 @@
 </script>
 
 <style scoped>
-.admin-dashboard {
-  padding: 20px;
-}
-
-.dashboard-title {
-  margin-bottom: 20px;
-  color: #303133;
-  font-weight: 500;
-  font-size: 20px;
-}
-
-.dashboard-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.stats-card {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.card-item {
-  flex: 1;
-}
-
-.card-content {
-  text-align: center;
-}
-
-.card-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #409eff;
-  margin-bottom: 5px;
-}
-
-.card-label {
-  font-size: 14px;
-  color: #606266;
-}
-
-.chart-section {
-  flex: 1;
-}
-
-.chart-placeholder {
-  height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-}
+/* 使用 global.less 中的通用仪表盘样式类 */
 </style>

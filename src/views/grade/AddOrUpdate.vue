@@ -9,7 +9,7 @@
         <el-input-number 
           v-model="formData.studentId" 
           :min="1" 
-          style="width: 60%" 
+          class="w-60" 
           placeholder="请输入学生ID" 
         />
       </el-form-item>
@@ -18,7 +18,7 @@
         <el-input-number 
           v-model="formData.topicId" 
           :min="1" 
-          style="width: 60%" 
+          class="w-60" 
           placeholder="请输入课题ID" 
         />
       </el-form-item>
@@ -29,34 +29,26 @@
           :min="0"
           :max="100"
           :precision="2"
-          style="width: 60%" 
+          class="w-60" 
           placeholder="请输入成绩(0-100)" 
         />
       </el-form-item>
 
-      <el-form-item label="教师ID" prop="teacherId">
+      <el-form-item label="评分教师ID" prop="graderId">
         <el-input-number 
-          v-model.number="formData.teacherId" 
+          v-model="formData.graderId" 
           :min="1" 
-          style="width: 60%" 
-          placeholder="请输入教师ID" 
+          class="w-60" 
+          placeholder="请输入评分教师ID" 
         />
       </el-form-item>
 
       <el-form-item label="学生姓名" prop="studentName">
-        <el-input v-model="formData.studentName" style="width: 60%" placeholder="请输入学生姓名" />
+        <el-input v-model="formData.studentName" class="w-60" placeholder="请输入学生姓名" />
       </el-form-item>
 
       <el-form-item label="课题标题" prop="topicTitle">
-        <el-input v-model="formData.topicTitle" style="width: 60%" placeholder="请输入课题标题" />
-      </el-form-item>
-
-      <el-form-item label="教师姓名" prop="teacherName">
-        <el-input v-model="formData.teacherName" style="width: 60%" placeholder="请输入教师姓名" />
-      </el-form-item>
-
-      <el-form-item label="状态" prop="status">
-        <el-input v-model="formData.status" style="width: 60%" placeholder="请输入状态" />
+        <el-input v-model="formData.topicTitle" class="w-60" placeholder="请输入课题标题" />
       </el-form-item>
 
       <el-form-item label="评语" prop="comment">
@@ -64,7 +56,7 @@
           v-model="formData.comment" 
           type="textarea" 
           :rows="4"
-          style="width: 60%" 
+          class="w-60" 
           placeholder="请输入评语" 
         />
       </el-form-item>
@@ -114,11 +106,9 @@ const formDefault = {
   studentName: '',
   topicId: 0,
   topicTitle: '',
-  teacherId: 0,
-  teacherName: '',
+  graderId: 0,
   score: 0,
   comment: '',
-  status: '',
 }
 
 // 表单数据
@@ -190,13 +180,6 @@ const rules = reactive({
       trigger: 'blur',
     },
   ],
-  teacherId: [
-    {
-      required: true,
-      message: '请输入教师ID',
-      trigger: 'blur',
-    },
-  ],
   studentName: [
     {
       required: true,
@@ -211,20 +194,12 @@ const rules = reactive({
       trigger: 'blur',
     },
   ],
-  teacherName: [
+  graderId: [
     {
       required: true,
-      message: '请输入教师姓名',
+      message: '请输入评分教师ID',
       trigger: 'blur',
     },
   ],
-  status: [
-    {
-      required: true,
-      message: '请输入状态',
-      trigger: 'blur',
-    },
-  ],
-  
 })
 </script>

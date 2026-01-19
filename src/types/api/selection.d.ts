@@ -1,13 +1,11 @@
 // 选题信息响应类型
 export interface SelectionResponse {
   id: number
-  topicId: number
-  topicTitle: string
   studentId: number
-  studentName: string
-  teacherId: number
-  teacherName: string
-  status: string
+  studentName?: string
+  topicId: number
+  topicTitle?: string
+  status: number
   createdAt?: Date
   updatedAt?: Date
 }

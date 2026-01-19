@@ -10,7 +10,7 @@ export const gradeApi = {
    * @returns 成绩列表
    */
   getList: (params: PageQuery) => {
-    return get<ApiResponse<GradePageResponse>>('/api/grades', params)
+    return get<ApiResponse<GradePageResponse>>('/api/grade/list', params)
   },
 
   /**
@@ -19,7 +19,7 @@ export const gradeApi = {
    * @returns 成绩详情
    */
   getById: (id: number | string) => {
-    return get<ApiResponse<GradeResponse>>(`/api/grades/${id}`, {})
+    return get<ApiResponse<GradeResponse>>(`/api/grade/${id}`, {})
   },
 
   /**
@@ -28,7 +28,7 @@ export const gradeApi = {
    * @returns 请求结果
    */
   create: (param: Omit<GradeResponse, 'id'>) => {
-    return post<ApiResponse<void>>('/api/grades', param)
+    return post<ApiResponse<void>>('/api/grade', param)
   },
 
   /**
@@ -38,7 +38,7 @@ export const gradeApi = {
    * @returns 请求结果
    */
   update: (id: number | string, param: Partial<Omit<GradeResponse, 'id'>>) => {
-    return put<ApiResponse<void>>(`/api/grades/${id}`, param)
+    return put<ApiResponse<void>>(`/api/grade/${id}`, param)
   },
 
   /**
@@ -47,6 +47,6 @@ export const gradeApi = {
    * @returns 请求结果
    */
   delete: (id: number | string) => {
-    return del<ApiResponse<void>>(`/api/grades/${id}`)
+    return del<ApiResponse<void>>(`/api/grade/${id}`)
   }
 }

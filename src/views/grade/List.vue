@@ -36,13 +36,11 @@ type GradeRow = {
   studentName: string
   topicId: number
   topicTitle: string
-  teacherId: number
-  teacherName: string
+  graderId: number
   score: number
   comment: string
-  submitDate?: string | Date
-  reviewDate?: string | Date
-  status: string
+  gradedAt?: string | Date
+  createdAt?: string | Date
 }
 
 // 定义操作组件引用--新增/编辑
@@ -69,11 +67,10 @@ const searchFields = [
 const tableColumns = [
   { prop: 'studentName', label: '学生姓名', headerAlign: 'center', align: 'center' },
   { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center' },
-  { prop: 'teacherName', label: '教师姓名', headerAlign: 'center', align: 'center' },
+  { prop: 'graderId', label: '评分教师ID', headerAlign: 'center', align: 'center' },
   { prop: 'score', label: '成绩', headerAlign: 'center', align: 'center' },
   { prop: 'comment', label: '评语', headerAlign: 'center', align: 'center' },
-  { prop: 'status', label: '状态', headerAlign: 'center', align: 'center' },
-  { prop: 'submitDate', label: '提交时间', headerAlign: 'center', align: 'center' },
+  { prop: 'gradedAt', label: '评分时间', headerAlign: 'center', align: 'center' },
 ]
 
 /**

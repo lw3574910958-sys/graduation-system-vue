@@ -88,7 +88,5 @@ function onCancel() {
 </script>
 
 <style scoped>
-.dialog-footer {
-  text-align: right;
-}
+/* 使用 global.less 中的 dialog-footer 样式 */
 </style>

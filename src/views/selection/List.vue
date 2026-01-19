@@ -36,9 +36,7 @@ type SelectionRow = {
   topicTitle: string
   studentId: number
   studentName: string
-  teacherId: number
-  teacherName: string
-  status: string
+  status: number
   createdAt?: string | Date
   updatedAt?: string | Date
 }
@@ -67,8 +65,9 @@ const searchFields = [
     component: 'el-select',
     props: { placeholder: '请选择状态' },
     options: [
-      { label: '待确认', value: '0' },
-      { label: '已确认', value: '1' }
+      { label: '待确认', value: 0 },
+      { label: '已确认', value: 1 },
+      { label: '已取消', value: 2 }
     ]
   }
 ]
@@ -113,10 +112,11 @@ function confirmDel(id?: any) {
 /**
  * 获取状态标签
  */
-function getStatusLabel(status: string) {
+function getStatusLabel(status: number) {
   switch(status) {
-    case '0': return '待确认'
-    case '1': return '已确认'
+    case 0: return '待确认'
+    case 1: return '已确认'
+    case 2: return '已取消'
     default: return '未知'
   }
 }

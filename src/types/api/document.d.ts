@@ -1,17 +1,19 @@
 // 文档信息响应类型
 export interface DocumentResponse {
   id: number
-  title: string
-  fileName: string
-  fileSize: number
-  fileType: string
-  filePath: string
-  studentId: number
-  studentName: string
+  userId: number
   topicId: number
-  topicTitle: string
-  uploadTime?: Date
-  status: string
+  fileType: number
+  originalFilename: string
+  storedPath?: string
+  fileSize: number
+  reviewStatus: number
+  reviewedAt?: Date
+  reviewerId?: number
+  feedback?: string
+  uploadedAt?: Date
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 // 文档分页响应类型

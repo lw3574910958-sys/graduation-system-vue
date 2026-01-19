@@ -1,66 +1,129 @@
 <template>
+
   <div class="login-container">
+
     <div class="login-content">
+
       <div class="login-header">
+
         <img src="@/assets/login/logo.png" alt="logo" class="login-logo" />
+
         <div class="login-title">高校毕业设计管理系统</div>
+
       </div>
+
+
 
       <el-form ref="formRef" :model="loginForm" :rules="loginRules" size="large">
+
         <el-form-item prop="username">
+
           <el-input
+
             v-model="loginForm.username"
+
             :prefix-icon="User"
+
             placeholder="用户名"
+
             autocomplete="off"
+
           />
+
         </el-form-item>
+
+
 
         <el-form-item prop="password">
+
           <el-input
+
             v-model="loginForm.password"
+
             :prefix-icon="Lock"
+
             type="password"
+
             placeholder="密码"
+
             show-password
+
             autocomplete="off"
+
           />
+
         </el-form-item>
+
+
 
         <el-form-item prop="captchaCode">
+
           <div class="captcha-group">
+
             <el-input
+
               v-model="loginForm.captchaCode"
+
               :prefix-icon="Key"
+
               placeholder="请输入验证码"
+
               maxlength="4"
+
               style="flex: 1; margin-right: 10px"
+
             />
+
             <div class="captcha-image" @click="getCaptcha">
+
               <img v-if="captchaImage" :src="captchaImage" alt="验证码" />
+
               <div v-else class="captcha-placeholder">加载中...</div>
+
             </div>
+
           </div>
+
         </el-form-item>
+
+
 
         <el-form-item>
+
           <el-button
+
             type="primary"
+
             size="large"
+
             :loading="loading"
+
             @click="handleLogin"
+
             style="width: 100%"
+
           >
+
             登录
+
           </el-button>
+
         </el-form-item>
+
       </el-form>
 
+
+
       <div class="login-footer">
+
         <p>© 2025 高校毕业设计管理系统</p>
+
       </div>
+
     </div>
+
   </div>
+
 </template>
 
 <script setup lang="ts">
@@ -140,71 +203,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
-
-.login-content {
-  width: 400px;
-  padding: 40px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-}
-
-.login-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.login-logo {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 15px;
-}
-
-.login-title {
-  font-size: 20px;
-  font-weight: bold;
-  color: #333;
-}
-
-.captcha-group {
-  display: flex;
-  align-items: center;
-}
-
-.captcha-image {
-  width: 100px;
-  height: 40px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.captcha-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.captcha-placeholder {
-  font-size: 12px;
-  color: #999;
-}
-
-.login-footer {
-  text-align: center;
-  margin-top: 20px;
-  color: #999;
-  font-size: 12px;
-}
+/* 使用 src/assets/styles/login.less 中的样式 */
 </style>

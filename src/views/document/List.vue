@@ -33,17 +33,19 @@ import BaseList from '@/components/common/BaseList.vue'
 // 文档数据结构
 type DocumentRow = {
   id: number | string
-  title: string
-  fileName: string
-  fileSize: number
-  fileType: string
-  filePath: string
-  studentId: number
-  studentName: string
+  userId: number
   topicId: number
-  topicTitle: string
-  status: string
-  uploadTime?: string | Date
+  fileType: number
+  originalFilename: string
+  storedPath: string
+  fileSize: number
+  reviewStatus: number
+  reviewedAt?: string | Date
+  reviewerId?: number
+  feedback?: string
+  uploadedAt?: string | Date
+  createdAt?: string | Date
+  updatedAt?: string | Date
 }
 
 // 定义操作组件引用--新增/编辑
@@ -60,44 +62,43 @@ const searchFields = [
     options: [
       { label: '开题报告', value: '0' },
       { label: '中期报告', value: '1' },
-      { label: '毕业论文', value: '2' }
-    ]
+      { label: '毕业论文', value: '2' },
+    ],
   },
   {
-    prop: 'status',
-    label: '状态：',
+    prop: 'reviewStatus',
+    label: '审核状态：',
     component: 'el-select',
-    props: { placeholder: '请选择状态' },
+    props: { placeholder: '请选择审核状态' },
     options: [
-      { label: '待审', value: '0' },
-      { label: '通过', value: '1' },
-      { label: '驳回', value: '2' }
-    ]
-  }
+      { label: '待审', value: 0 },
+      { label: '通过', value: 1 },
+      { label: '驳回', value: 2 },
+    ],
+  },
 ]
 
 // 表格列配置
 const tableColumns = [
-  { prop: 'title', label: '标题', headerAlign: 'center', align: 'center' },
-  { prop: 'fileName', label: '文件名', headerAlign: 'center', align: 'center' },
-  { 
-    prop: 'fileType', 
-    label: '文件类型', 
-    headerAlign: 'center', 
+  { prop: 'originalFilename', label: '原始文件名', headerAlign: 'center', align: 'center' },
+  {
+    prop: 'fileType',
+    label: '文件类型',
+    headerAlign: 'center',
     align: 'center',
-    render: (row: DocumentRow) => getFileTypeLabel(row.fileType)
+    render: (row: DocumentRow) => getFileTypeLabel(row.fileType),
   },
   { prop: 'fileSize', label: '文件大小', headerAlign: 'center', align: 'center' },
-  { prop: 'studentName', label: '学生姓名', headerAlign: 'center', align: 'center' },
-  { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center' },
-  { 
-    prop: 'status', 
-    label: '状态', 
-    headerAlign: 'center', 
+  { prop: 'userId', label: '上传人ID', headerAlign: 'center', align: 'center' },
+  { prop: 'topicId', label: '课题ID', headerAlign: 'center', align: 'center' },
+  {
+    prop: 'reviewStatus',
+    label: '审核状态',
+    headerAlign: 'center',
     align: 'center',
-    render: (row: DocumentRow) => getReviewStatusLabel(row.status)
+    render: (row: DocumentRow) => getReviewStatusLabel(row.reviewStatus),
   },
-  { prop: 'uploadTime', label: '上传时间', headerAlign: 'center', align: 'center' },
+  { prop: 'uploadedAt', label: '上传时间', headerAlign: 'center', align: 'center' },
 ]
 
 /**
@@ -125,20 +126,20 @@ function confirmDel(id?: any) {
  * 获取文件类型标签
  * 使用常量映射，便于维护和国际化
  */
-function getFileTypeLabel(fileType: string | number) {
+function getFileTypeLabel(fileType: number) {
   // 将数字转换为字符串并查找对应的标签
-  const fileTypeString = String(fileType);
-  return FILE_TYPE_LABELS[fileTypeString as keyof typeof FILE_TYPE_LABELS] || '未知';
+  const fileTypeString = fileType.toString()
+  return FILE_TYPE_LABELS[fileTypeString as unknown as keyof typeof FILE_TYPE_LABELS] || '未知'
 }
 
 /**
  * 获取审核状态标签
  * 使用常量映射，便于维护和国际化
  */
-function getReviewStatusLabel(reviewStatus: string | number) {
+function getReviewStatusLabel(reviewStatus: number) {
   // 将数字转换为字符串并查找对应的标签
-  const statusString = String(reviewStatus);
-  return REVIEW_STATUS_LABELS[statusString as keyof typeof REVIEW_STATUS_LABELS] || '未知';
+  const statusString = reviewStatus.toString()
+  return REVIEW_STATUS_LABELS[statusString as unknown as keyof typeof REVIEW_STATUS_LABELS] || '未知'
 }
 
 // 用于刷新列表的方法

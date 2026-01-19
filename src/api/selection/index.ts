@@ -10,7 +10,7 @@ export const selectionApi = {
    * @returns 选题列表
    */
   getList: (params: PageQuery) => {
-    return get<ApiResponse<SelectionPageResponse>>('/api/selections', params)
+    return get<ApiResponse<SelectionPageResponse>>('/api/selection/list', params)
   },
 
   /**
@@ -19,7 +19,7 @@ export const selectionApi = {
    * @returns 选题详情
    */
   getById: (id: number | string) => {
-    return get<ApiResponse<SelectionResponse>>(`/api/selections/${id}`, {})
+    return get<ApiResponse<SelectionResponse>>(`/api/selection/${id}`, {})
   },
 
   /**
@@ -28,7 +28,7 @@ export const selectionApi = {
    * @returns 请求结果
    */
   create: (param: Omit<SelectionResponse, 'id'>) => {
-    return post<ApiResponse<void>>('/api/selections', param)
+    return post<ApiResponse<void>>('/api/selection', param)
   },
 
   /**
@@ -38,7 +38,7 @@ export const selectionApi = {
    * @returns 请求结果
    */
   update: (id: number | string, param: Partial<Omit<SelectionResponse, 'id'>>) => {
-    return put<ApiResponse<void>>(`/api/selections/${id}`, param)
+    return put<ApiResponse<void>>(`/api/selection/${id}`, param)
   },
 
   /**
@@ -47,6 +47,6 @@ export const selectionApi = {
    * @returns 请求结果
    */
   delete: (id: number | string) => {
-    return del<ApiResponse<void>>(`/api/selections/${id}`)
+    return del<ApiResponse<void>>(`/api/selection/${id}`)
   }
 }

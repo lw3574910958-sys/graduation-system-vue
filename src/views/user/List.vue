@@ -27,6 +27,7 @@ import { ref, reactive } from 'vue'
 import { userApi } from '@/api/user'
 import AddOrUpdate from '@/views/user/AddOrUpdate.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { UserFilled } from '@element-plus/icons-vue'
 // 导入用户类型常量和消息常量
 import { USER_TYPE_LABELS, MESSAGE } from '@/constants/user'
 import BaseList from '@/components/common/BaseList.vue'
@@ -84,6 +85,19 @@ const tableColumns = [
     headerAlign: 'center', 
     align: 'center',
     render: (row: UserRow) => getUserTypeLabel(row.userType)
+  },
+  {
+    prop: 'avatar',
+    label: '头像',
+    headerAlign: 'center',
+    align: 'center',
+    width: 100,
+    render: (row: UserRow) => {
+      if (row.avatar) {
+        return `<el-avatar shape="circle" :size="40" src="${row.avatar}" fit="cover" />`
+      }
+      return `<el-avatar shape="circle" :size="40" icon="UserFilled" />`
+    }
   },
   { 
     prop: 'status', 

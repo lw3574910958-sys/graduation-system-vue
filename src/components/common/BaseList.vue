@@ -1,5 +1,5 @@
 <template>
-  <div class="base-list-container">
+  <div class="base-list-container p-20">
     <el-form :inline="true" v-if="showSearchForm">
       <el-form-item
         v-for="searchField in searchFields"
@@ -29,7 +29,7 @@
       :data="datalist"
       v-loading="listLoading"
       @selection-change="handleSelectionChange"
-      style="width: 100%"
+      class="w-100"
       :header-cell-style="{ background: '#f5f7fa' }"
     >
       <el-table-column type="selection" width="55" v-if="showSelection" />
@@ -77,7 +77,7 @@
       background
       layout="prev, pager, next"
       :total="total"
-      style="float: right; margin: 10px 20px 20px 0px"
+      class="float-right mt-10 mr-20 mb-20"
       v-if="showPagination"
     />
 
@@ -324,7 +324,5 @@ defineExpose({
 </script>
 
 <style scoped>
-.base-list-container {
-  padding: 20px;
-}
+/* 使用 global.less 中的 p-20 类 */
 </style>

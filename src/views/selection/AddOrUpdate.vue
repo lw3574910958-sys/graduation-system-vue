@@ -18,18 +18,7 @@
         <el-input v-model="formData.studentName" style="width: 60%" placeholder="请输入学生姓名" />
       </el-form-item>
 
-      <el-form-item label="教师ID" prop="teacherId">
-        <el-input-number 
-          v-model.number="formData.teacherId" 
-          :min="1" 
-          style="width: 60%" 
-          placeholder="请输入教师ID" 
-        />
-      </el-form-item>
 
-      <el-form-item label="教师姓名" prop="teacherName">
-        <el-input v-model="formData.teacherName" style="width: 60%" placeholder="请输入教师姓名" />
-      </el-form-item>
 
       <el-form-item label="课题ID" prop="topicId">
         <el-input-number 
@@ -48,6 +37,7 @@
         <el-select v-model="formData.status" placeholder="请选择状态" style="width: 60%">
           <el-option label="待确认" :value="0" />
           <el-option label="已确认" :value="1" />
+          <el-option label="已取消" :value="2" />
         </el-select>
       </el-form-item>
     </el-form>
@@ -96,9 +86,8 @@ const formDefault = {
   studentName: '',
   topicId: 0,
   topicTitle: '',
-  teacherId: 0,
-  teacherName: '',
-  status: '0',
+
+  status: 0,
 }
 
 // 表单数据
@@ -170,13 +159,6 @@ const rules = reactive({
       trigger: 'blur',
     },
   ],
-  status: [
-    {
-      required: true,
-      message: '请选择状态',
-      trigger: 'blur',
-    },
-  ],
   studentName: [
     {
       required: true,
@@ -184,19 +166,12 @@ const rules = reactive({
       trigger: 'blur',
     },
   ],
-  teacherId: [
+  status: [
     {
       required: true,
-      message: '请输入教师ID',
+      message: '请选择状态',
       trigger: 'blur',
     },
   ],
-  teacherName: [
-    {
-      required: true,
-      message: '请输入教师姓名',
-      trigger: 'blur',
-    },
-  ]
 })
 </script>

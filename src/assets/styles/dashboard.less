@@ -1,0 +1,83 @@
+/* 仪表盘相关通用样式 */
+.dashboard-container {
+  padding: 20px;
+}
+
+.dashboard-title {
+  margin-bottom: 20px;
+  color: #303133;
+  font-weight: 500;
+  font-size: 20px;
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stats-card {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.card-item {
+  flex: 1;
+}
+
+.card-content {
+  text-align: center;
+}
+
+.card-value {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.card-label {
+  font-size: 14px;
+  color: #606266;
+}
+
+.chart-section {
+  flex: 1;
+}
+
+.progress-section {
+  margin-bottom: 20px;
+}
+
+.progress-content {
+  padding: 20px 0;
+}
+
+.notice-section {
+  flex: 1;
+}
+
+.notice-content {
+  min-height: 200px;
+}
+
+.chart-placeholder {
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+/* 仪表盘特定颜色 */
+.admin-dashboard .card-value {
+  color: #409eff;
+}
+
+.teacher-dashboard .card-value {
+  color: #67c23a;
+}
+
+.student-dashboard .card-value {
+  color: #e6a23c;
+}

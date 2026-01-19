@@ -45,21 +45,16 @@ const formFields = [
     component: 'el-input-number',
     props: { min: 1, style: { width: '60%' }, placeholder: '请输入发布教师ID' },
   },
-  {
-    prop: 'teacherName',
-    label: '发布教师姓名',
-    component: 'el-input',
-    props: { style: { width: '60%' }, placeholder: '请输入发布教师姓名' },
-  },
+
   {
     prop: 'status',
     label: '状态',
     component: 'el-select',
     props: { style: { width: '60%' }, placeholder: '请选择状态' },
     options: [
-      { label: '开放', value: '0' },
-      { label: '已选', value: '1' },
-      { label: '关闭', value: '2' }
+      { label: '开放', value: 0 },
+      { label: '已选', value: 1 },
+      { label: '关闭', value: 2 }
     ]
   }
 ]
@@ -70,8 +65,7 @@ const formDefault = {
   title: '',
   description: '',
   teacherId: 0,
-  teacherName: '',
-  status: '0',
+  status: 0,
 }
 
 // 对话框标题
@@ -107,13 +101,6 @@ const formRules = {
     {
       required: true,
       message: '请选择状态',
-      trigger: 'blur',
-    },
-  ],
-  teacherName: [
-    {
-      required: true,
-      message: '请输入发布教师姓名',
       trigger: 'blur',
     },
   ]

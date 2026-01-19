@@ -2,16 +2,15 @@
 export interface GradeResponse {
   id: number
   studentId: number
-  studentName: string
+  studentName?: string
   topicId: number
-  topicTitle: string
-  teacherId: number
-  teacherName: string
-  score: number
-  comment: string
-  submitDate?: Date
-  reviewDate?: Date
-  status: string
+  topicTitle?: string
+  score?: number
+  graderId?: number
+  comment?: string
+  gradedAt?: Date
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 // 成绩分页响应类型

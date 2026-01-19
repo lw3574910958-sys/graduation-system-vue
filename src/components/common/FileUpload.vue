@@ -81,6 +81,11 @@ const props = defineProps({
     type: String,
     default: 'picture-card',
   },
+  //是否为头像上传
+  isAvatarUpload: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 // 允许上传的文件类型
@@ -183,7 +188,9 @@ const handleUpload = async (options: { file: any, onError: Function, onSuccess: 
       background: 'rgba(0, 0, 0, 0.7)',
     })
 
-    const response: any = await commonApi.uploadFile(formData)
+    const response: any = props.isAvatarUpload ? 
+        await commonApi.uploadAvatar(formData) : 
+        await commonApi.uploadFile(formData)
 
     loadingInstance.close()
 

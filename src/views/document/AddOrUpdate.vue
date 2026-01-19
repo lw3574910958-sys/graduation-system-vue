@@ -28,34 +28,27 @@ const baseRef = ref()
 // 表单字段配置
 const formFields = [
   {
-    prop: 'title',
-    label: '文档标题',
+    prop: 'originalFilename',
+    label: '原始文件名',
     component: 'el-input',
-    props: { style: { width: '60%' }, placeholder: '请输入文档标题' },
+    props: { style: { width: '60%' }, placeholder: '请输入原始文件名' },
   },
   {
-    prop: 'fileName',
-    label: '文件名',
-    component: 'el-input',
-    props: { style: { width: '60%' }, placeholder: '请输入文件名' },
+    prop: 'storedPath',
+    label: '文档文件',
+    component: 'FileUpload',
+    props: { 
+      style: { width: '60%' },
+      listType: 'text',
+      maxSize: 10,
+      accept: '.pdf,.doc,.docx,.txt,.zip,.rar'
+    },
   },
   {
-    prop: 'filePath',
-    label: '文件路径',
-    component: 'el-input',
-    props: { style: { width: '60%' }, placeholder: '请输入文件路径' },
-  },
-  {
-    prop: 'studentId',
-    label: '学生ID',
+    prop: 'userId',
+    label: '用户ID',
     component: 'el-input-number',
-    props: { min: 1, style: { width: '60%' }, placeholder: '请输入学生ID' },
-  },
-  {
-    prop: 'studentName',
-    label: '学生姓名',
-    component: 'el-input',
-    props: { style: { width: '60%' }, placeholder: '请输入学生姓名' },
+    props: { min: 1, style: { width: '60%' }, placeholder: '请输入用户ID' },
   },
   {
     prop: 'topicId',
@@ -64,49 +57,51 @@ const formFields = [
     props: { min: 1, style: { width: '60%' }, placeholder: '请输入题目ID' },
   },
   {
-    prop: 'topicTitle',
-    label: '题目标题',
-    component: 'el-input',
-    props: { style: { width: '60%' }, placeholder: '请输入题目标题' },
-  },
-  {
     prop: 'fileType',
     label: '文件类型',
     component: 'el-select',
     props: { style: { width: '60%' }, placeholder: '请选择文件类型' },
     options: [
-      { label: '开题报告', value: '0' },
-      { label: '中期报告', value: '1' },
-      { label: '毕业论文', value: '2' }
+      { label: '开题报告', value: 0 },
+      { label: '中期报告', value: 1 },
+      { label: '毕业论文', value: 2 }
     ]
   },
   {
-    prop: 'status',
-    label: '状态',
+    prop: 'reviewStatus',
+    label: '审核状态',
     component: 'el-select',
-    props: { style: { width: '60%' }, placeholder: '请选择状态' },
+    props: { style: { width: '60%' }, placeholder: '请选择审核状态' },
     options: [
-      { label: '待审', value: '0' },
-      { label: '通过', value: '1' },
-      { label: '驳回', value: '2' }
+      { label: '待审', value: 0 },
+      { label: '通过', value: 1 },
+      { label: '驳回', value: 2 }
     ]
+  },
+  {
+    prop: 'feedback',
+    label: '审核意见',
+    component: 'el-input',
+    props: { type: 'textarea', style: { width: '60%' }, placeholder: '请输入审核意见' },
   }
 ]
 
 // 表单初始值
 const formDefault = {
   id: undefined,
-  title: '',
-  fileName: '',
-  fileSize: 0,
-  fileType: '0',
-  filePath: '',
-  studentId: 0,
-  studentName: '',
+  userId: 0,
   topicId: 0,
-  topicTitle: '',
-  status: '0',
-  uploadTime: undefined,
+  fileType: 0,
+  originalFilename: '',
+  storedPath: '',
+  fileSize: 0,
+  reviewStatus: 0,
+  reviewerId: undefined,
+  feedback: undefined,
+  uploadedAt: undefined,
+  createdAt: undefined,
+  updatedAt: undefined,
+  reviewedAt: undefined,
 }
 
 // 对话框标题
@@ -117,38 +112,24 @@ const dialogTitle = {
 
 // 表单校验规则
 const formRules = {
-  title: [
+  originalFilename: [
     {
       required: true,
-      message: '请输入文档标题',
+      message: '请输入原始文件名',
       trigger: 'blur',
     },
   ],
-  fileName: [
+  storedPath: [
     {
       required: true,
-      message: '请输入文件名',
+      message: '请输入存储路径',
       trigger: 'blur',
     },
   ],
-  filePath: [
+  userId: [
     {
       required: true,
-      message: '请输入文件路径',
-      trigger: 'blur',
-    },
-  ],
-  studentId: [
-    {
-      required: true,
-      message: '请输入学生ID',
-      trigger: 'blur',
-    },
-  ],
-  studentName: [
-    {
-      required: true,
-      message: '请输入学生姓名',
+      message: '请输入用户ID',
       trigger: 'blur',
     },
   ],
@@ -159,13 +140,6 @@ const formRules = {
       trigger: 'blur',
     },
   ],
-  topicTitle: [
-    {
-      required: true,
-      message: '请输入题目标题',
-      trigger: 'blur',
-    },
-  ],
   fileType: [
     {
       required: true,
@@ -173,10 +147,10 @@ const formRules = {
       trigger: 'blur',
     },
   ],
-  status: [
+  reviewStatus: [
     {
       required: true,
-      message: '请选择状态',
+      message: '请选择审核状态',
       trigger: 'blur',
     },
   ],

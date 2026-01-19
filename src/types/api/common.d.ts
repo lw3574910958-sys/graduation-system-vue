@@ -4,8 +4,7 @@ export interface UploadFileResponse {
   url: string
   size: number
   type: string
-  originalName: string
-  uploadTime: string
+  storedPath: string
 }
 
 // 上传响应类型

@@ -3,8 +3,10 @@ export interface DepartmentResponse {
   id: number
   name: string
   code: string
-  description: string
+  description?: string
+  status: number
   createdAt?: Date
+  updatedAt?: Date
 }
 
 // 院系分页响应类型

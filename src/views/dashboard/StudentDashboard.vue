@@ -1,5 +1,5 @@
 <template>
-  <div class="student-dashboard">
+  <div class="student-dashboard dashboard-container">
     <h2 class="dashboard-title">学生 Dashboard</h2>
     <div class="dashboard-content">
       <div class="stats-card">
@@ -65,61 +65,5 @@
 </script>
 
 <style scoped>
-.student-dashboard {
-  padding: 20px;
-}
-
-.dashboard-title {
-  margin-bottom: 20px;
-  color: #303133;
-  font-weight: 500;
-  font-size: 20px;
-}
-
-.dashboard-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.stats-card {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.card-item {
-  flex: 1;
-}
-
-.card-content {
-  text-align: center;
-}
-
-.card-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #e6a23c;
-  margin-bottom: 5px;
-}
-
-.card-label {
-  font-size: 14px;
-  color: #606266;
-}
-
-.progress-section {
-  margin-bottom: 20px;
-}
-
-.progress-content {
-  padding: 20px 0;
-}
-
-.notice-section {
-  flex: 1;
-}
-
-.notice-content {
-  min-height: 200px;
-}
+/* 使用 global.less 中的通用仪表盘样式类 */
 </style>

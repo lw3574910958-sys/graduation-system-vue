@@ -34,6 +34,7 @@ import LeftMenu from '@/components/layout/LeftMenu.vue'
 import Footer from '@/components/layout/Footer.vue'
 </script>
 
-<style lang="less">
-@import url('@/assets/styles/style.less');
-</style>
+<!--
+注意：不再导入 style.less
+因为该样式已在 main.ts 中全局导入，避免重复导入
+-->

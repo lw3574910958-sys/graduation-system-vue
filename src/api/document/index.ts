@@ -10,7 +10,7 @@ export const documentApi = {
    * @returns 文档列表
    */
   getList: (params: PageQuery) => {
-    return get<ApiResponse<DocumentPageResponse>>('/api/documents', params)
+    return get<ApiResponse<DocumentPageResponse>>('/api/document/list', params)
   },
 
   /**
@@ -19,7 +19,7 @@ export const documentApi = {
    * @returns 文档详情
    */
   getById: (id: number | string) => {
-    return get<ApiResponse<DocumentResponse>>(`/api/documents/${id}`, {})
+    return get<ApiResponse<DocumentResponse>>(`/api/document/${id}`, {})
   },
 
   /**
@@ -28,7 +28,7 @@ export const documentApi = {
    * @returns 请求结果
    */
   create: (param: Omit<DocumentResponse, 'id'>) => {
-    return post<ApiResponse<void>>('/api/documents', param)
+    return post<ApiResponse<void>>('/api/document', param)
   },
 
   /**
@@ -38,7 +38,7 @@ export const documentApi = {
    * @returns 请求结果
    */
   update: (id: number | string, param: Partial<Omit<DocumentResponse, 'id'>>) => {
-    return put<ApiResponse<void>>(`/api/documents/${id}`, param)
+    return put<ApiResponse<void>>(`/api/document/${id}`, param)
   },
 
   /**
@@ -47,6 +47,6 @@ export const documentApi = {
    * @returns 请求结果
    */
   delete: (id: number | string) => {
-    return del<ApiResponse<void>>(`/api/documents/${id}`)
+    return del<ApiResponse<void>>(`/api/document/${id}`)
   }
 }

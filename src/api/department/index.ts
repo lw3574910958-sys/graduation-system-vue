@@ -9,7 +9,7 @@ export const departmentApi = {
    * @returns 院系列表
    */
   getList: (params?: PageQuery) => {
-    return get<ApiResponse<DepartmentPageResponse>>('/api/departments', params || {})
+    return get<ApiResponse<DepartmentPageResponse>>('/api/department/list', params || {})
   },
 
   /**
@@ -18,7 +18,7 @@ export const departmentApi = {
    * @returns 院系详情
    */
   getById: (id: number | string) => {
-    return get<ApiResponse<DepartmentResponse>>(`/api/departments/${id}`, {})
+    return get<ApiResponse<DepartmentResponse>>(`/api/department/${id}`, {})
   },
 
   /**
@@ -27,7 +27,7 @@ export const departmentApi = {
    * @returns 请求结果
    */
   create: (param: Omit<DepartmentResponse, 'id'>) => {
-    return post<ApiResponse<void>>('/api/departments', param)
+    return post<ApiResponse<void>>('/api/department', param)
   },
 
   /**
@@ -37,7 +37,7 @@ export const departmentApi = {
    * @returns 请求结果
    */
   update: (id: number | string, param: Partial<Omit<DepartmentResponse, 'id'>>) => {
-    return put<ApiResponse<void>>(`/api/departments/${id}`, param)
+    return put<ApiResponse<void>>(`/api/department/${id}`, param)
   },
 
   /**
@@ -46,6 +46,6 @@ export const departmentApi = {
    * @returns 请求结果
    */
   delete: (id: number | string) => {
-    return del<ApiResponse<void>>(`/api/departments/${id}`)
+    return del<ApiResponse<void>>(`/api/department/${id}`)
   }
 }

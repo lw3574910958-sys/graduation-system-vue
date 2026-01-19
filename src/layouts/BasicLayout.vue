@@ -1,7 +1,7 @@
 <template>
   <div class="basic-layout">
     <Header />
-    <div class="basic-layout-content">
+    <div class="flex-1 overflow-auto p-20 bg-light">
       <slot />
     </div>
   </div>
@@ -16,12 +16,5 @@ import Header from '@/components/layout/Header.vue';
   height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-.basic-layout-content {
-  flex: 1;
-  overflow: auto;
-  padding: 20px;
-  background-color: #f5f5f5;
 }
 </style>

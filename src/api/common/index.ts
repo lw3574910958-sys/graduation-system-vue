@@ -11,7 +11,21 @@ export const commonApi = {
    */
   uploadFile: (formData: FormData) => {
     return http<ApiResponse<UploadResponse>>({
-      url: '/api/upload',
+      url: '/api/upload/file',
+      method: 'post',
+      data: formData,
+      // 不设置Content-Type，让浏览器自动设置
+    })
+  },
+
+  /**
+   * 上传头像
+   * @param formData 头像文件数据
+   * @returns 上传结果
+   */
+  uploadAvatar: (formData: FormData) => {
+    return http<ApiResponse<UploadResponse>>({
+      url: '/api/upload/avatar',
       method: 'post',
       data: formData,
       // 不设置Content-Type，让浏览器自动设置

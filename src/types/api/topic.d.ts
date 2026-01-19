@@ -4,11 +4,9 @@ export interface TopicResponse {
   title: string
   description: string
   teacherId: number
-  teacherName: string
-  studentId?: number
-  studentName?: string
-  status: string
+  status: number
   createdAt?: Date
+  updatedAt?: Date
 }
 
 // 题目分页响应类型

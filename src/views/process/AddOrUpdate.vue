@@ -12,7 +12,7 @@
       </el-form-item>
       
       <el-form-item label="学生ID" prop="studentId">
-        <el-input-number v-model="form.studentId" :min="1" style="width: 100%" placeholder="请输入学生ID" />
+        <el-input-number v-model="form.studentId" :min="1" class="w-100" placeholder="请输入学生ID" />
       </el-form-item>
       
       <el-form-item label="学生姓名" prop="studentName">
@@ -20,7 +20,7 @@
       </el-form-item>
       
       <el-form-item label="课题ID" prop="topicId">
-        <el-input-number v-model="form.topicId" :min="1" style="width: 100%" placeholder="请输入课题ID" />
+        <el-input-number v-model="form.topicId" :min="1" class="w-100" placeholder="请输入课题ID" />
       </el-form-item>
       
       <el-form-item label="课题" prop="topicTitle">
@@ -37,7 +37,7 @@
       </el-form-item>
       
       <el-form-item label="状态" prop="status">
-        <el-select v-model="form.status" placeholder="请选择状态" style="width: 100%">
+        <el-select v-model="form.status" placeholder="请选择状态" class="w-100">
           <el-option label="待提交" value="pending" />
           <el-option label="进行中" value="in-progress" />
           <el-option label="已完成" value="completed" />
@@ -186,7 +186,5 @@ function validate() {
 </script>
 
 <style scoped>
-.dialog-footer {
-  text-align: right;
-}
+/* 使用 global.less 中的 dialog-footer 样式 */
 </style>

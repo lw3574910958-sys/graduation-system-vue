@@ -29,7 +29,7 @@
     </el-form>
 
     <template #footer>
-      <div class="dialog-footer">
+      <div class="d-flex justify-end">
         <el-button @click="onCancel()">取消</el-button>
         <el-button
           type="primary"
@@ -47,6 +47,7 @@
 <script setup lang="ts" generic="T = any">
 import { ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import FileUpload from '@/components/common/FileUpload.vue'
 import { MESSAGE } from '@/constants/user'
 
 // 表单项类型定义
@@ -166,6 +167,11 @@ function onCancel() {
   visible.value = false
 }
 
+// 注册动态组件
+const dynamicComponents = {
+  FileUpload
+}
+
 // 暴露方法给父组件
 defineExpose({
   showModel,
@@ -174,8 +180,5 @@ defineExpose({
 </script>
 
 <style scoped>
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-}
+
 </style>

@@ -10,7 +10,7 @@ export const topicApi = {
    * @returns 题目列表
    */
   getList: (params: PageQuery) => {
-    return get<ApiResponse<TopicPageResponse>>('/api/topics', params)
+    return get<ApiResponse<TopicPageResponse>>('/api/topic/list', params)
   },
 
   /**
@@ -19,7 +19,7 @@ export const topicApi = {
    * @returns 题目详情
    */
   getById: (id: number | string) => {
-    return get<ApiResponse<TopicResponse>>(`/api/topics/${id}`, {})
+    return get<ApiResponse<TopicResponse>>(`/api/topic/${id}`, {})
   },
 
   /**
@@ -28,7 +28,7 @@ export const topicApi = {
    * @returns 请求结果
    */
   create: (param: Omit<TopicResponse, 'id'>) => {
-    return post<ApiResponse<void>>('/api/topics', param)
+    return post<ApiResponse<void>>('/api/topic', param)
   },
 
   /**
@@ -38,7 +38,7 @@ export const topicApi = {
    * @returns 请求结果
    */
   update: (id: number | string, param: Partial<Omit<TopicResponse, 'id'>>) => {
-    return put<ApiResponse<void>>(`/api/topics/${id}`, param)
+    return put<ApiResponse<void>>(`/api/topic/${id}`, param)
   },
 
   /**
@@ -47,6 +47,6 @@ export const topicApi = {
    * @returns 请求结果
    */
   delete: (id: number | string) => {
-    return del<ApiResponse<void>>(`/api/topics/${id}`)
+    return del<ApiResponse<void>>(`/api/topic/${id}`)
   }
 }

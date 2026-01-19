@@ -35,10 +35,7 @@ type TopicRow = {
   title: string
   description: string
   teacherId: number
-  teacherName: string
-  studentId?: number
-  studentName?: string
-  status: string
+  status: number
   createdAt?: string | Date
 }
 
@@ -60,9 +57,9 @@ const searchFields = [
     component: 'el-select',
     props: { placeholder: '请选择状态' },
     options: [
-      { label: '开放', value: '0' },
-      { label: '已选', value: '1' },
-      { label: '关闭', value: '2' }
+      { label: '开放', value: 0 },
+      { label: '已选', value: 1 },
+      { label: '关闭', value: 2 }
     ]
   }
 ]
@@ -71,7 +68,7 @@ const searchFields = [
 const tableColumns = [
   { prop: 'title', label: '课题标题', headerAlign: 'center', align: 'center' },
   { prop: 'description', label: '课题描述', headerAlign: 'center', align: 'center' },
-  { prop: 'teacherName', label: '发布教师', headerAlign: 'center', align: 'center' },
+  { prop: 'teacherId', label: '发布教师ID', headerAlign: 'center', align: 'center' },
   { 
     prop: 'status', 
     label: '状态', 
@@ -106,11 +103,11 @@ function confirmDel(id?: number | string) {
 /**
  * 获取状态标签
  */
-function getStatusLabel(status: string) {
+function getStatusLabel(status: number) {
   switch(status) {
-    case '0': return '开放'
-    case '1': return '已选'
-    case '2': return '关闭'
+    case 0: return '开放'
+    case 1: return '已选'
+    case 2: return '关闭'
     default: return '未知'
   }
 }

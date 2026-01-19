@@ -1,14 +1,7 @@
 <template>
-  <div class="welcome-view">高校毕业设计管理系统</div>
+  <div class="d-flex justify-center align-center h-100 fw-bold fs-30">高校毕业设计管理系统</div>
 </template>
 
-<style lang="less" scoped>
-.welcome-view {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  font-size: 30px;
-  font-weight: bold;
-}
+<style scoped>
+/* 使用 global.less 中的通用样式类 */
 </style>
