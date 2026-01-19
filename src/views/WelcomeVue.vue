@@ -1,5 +1,5 @@
 <template>
-  <div class="welcome-view">My Admin</div>
+  <div class="welcome-view">高校毕业设计管理系统</div>
 </template>
 
 <style lang="less" scoped>

@@ -1,0 +1,230 @@
+<template>
+  <el-dialog
+    v-model="visible"
+    :title="!formData.id ? '新增成绩信息' : '修改成绩信息'"
+    width="50%"
+  >
+    <el-form :rules="rules" :model="formData" ref="formRef" label-width="100px">
+      <el-form-item label="学生ID" prop="studentId">
+        <el-input-number 
+          v-model="formData.studentId" 
+          :min="1" 
+          style="width: 60%" 
+          placeholder="请输入学生ID" 
+        />
+      </el-form-item>
+
+      <el-form-item label="课题ID" prop="topicId">
+        <el-input-number 
+          v-model="formData.topicId" 
+          :min="1" 
+          style="width: 60%" 
+          placeholder="请输入课题ID" 
+        />
+      </el-form-item>
+
+      <el-form-item label="成绩" prop="score">
+        <el-input-number 
+          v-model="formData.score" 
+          :min="0"
+          :max="100"
+          :precision="2"
+          style="width: 60%" 
+          placeholder="请输入成绩(0-100)" 
+        />
+      </el-form-item>
+
+      <el-form-item label="教师ID" prop="teacherId">
+        <el-input-number 
+          v-model.number="formData.teacherId" 
+          :min="1" 
+          style="width: 60%" 
+          placeholder="请输入教师ID" 
+        />
+      </el-form-item>
+
+      <el-form-item label="学生姓名" prop="studentName">
+        <el-input v-model="formData.studentName" style="width: 60%" placeholder="请输入学生姓名" />
+      </el-form-item>
+
+      <el-form-item label="课题标题" prop="topicTitle">
+        <el-input v-model="formData.topicTitle" style="width: 60%" placeholder="请输入课题标题" />
+      </el-form-item>
+
+      <el-form-item label="教师姓名" prop="teacherName">
+        <el-input v-model="formData.teacherName" style="width: 60%" placeholder="请输入教师姓名" />
+      </el-form-item>
+
+      <el-form-item label="状态" prop="status">
+        <el-input v-model="formData.status" style="width: 60%" placeholder="请输入状态" />
+      </el-form-item>
+
+      <el-form-item label="评语" prop="comment">
+        <el-input 
+          v-model="formData.comment" 
+          type="textarea" 
+          :rows="4"
+          style="width: 60%" 
+          placeholder="请输入评语" 
+        />
+      </el-form-item>
+    </el-form>
+
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="onCancel()">取消</el-button>
+        <el-button
+          type="primary"
+          @click="onSubmit()"
+          :loading="btnLoading"
+        >
+          确定
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
+</template>
+
+<script lang="ts" setup>
+import { reactive, ref } from 'vue'
+import { gradeApi } from '@/api/grade'
+import { ElMessage } from 'element-plus'
+import { MESSAGE } from '@/constants/user'
+
+// 暴露方法给父组件调用
+defineExpose({
+  showModel,
+  onCancel,
+})
+
+// 控制对话框显示与否
+const visible = ref(false)
+// 按钮加载状态
+const btnLoading = ref(false)
+// 触发自定义事件
+const emit = defineEmits(['refreshList'])
+
+// 表单组件
+const formRef = ref()
+
+// 表单初始值
+const formDefault = {
+  id: undefined,
+  studentId: 0,
+  studentName: '',
+  topicId: 0,
+  topicTitle: '',
+  teacherId: 0,
+  teacherName: '',
+  score: 0,
+  comment: '',
+  status: '',
+}
+
+// 表单数据
+const formData = reactive({ ...formDefault })
+
+// 显示对话框
+function showModel(row?: any) {
+  if (row) {
+    Object.assign(formData, row)
+  } else {
+    Object.assign(formData, formDefault)
+  }
+  visible.value = true
+}
+
+// 提交表单
+async function onSubmit() {
+  formRef.value
+    .validate()
+    .then(async () => {
+      try {
+        btnLoading.value = true
+        if (formData.id) {
+          await gradeApi.update(formData.id, formData)
+        } else {
+          await gradeApi.create(formData)
+        }
+        ElMessage.success(`${!formData.id ? '新增' : '修改'}成绩信息成功`)
+        visible.value = false
+        emit('refreshList')
+      } catch (e) {
+        console.error('Failed to submit form:', e)
+        ElMessage.error(MESSAGE.SUBMIT_FAILED)
+      } finally {
+        btnLoading.value = false
+      }
+    })
+    .catch((err: any) => {
+      console.log('Form validation failed:', err)
+    })
+}
+
+// 取消按钮
+function onCancel() {
+  formRef.value?.clearValidate()
+  visible.value = false
+}
+
+// 表单校验规则
+const rules = reactive({
+  studentId: [
+    {
+      required: true,
+      message: '请输入学生ID',
+      trigger: 'blur',
+    },
+  ],
+  topicId: [
+    {
+      required: true,
+      message: '请输入课题ID',
+      trigger: 'blur',
+    },
+  ],
+  score: [
+    {
+      required: true,
+      message: '请输入成绩',
+      trigger: 'blur',
+    },
+  ],
+  teacherId: [
+    {
+      required: true,
+      message: '请输入教师ID',
+      trigger: 'blur',
+    },
+  ],
+  studentName: [
+    {
+      required: true,
+      message: '请输入学生姓名',
+      trigger: 'blur',
+    },
+  ],
+  topicTitle: [
+    {
+      required: true,
+      message: '请输入课题标题',
+      trigger: 'blur',
+    },
+  ],
+  teacherName: [
+    {
+      required: true,
+      message: '请输入教师姓名',
+      trigger: 'blur',
+    },
+  ],
+  status: [
+    {
+      required: true,
+      message: '请输入状态',
+      trigger: 'blur',
+    },
+  ],
+  
+})
+</script>

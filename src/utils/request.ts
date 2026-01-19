@@ -1,132 +1,261 @@
-import axios, { type AxiosProxyConfig, type AxiosRequestConfig } from 'axios'
-import { saveLocalStorage, getLocalStorage, clearLocalStorage } from '@/utils/utils'
+import axios, {
+  type AxiosError,
+  type AxiosResponse,
+  type AxiosRequestConfig,
+  type InternalAxiosRequestConfig,
+} from 'axios'
+import storageUtil from '@/utils/storage'
 import constants from '@/utils/constants'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import { useAuthStore } from '@/stores'
+import { MESSAGE } from '@/constants/user'
 
-//token名称，需要和服务端保持一致
-const TOKEN_NAME = constants.USER_TOKEN
+let isAlreadyLoggingOut = false
 
-//创建axios实例
-const service = axios.create({
+// 创建基础 axios 实例（无拦截器，用于 refreshToken）
+const baseService = axios.create({
   baseURL: constants.BASE_URL,
+  timeout: 10000,
+  withCredentials: false,
 })
 
-///退出系统
+// 主 axios 实例（带拦截器）
+const service = axios.create({
+  baseURL: constants.BASE_URL,
+  timeout: 10000,
+  withCredentials: false,
+})
+
+//退出登录
 export const logout = () => {
-  clearLocalStorage()
-  window.location.href = constants.PAGE_ADMIN_LOGIN
+  if (isAlreadyLoggingOut) {
+    return
+  }
+
+  ElMessageBox.confirm(MESSAGE.CONFIRM_LOGOUT || '确定要退出登录吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+    closeOnClickModal: false,
+    closeOnPressEscape: false,
+  })
+    .then(() => {
+      isAlreadyLoggingOut = true
+      storageUtil.clear()
+      ElMessage.closeAll()
+
+      if (!window.location.pathname.includes(constants.LOGIN_PATH)) {
+        window.location.href = constants.LOGIN_PATH
+      }
+
+      setTimeout(() => {
+        isAlreadyLoggingOut = false
+      }, 1000)
+    })
+    .catch(() => {
+      isAlreadyLoggingOut = false
+    })
 }
 
-//请求拦截器
+// 请求拦截器
 service.interceptors.request.use(
-  (config) => {
-    //在请求头中加入token
-    const token = getLocalStorage(constants.USER_TOKEN)
-    if (token && token.trim()) {
-      // 确保 headers 对象存在
-      if (!config.headers) {
-        config.headers = {} as any
-      }
-      // 移除可能存在的 Bearer 前缀，然后重新添加以确保格式正确
-      const cleanToken = token.replace(/^Bearer\s+/i, '').trim()
-      const tokenValue = `Bearer ${cleanToken}`
-      // 设置 header，确保使用正确的 header 名称
-      config.headers[TOKEN_NAME] = tokenValue
+  (config: InternalAxiosRequestConfig) => {
+    const authStore = useAuthStore()
+    if (authStore.token && authStore.token.trim()) {
+      // 清理可能已存在的前缀，避免重复添加
+      const cleanToken = authStore.token.replace(/^Bearer\s*/i, '').trim()
+      config.headers[constants.TOKEN_NAME] = `${constants.TOKEN_PREFIX}${cleanToken}`
     } else {
-      if (config.headers) {
-        delete config.headers[TOKEN_NAME]
-      }
+      delete config.headers[constants.TOKEN_NAME]
     }
     return config
   },
-  (error: any) => {
+  (error: AxiosError) => {
     return Promise.reject(error)
   },
 )
 
-//响应拦截器
+// 响应拦截器
 service.interceptors.response.use(
-  (response) => {
-    //更具content-type,判断是否是JSON数据
-    let contentType = response.headers['content-type']
-      ? response.headers['content-type']
-      : response.headers['Content-Type']
-    if (contentType.indexOf('application/json') === -1) {
-      return Promise.resolve(response)
+  (response: AxiosResponse) => {
+    // Blob 数据处理
+    if (response.data instanceof Blob) {
+      return response
     }
 
-    //Blob数据，直接返回
-    if (response.data && response.data instanceof Blob) {
-      return Promise.reject(response.data)
+    // 非 JSON 数据处理
+    const contentType = (
+      response.headers['content-type'] ||
+      response.headers['Content-Type'] ||
+      ''
+    ).toLowerCase()
+    if (!contentType.includes('application/json')) {
+      return response
     }
 
+    // 后端统一响应结构：{ code: number, message: string, data: T }
     const res = response.data
 
-    if (res.code && res.code !== 200) {
-      //token失效，重新登录
-      if (res.code === 11012 || res.code === 11011) {
-        ElMessage.closeAll()
-        ElMessage.error('登录状态已过期，请重新登录！')
-        setTimeout(() => {
-          logout()
-        }, 3000)
-        return Promise.reject(response)
-      }
-
-      //长时间未操作，token过期
-      if (res.code === 30001) {
-        ElMessageBox.confirm('你需要重新登录系统', '确认重新登陆', {
-          confirmButtonText: '重新登录',
-          cancelButtonText: '取消',
-          type: 'warning',
-        }).then(() => {
-          logout()
-        })
-        setTimeout(() => {
-          logout()
-        }, 3000)
-        return Promise.reject(response)
-      }
-
-      ElMessage.closeAll()
-      if (res.message) {
-        ElMessage.error(res.message)
-      }
-      return Promise.reject(response)
-    } else {
-      return Promise.resolve(res)
+    //成功
+    if (res.code === 200) {
+      return res
     }
+
+    // === 所有业务错误处理 ===
+    const message = res.message || '请求失败，请稍后重试！'
+
+    // 未登录 / Token 失效
+    if (res?.code === 401) {
+      ElMessage.error(message)
+      const authStore = useAuthStore()
+      authStore.clearAuth()
+      window.location.href = '/login'
+      return Promise.reject(new Error(message))
+    }
+
+    // 验证码相关错误（1101～1104）
+    if ([1101, 1102, 1103, 1104].includes(res?.code)) {
+      ElMessage.error(message)
+      return Promise.reject(new Error(message))
+    }
+
+    // 权限不足
+    if (res?.code === 403) {
+      ElMessage.error(message)
+      return Promise.reject(new Error(message))
+    }
+
+    // 资源不存在
+    if (res?.code === 404) {
+      ElMessage.error(message)
+      return Promise.reject(new Error(message))
+    }
+
+    // 其他业务错误
+    ElMessage.error(message)
+    return Promise.reject(new Error(message))
   },
-  (error) => {
+  (error: AxiosError) => {
     //响应错误
     if (error.message.includes('timeout')) {
       ElMessage.closeAll()
-      ElMessage.error('请求超时，请稍后重试！')
+      ElMessage.error(MESSAGE.REQUEST_FAILED)
     } else if (error.message.includes('Network Error')) {
       ElMessage.closeAll()
-      ElMessage.error('网络异常，请稍后重试！')
-    } else if (error.message.includes('Request') !== -1) {
+      ElMessage.error(MESSAGE.NETWORK_ERROR)
+    } else if (error.message.includes('Request')) {
       ElMessage.closeAll()
-      ElMessage.error('请求异常，请稍后重试！')
+      ElMessage.error(MESSAGE.REQUEST_FAILED)
     }
     return Promise.reject(error)
   },
 )
 
-//通用get,post请求方法
+// ==================== Token 自动刷新 ====================
+let refreshTimeoutId: number | null = null
+
+const refreshToken = async (): Promise<void> => {
+  try {
+    const oldToken = storageUtil.get(constants.TOKEN_NAME)
+    if (!oldToken) {
+      logout()
+      return
+    }
+    const cleanToken = oldToken.replace(/^Bearer\s*/i, '').trim()
+    const res = await baseService.post('/api/auth/refresh-token', null, {
+      headers: { [constants.TOKEN_NAME]: constants.TOKEN_PREFIX + cleanToken },
+    })
+
+    if (res.data?.code === 200 && res.data?.data?.token) {
+      const newToken = constants.TOKEN_PREFIX + res.data.data.token
+      storageUtil.set(constants.TOKEN_NAME, newToken)
+
+      scheduleNextRefresh(86400 - 1800)
+    } else {
+      throw new Error('Refresh token invalid')
+    }
+  } catch (error) {
+    console.error('Token refresh failed:', error)
+    logout()
+  }
+}
+
+const scheduleNextRefresh = (delaySeconds: number) => {
+  stopTokenAutoRefresh()
+  refreshTimeoutId = window.setTimeout(() => {
+    refreshToken()
+  }, delaySeconds * 1000)
+}
+
+export const startTokenAutoRefresh = () => {
+  // 保守策略：每 23.5 小时刷新一次（避免因活跃度不足被踢）
+  scheduleNextRefresh(86400 - 1800)
+}
+
+export const stopTokenAutoRefresh = () => {
+  if (refreshTimeoutId) {
+    clearTimeout(refreshTimeoutId)
+    refreshTimeoutId = null
+  }
+}
+
+// ==================== 初始化保活 ====================
+
+export const initAutoRefresh = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  const handleStorageChange = (event: StorageEvent) => {
+    if (event.key === constants.TOKEN_NAME && event.newValue === null) {
+      logout()
+    }
+  }
+
+  const handleVisibilityChange = () => {
+    if (!document.hidden && storageUtil.get(constants.TOKEN_NAME)) {
+      startTokenAutoRefresh()
+    }
+  }
+
+  const cleanup = () => {
+    stopTokenAutoRefresh()
+    window.removeEventListener('storage', handleStorageChange)
+    document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }
+
+  window.addEventListener('storage', handleStorageChange)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+  window.addEventListener('beforeunload', cleanup)
+  window.addEventListener('pagehide', cleanup)
+
+  if (storageUtil.get(constants.TOKEN_NAME)) {
+    startTokenAutoRefresh()
+  }
+}
+
+if (typeof window !== 'undefined') {
+  initAutoRefresh()
+}
+
+// ====== 导出通用请求方法 ======
 /**
  * 通用请求方法
- * param config 请求配置
+ * @param config Axios 请求配置
+ * @returns Promise<T>
  */
-export const http = (config: AxiosRequestConfig<any>) => {
+export const http = <T = any>(config: AxiosRequestConfig<any>): Promise<T> => {
   return service.request(config)
 }
 
 /**
- * 通用GET请求方法
+ * 通用 GET 请求方法
+ * @param url 请求地址
+ * @param params 可选查询参数
+ * @returns Promise<any>
  */
-export const get = (url: string, params: any) => {
-  return http({
+export const get = <T = any>(url: string, params?: any): Promise<T> => {
+  return http<T>({
     url: url,
     method: 'get',
     params: params,
@@ -134,12 +263,57 @@ export const get = (url: string, params: any) => {
 }
 
 /**
- * 通用POST请求方法
+ * 通用 POST 请求方法
+ * @param url 请求地址
+ * @param data 请求体数据
+ * @returns Promise<any>
  */
-export const post = (url: string, data: {}) => {
-  return http({
+export const post = <T = any>(url: string, data?: any): Promise<T> => {
+  return http<T>({
     url: url,
     method: 'post',
     data: data,
+  })
+}
+
+/**
+ * 通用 PUT 请求方法（用于全量更新）
+ * @param url 请求地址
+ * @param data 请求体数据
+ * @returns Promise<any>
+ */
+export const put = <T = any>(url: string, data?: any): Promise<T> => {
+  return http<T>({
+    url,
+    method: 'put',
+    data,
+  })
+}
+
+/**
+ * 通用 PATCH 请求方法（用于部分更新）
+ * @param url 请求地址
+ * @param data 请求体数据
+ * @returns Promise<any>
+ */
+export const patch = <T = any>(url: string, data?: any): Promise<T> => {
+  return http<T>({
+    url,
+    method: 'patch',
+    data,
+  })
+}
+
+/**
+ * 通用 DELETE 请求方法
+ * @param url 请求地址
+ * @param params 可选查询参数（某些 DELETE 接口可能需要 query 参数）
+ * @returns Promise<any>
+ */
+export const del = <T = any>(url: string, params?: any): Promise<T> => {
+  return http<T>({
+    url,
+    method: 'delete',
+    params,
   })
 }

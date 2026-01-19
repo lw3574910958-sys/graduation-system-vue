@@ -1,37 +1,47 @@
 import constants from '@/utils/constants'
 
-export const saveLocalStorage = (key: string, value: string) => {
-  localStorage.setItem(key, value)
+// ==================== File URL ====================
+
+const normalizePath = (base: string, path: string): string => {
+  const cleanBase = base.replace(/\/+$/, '')
+  const cleanPath = path.replace(/^\/+/, '')
+  return cleanPath ? `${cleanBase}/${cleanPath}` : cleanBase
 }
 
-export const getLocalStorage = (key: string) => {
-  const value = localStorage.getItem(key)
-  return value ? value : null
-}
-
-export const clearLocalStorage = () => {
-  localStorage.clear()
-}
-
-export const getFileUrl = (url: string) => {
+/**
+ * 获取文件url
+ * @param url
+ * @returns
+ */
+export const getFileUrl = (url: string): string => {
   if (!url) return ''
-  if (url.startsWith('http')) {
+  if (/^https?:\/\//.test(url)) {
     return url
   }
-  return `${constants.BASE_URL}/${url}`
+  return normalizePath(constants.BASE_URL, url)
 }
 
-export const urls2FileList = (url: any) => {
-  const list: any = []
-  if (url) {
-    url.split(',').map((item: string) => {
-      let url = getFileUrl(item)
-      const file = {
-        name: item,
-        url: url,
-      }
-      list.push(file)
-    })
+// ==================== File List ====================
+export interface FileItem {
+  name: string
+  url: string
+}
+
+/**
+ * url转fileList
+ * @param url
+ * @returns
+ */
+export const urls2FileList = (url: string | null | undefined): FileItem[] => {
+  if (!url || typeof url !== 'string') {
+    return []
   }
-  return list
+  return url
+    .split(',')
+    .map((item) => item.trim())
+    .filter((item) => item)
+    .map((item) => ({
+      name: item,
+      url: getFileUrl(item),
+    }))
 }

@@ -1,1 +1,55 @@
+# 阿里前端规范：所有文本文件统一使用 LF 换行符（\n）
 * text=auto eol=lf
+
+# 源码文件
+*.js text eol=lf
+*.ts text eol=lf
+*.jsx text eol=lf
+*.tsx text eol=lf
+*.vue text eol=lf
+
+# 配置与构建
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+*.env text eol=lf
+*.config.js text eol=lf
+*.config.ts text eol=lf
+
+# 样式文件
+*.css text eol=lf
+*.scss text eol=lf
+*.sass text eol=lf
+*.less text eol=lf
+*.styl text eol=lf
+
+# 模板与文档
+*.html text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+
+# 脚本（跨平台）
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 二进制资源（必须标记为 binary）
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.svg binary
+*.pdf binary
+*.zip binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.otf binary
+
+# 构建产物（通常已 gitignore，但显式声明更安全）
+*.min.js binary
+*.bundle.js binary
