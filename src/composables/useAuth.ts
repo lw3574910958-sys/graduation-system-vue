@@ -1,3 +1,7 @@
+/*
+ * 认证相关的组合式函数
+ */
+
 import { ref } from 'vue'
 import { authApi } from '@/api/auth'
 import { useAuthStore } from '@/stores'
@@ -36,7 +40,7 @@ export const useAuth = () => {
         username,
         password,
         captchaCode,
-        captchaKey: captchaKey.value
+        captchaKey: captchaKey.value,
       })
 
       const authStore = useAuthStore()
@@ -80,6 +84,6 @@ export const useAuth = () => {
     getCaptcha,
     login,
     logout,
-    checkAuth
+    checkAuth,
   }
 }

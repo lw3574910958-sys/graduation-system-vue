@@ -1,51 +1,88 @@
 import { get, post, put, del } from '@/utils/request'
-import type { ApiResponse, PageQuery } from '@/types/global'
-import type { DepartmentResponse, DepartmentPageResponse } from '@/types/api/department'
+import type {
+  DepartmentResponse,
+  DepartmentPageResponse,
+  DepartmentTreeResponse,
+  DepartmentCreateRequest,
+  DepartmentUpdateRequest,
+  DepartmentQueryParams,
+} from '@/types/api/department'
+import type { ApiResponse } from '@/types/global'
 
-// 院系相关API
 export const departmentApi = {
-  /**
-   * 获取院系列表
-   * @returns 院系列表
-   */
-  getList: (params?: PageQuery) => {
-    return get<ApiResponse<DepartmentPageResponse>>('/api/department/list', params || {})
+  // 为兼容视图组件而添加的别名方法
+  create: (param: DepartmentCreateRequest) => {
+    return departmentApi.createDepartment(param)
   },
-
-  /**
-   * 根据ID获取院系详情
-   * @param id 院系ID
-   * @returns 院系详情
-   */
-  getById: (id: number | string) => {
-    return get<ApiResponse<DepartmentResponse>>(`/api/department/${id}`, {})
+  update: (id: number | string, param: DepartmentUpdateRequest) => {
+    return departmentApi.updateDepartment(Number(id), param)
   },
-
-  /**
-   * 创建院系
-   * @param param 院系信息
-   * @returns 请求结果
-   */
-  create: (param: Omit<DepartmentResponse, 'id'>) => {
-    return post<ApiResponse<void>>('/api/department', param)
-  },
-
-  /**
-   * 更新院系
-   * @param id 院系ID
-   * @param param 院系信息
-   * @returns 请求结果
-   */
-  update: (id: number | string, param: Partial<Omit<DepartmentResponse, 'id'>>) => {
-    return put<ApiResponse<void>>(`/api/department/${id}`, param)
-  },
-
-  /**
-   * 删除院系
-   * @param id 院系ID
-   * @returns 请求结果
-   */
   delete: (id: number | string) => {
-    return del<ApiResponse<void>>(`/api/department/${id}`)
-  }
+    return departmentApi.deleteDepartment(id)
+  },
+  getList: (params: DepartmentQueryParams) => {
+    return departmentApi.getDepartmentPage(params)
+  },
+  
+  /**
+   * 分页查询部门列表
+   * @param params 查询参数
+   * @returns 分页结果
+   */
+  getDepartmentPage: (params: DepartmentQueryParams) => {
+    return get<ApiResponse<DepartmentPageResponse>>('/api/departments/page', params)
+  },
+
+  /**
+   * 获取部门树形结构
+   * @returns 部门树
+   */
+  getDepartmentTree: () => {
+    return get<ApiResponse<DepartmentTreeResponse[]>>('/api/departments/tree', {})
+  },
+
+  /**
+   * 获取所有部门列表（用于下拉框）
+   * @returns 部门列表
+   */
+  getAllDepartments: () => {
+    return get<ApiResponse<DepartmentResponse[]>>('/api/departments', {})
+  },
+
+  /**
+   * 根据ID获取部门详情
+   * @param id 部门ID
+   * @returns 部门详情
+   */
+  getDepartmentById: (id: number | string) => {
+    return get<ApiResponse<DepartmentResponse>>(`/api/departments/${id}`, {})
+  },
+
+  /**
+   * 创建新部门
+   * @param param 部门信息
+   * @returns 请求结果
+   */
+  createDepartment: (param: DepartmentCreateRequest) => {
+    return post<ApiResponse<void>>('/api/departments', param)
+  },
+
+  /**
+   * 更新部门信息
+   * @param id 部门ID
+   * @param param 部门信息
+   * @returns 请求结果
+   */
+  updateDepartment: (id: number, param: DepartmentUpdateRequest) => {
+    return put<ApiResponse<void>>(`/api/departments/${id}`, param)
+  },
+
+  /**
+   * 删除部门
+   * @param id 部门ID
+   * @returns 请求结果
+   */
+  deleteDepartment: (id: number | string) => {
+    return del<ApiResponse<void>>(`/api/departments/${id}`)
+  },
 }

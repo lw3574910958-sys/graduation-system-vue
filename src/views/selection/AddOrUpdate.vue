@@ -1,16 +1,12 @@
 <template>
-  <el-dialog
-    v-model="visible"
-    :title="!formData.id ? '新增选题信息' : '修改选题信息'"
-    width="50%"
-  >
+  <el-dialog v-model="visible" :title="!formData.id ? '新增选题信息' : '修改选题信息'" width="50%">
     <el-form :rules="rules" :model="formData" ref="formRef" label-width="100px">
       <el-form-item label="学生ID" prop="studentId">
-        <el-input-number 
-          v-model.number="formData.studentId" 
-          :min="1" 
-          style="width: 60%" 
-          placeholder="请输入学生ID" 
+        <el-input-number
+          v-model.number="formData.studentId"
+          :min="1"
+          style="width: 60%"
+          placeholder="请输入学生ID"
         />
       </el-form-item>
 
@@ -18,14 +14,12 @@
         <el-input v-model="formData.studentName" style="width: 60%" placeholder="请输入学生姓名" />
       </el-form-item>
 
-
-
       <el-form-item label="课题ID" prop="topicId">
-        <el-input-number 
-          v-model="formData.topicId" 
-          :min="1" 
-          style="width: 60%" 
-          placeholder="请输入课题ID" 
+        <el-input-number
+          v-model="formData.topicId"
+          :min="1"
+          style="width: 60%"
+          placeholder="请输入课题ID"
         />
       </el-form-item>
 
@@ -45,13 +39,7 @@
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="onCancel()">取消</el-button>
-        <el-button
-          type="primary"
-          @click="onSubmit()"
-          :loading="btnLoading"
-        >
-          确定
-        </el-button>
+        <el-button type="primary" @click="onSubmit()" :loading="btnLoading"> 确定 </el-button>
       </div>
     </template>
   </el-dialog>
@@ -86,7 +74,7 @@ const formDefault = {
   studentName: '',
   topicId: 0,
   topicTitle: '',
-
+  teacherId: 0,
   status: 0,
 }
 
@@ -125,8 +113,8 @@ async function onSubmit() {
         btnLoading.value = false
       }
     })
-    .catch((err: any) => {
-      console.log('Form validation failed:', err)
+    .catch(() => {
+      // 表单验证失败，el-form已显示错误提示
     })
 }
 

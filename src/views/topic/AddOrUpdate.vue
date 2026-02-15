@@ -1,16 +1,14 @@
-<template>
-  <base-add-or-update
-    :save-api="topicApi.create"
-    :update-api="topicApi.update"
-    :form-fields="formFields"
-    :form-default="formDefault"
-    :dialog-title="dialogTitle"
-    :form-rules="formRules"
-    @refresh-list="emit('refreshList')"
-    ref="baseRef"
-  >
-  </base-add-or-update>
-</template>
+<!-- <base-add-or-update
+  :save-api="topicApi.create"
+  :update-api="topicApi.update"
+  :form-fields="formFields"
+  :form-default="formDefault"
+  :dialog-title="dialogTitle"
+  :form-rules="formRules"
+  @refresh-list="emit('refreshList')"
+  ref="baseRef"
+>
+</base-add-or-update> -->
 
 <script lang="ts" setup>
 import { ref } from 'vue'
@@ -64,7 +62,11 @@ const formDefault = {
   id: undefined,
   title: '',
   description: '',
+  requirement: '',
+  difficulty: '',
   teacherId: 0,
+  departmentId: 0,
+  maxStudents: 1,
   status: 0,
 }
 

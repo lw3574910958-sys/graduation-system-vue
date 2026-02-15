@@ -1,3 +1,7 @@
+/**
+ * @description: axios 封装
+ */
+
 import axios, {
   type AxiosError,
   type AxiosResponse,
@@ -9,20 +13,21 @@ import constants from '@/utils/constants'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores'
 import { MESSAGE } from '@/constants/user'
+import ErrorHandler from '@/utils/errorHandler'
 
 let isAlreadyLoggingOut = false
 
 // 创建基础 axios 实例（无拦截器，用于 refreshToken）
 const baseService = axios.create({
   baseURL: constants.BASE_URL,
-  timeout: 10000,
+  timeout: constants.REQUEST_TIMEOUT,
   withCredentials: false,
 })
 
 // 主 axios 实例（带拦截器）
 const service = axios.create({
   baseURL: constants.BASE_URL,
-  timeout: 10000,
+  timeout: constants.REQUEST_TIMEOUT,
   withCredentials: false,
 })
 
@@ -60,10 +65,9 @@ export const logout = () => {
 // 请求拦截器
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const authStore = useAuthStore()
-    if (authStore.token && authStore.token.trim()) {
-      // 清理可能已存在的前缀，避免重复添加
-      const cleanToken = authStore.token.replace(/^Bearer\s*/i, '').trim()
+    const token = storageUtil.get(constants.TOKEN_NAME)
+    if (token && token.trim()) {
+      const cleanToken = token.replace(/^Bearer\s*/i, '').trim()
       config.headers[constants.TOKEN_NAME] = `${constants.TOKEN_PREFIX}${cleanToken}`
     } else {
       delete config.headers[constants.TOKEN_NAME]
@@ -101,52 +105,15 @@ service.interceptors.response.use(
       return res
     }
 
-    // === 所有业务错误处理 ===
-    const message = res.message || '请求失败，请稍后重试！'
-
-    // 未登录 / Token 失效
-    if (res?.code === 401) {
-      ElMessage.error(message)
-      const authStore = useAuthStore()
-      authStore.clearAuth()
-      window.location.href = '/login'
-      return Promise.reject(new Error(message))
-    }
-
-    // 验证码相关错误（1101～1104）
-    if ([1101, 1102, 1103, 1104].includes(res?.code)) {
-      ElMessage.error(message)
-      return Promise.reject(new Error(message))
-    }
-
-    // 权限不足
-    if (res?.code === 403) {
-      ElMessage.error(message)
-      return Promise.reject(new Error(message))
-    }
-
-    // 资源不存在
-    if (res?.code === 404) {
-      ElMessage.error(message)
-      return Promise.reject(new Error(message))
-    }
-
-    // 其他业务错误
-    ElMessage.error(message)
-    return Promise.reject(new Error(message))
+    // 使用统一错误处理
+    const error = new Error(res.message || '请求失败，请稍后重试！')
+    ;(error as any).response = { data: res, status: res.code }
+    ErrorHandler.handleGlobalError(error)
+    return Promise.reject(error)
   },
   (error: AxiosError) => {
-    //响应错误
-    if (error.message.includes('timeout')) {
-      ElMessage.closeAll()
-      ElMessage.error(MESSAGE.REQUEST_FAILED)
-    } else if (error.message.includes('Network Error')) {
-      ElMessage.closeAll()
-      ElMessage.error(MESSAGE.NETWORK_ERROR)
-    } else if (error.message.includes('Request')) {
-      ElMessage.closeAll()
-      ElMessage.error(MESSAGE.REQUEST_FAILED)
-    }
+    // 使用统一错误处理
+    ErrorHandler.handleGlobalError(error)
     return Promise.reject(error)
   },
 )
@@ -246,6 +213,26 @@ if (typeof window !== 'undefined') {
  */
 export const http = <T = any>(config: AxiosRequestConfig<any>): Promise<T> => {
   return service.request(config)
+}
+
+/**
+ * 带超时的请求方法
+ * @param config Axios 请求配置
+ * @param timeout 超时时间，默认 10 秒
+ * @returns Promise<T>
+ */
+export const httpWithTimeout = <T = any>(
+  config: AxiosRequestConfig<any>,
+  timeout: number = 10000,
+): Promise<T> => {
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error(`请求超时: ${config.url}`)), timeout)
+  })
+
+  return Promise.race([
+    service.request<T>(config).then((response) => response.data),
+    timeoutPromise,
+  ])
 }
 
 /**

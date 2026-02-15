@@ -31,13 +31,13 @@ const formFields = [
     prop: 'username',
     label: '用户名',
     component: 'el-input',
-    props: { style: { width: '50%' }, readonlyWhenUpdate: true },
+    props: { style: { width: '50%' }, readonlyWhenUpdate: true, placeholder: '4-20位字母、数字或下划线' },
   },
   {
     prop: 'realName',
     label: '真实姓名',
     component: 'el-input',
-    props: { style: { width: '50%' } },
+    props: { style: { width: '50%' }, placeholder: '请输入真实姓名' },
   },
   {
     prop: 'userType',
@@ -64,13 +64,25 @@ const formFields = [
     prop: 'password',
     label: '密码',
     component: 'el-input',
-    props: { type: 'password', style: { width: '50%' }, placeholder: '请输入密码' },
+    props: { type: 'password', style: { width: '50%' }, placeholder: '至少包含字母和数字，长度≥6位', showPassword: true },
+  },
+  {
+    prop: 'phone',
+    label: '手机号',
+    component: 'el-input',
+    props: { style: { width: '50%' }, placeholder: '请输入手机号码' },
+  },
+  {
+    prop: 'email',
+    label: '邮箱',
+    component: 'el-input',
+    props: { style: { width: '50%' }, placeholder: '请输入邮箱地址' },
   },
   {
     prop: 'avatar',
     label: '头像',
     component: 'el-input', // 实际上应该用文件上传组件，这里简化处理
-    props: { style: { width: '50%' } },
+    props: { style: { width: '50%' }, placeholder: '头像URL或存储路径' },
   }
 ]
 
@@ -82,6 +94,8 @@ const formDefault = {
   realName: undefined,
   userType: undefined,
   status: 1,
+  phone: undefined,
+  email: undefined,
   avatar: undefined,
 }
 
@@ -99,6 +113,11 @@ const formRules = {
       message: '请输入用户名',
       trigger: 'blur',
     },
+    {
+      pattern: /^[a-zA-Z0-9_]{4,20}$/,
+      message: '用户名必须是4-20位字母、数字或下划线',
+      trigger: 'blur',
+    }
   ],
   realName: [
     {
@@ -106,11 +125,28 @@ const formRules = {
       message: '请输入真实姓名',
       trigger: 'blur',
     },
+    {
+      min: 2,
+      max: 20,
+      message: '姓名长度应在2-20个字符之间',
+      trigger: 'blur',
+    }
   ],
   userType: [
     {
       required: true,
       message: '请选择用户类型',
+      trigger: 'blur',
+    },
+    {
+      validator: (rule: any, value: any, callback: (error?: Error | undefined) => void) => {
+        const validTypes = ['student', 'teacher', 'admin'];
+        if (!value || !validTypes.includes(value)) {
+          callback(new Error('请选择有效的用户类型'));
+        } else {
+          callback();
+        }
+      },
       trigger: 'blur',
     },
   ],
@@ -122,6 +158,8 @@ const formRules = {
         const formData = baseRef.value?.formData || {}
         if (!formData.id && !value) {
           callback(new Error('请输入密码'));
+        } else if (value && (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/.test(value))) {
+          callback(new Error('密码必须至少包含一个字母和一个数字，长度至少为6位'));
         } else {
           callback();
         }
@@ -136,6 +174,20 @@ const formRules = {
       trigger: 'blur',
     },
   ],
+  phone: [
+    {
+      pattern: /^1[3-9]\d{9}$/,
+      message: '请输入正确的手机号码',
+      trigger: 'blur',
+    }
+  ],
+  email: [
+    {
+      pattern: /^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/, 
+      message: '请输入正确的邮箱地址',
+      trigger: 'blur',
+    }
+  ]
 }
 
 // 包装API方法以适配类型

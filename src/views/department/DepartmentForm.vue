@@ -52,6 +52,7 @@ const formDefault = {
   name: '',
   code: '',
   description: '',
+  status: 1, // 默认启用状态
 }
 
 // 对话框标题

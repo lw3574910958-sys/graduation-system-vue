@@ -1,5 +1,5 @@
 <template>
-  <div class="common-layout">
+  <div class="basic-layout">
     <el-container>
       <el-header>
         <Header />
@@ -14,7 +14,7 @@
           <div class="pdm-content_wrapper">
             <el-main class="pdm-content">
               <el-card class="pdm-content-card">
-                <router-view />
+                <RouterView />
               </el-card>
             </el-main>
 
@@ -29,12 +29,15 @@
 </template>
 
 <script setup lang="ts">
-import Header from '@/components/layout/Header.vue'
-import LeftMenu from '@/components/layout/LeftMenu.vue'
-import Footer from '@/components/layout/Footer.vue'
+import { RouterView } from 'vue-router'
+import Header from '@/components/layout/Header.vue';
+import LeftMenu from '@/components/layout/LeftMenu.vue';
+import Footer from '@/components/layout/Footer.vue';
 </script>
 
-<!--
-注意：不再导入 style.less
-因为该样式已在 main.ts 中全局导入，避免重复导入
--->
+<style scoped>
+.basic-layout {
+  height: 100vh;
+  width: 100%;
+}
+</style>

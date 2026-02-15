@@ -50,7 +50,11 @@
             :scope="scope"
             :render="column.render"
           />
-          <span v-else v-html="column.render(scope.row, scope.$index, scope.column)" />
+          <SafeText 
+            v-else 
+            :content="column.render(scope.row, scope.$index, scope.column)" 
+            :allow-html="false" 
+          />
         </template>
       </el-table-column>
 
@@ -91,6 +95,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import constants from '@/utils/constants'
 import { MESSAGE } from '@/constants/user'
+import SafeText from '@/components/common/SafeText.vue'
 
 // 定义搜索字段类型
 interface SearchField {

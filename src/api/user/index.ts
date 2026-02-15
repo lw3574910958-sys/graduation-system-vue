@@ -1,22 +1,20 @@
 import { get, post, put, del } from '@/utils/request'
-import type { UserResponse, UserPageResponse } from '@/types/api/user'
+import type {
+  UserResponse,
+  UserPageResponse,
+  UserCreateRequest,
+  UserUpdateRequest,
+  UserQueryParams,
+} from '@/types/api/user'
 import type { ApiResponse, PageQuery } from '@/types/global'
 
 export const userApi = {
-  /**
-   * 获取当前用户信息
-   * @returns 用户信息
-   */
-  getCurrentUserInfo: () => {
-    return get<ApiResponse<UserResponse>>('/api/users/info', {})
-  },
-
   /**
    * 分页查询用户列表
    * @param params 查询参数
    * @returns 分页结果
    */
-  getUserPage: (params: PageQuery) => {
+  getUserPage: (params: UserQueryParams) => {
     return get<ApiResponse<UserPageResponse>>('/api/users/page', params)
   },
 
@@ -34,7 +32,7 @@ export const userApi = {
    * @param param 用户信息
    * @returns 请求结果
    */
-  createUser: (param: Omit<UserResponse, 'id'>) => {
+  createUser: (param: UserCreateRequest) => {
     return post<ApiResponse<void>>('/api/users', param)
   },
 
@@ -44,7 +42,7 @@ export const userApi = {
    * @param param 用户信息
    * @returns 请求结果
    */
-  updateUser: (id: number, param: Partial<Omit<UserResponse, 'id'>>) => {
+  updateUser: (id: number, param: UserUpdateRequest) => {
     return put<ApiResponse<void>>(`/api/users/${id}`, param)
   },
 

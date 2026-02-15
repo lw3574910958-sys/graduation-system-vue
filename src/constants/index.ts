@@ -41,6 +41,9 @@ export const MESSAGE = {
   CONFIRM_LOGOUT: '确定要退出登录吗？',
   UPLOAD_SUCCESS: '上传成功',
   UPLOAD_FAILED: '上传失败',
+  LOGIN_EXPIRED: '登录已过期，请重新登录',
+  USERNAME_EXISTS: '用户名已存在，请选择其他用户名',
+  INVALID_USER_TYPE: '无效的用户类型',
 } as const
 
 // 系统常量
@@ -50,6 +53,8 @@ export const SYSTEM_CONSTANTS = {
   TOKEN_PREFIX: 'Bearer ',
   LOGIN_PATH: '/login',
   USER_INFO_KEY: 'user_info',
+  REQUEST_TIMEOUT: 10000, // 默认请求超时时间
+  USER_INFO_FETCH_TIMEOUT: 8000, // 获取用户信息超时时间
 } as const
 
 // 文件类型

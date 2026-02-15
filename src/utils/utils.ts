@@ -1,3 +1,7 @@
+/**
+ * @description: 通用工具类
+ */
+
 import constants from '@/utils/constants'
 
 // ==================== File URL ====================

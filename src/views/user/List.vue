@@ -12,7 +12,9 @@
     >
       <template #operations="{ scope }">
         <el-button @click="update(scope.row)" type="primary" size="small">编辑</el-button>
-        <el-button @click="resetPassword(scope.row.id)" type="warning" size="small">重置密码</el-button>
+        <el-button @click="resetPassword(scope.row.id)" type="warning" size="small"
+          >重置密码</el-button
+        >
         <el-button @click="confirmDel(scope.row.id)" type="danger" size="small">删除</el-button>
       </template>
       <template #dialogs>
@@ -28,6 +30,8 @@ import { userApi } from '@/api/user'
 import AddOrUpdate from '@/views/user/AddOrUpdate.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { UserFilled } from '@element-plus/icons-vue'
+import Avatar from '@/components/common/Avatar.vue'
+import StatusTag from '@/components/common/StatusTag.vue'
 // 导入用户类型常量和消息常量
 import { USER_TYPE_LABELS, MESSAGE } from '@/constants/user'
 import BaseList from '@/components/common/BaseList.vue'
@@ -54,13 +58,13 @@ const searchFields = [
     prop: 'username',
     label: '用户名：',
     component: 'el-input',
-    props: { placeholder: '请输入用户名' }
+    props: { placeholder: '请输入用户名' },
   },
   {
     prop: 'realName',
     label: '真实姓名：',
     component: 'el-input',
-    props: { placeholder: '请输入真实姓名' }
+    props: { placeholder: '请输入真实姓名' },
   },
   {
     prop: 'userType',
@@ -70,21 +74,21 @@ const searchFields = [
     options: [
       { label: '学生', value: 'student' },
       { label: '教师', value: 'teacher' },
-      { label: '管理员', value: 'admin' }
-    ]
-  }
+      { label: '管理员', value: 'admin' },
+    ],
+  },
 ]
 
 // 表格列配置
 const tableColumns = [
   { prop: 'username', label: '用户名', headerAlign: 'center', align: 'center' },
   { prop: 'realName', label: '真实姓名', headerAlign: 'center', align: 'center' },
-  { 
-    prop: 'userType', 
-    label: '用户类型', 
-    headerAlign: 'center', 
+  {
+    prop: 'userType',
+    label: '用户类型',
+    headerAlign: 'center',
     align: 'center',
-    render: (row: UserRow) => getUserTypeLabel(row.userType)
+    render: (row: UserRow) => getUserTypeLabel(row.userType),
   },
   {
     prop: 'avatar',
@@ -92,26 +96,19 @@ const tableColumns = [
     headerAlign: 'center',
     align: 'center',
     width: 100,
-    render: (row: UserRow) => {
-      if (row.avatar) {
-        return `<el-avatar shape="circle" :size="40" src="${row.avatar}" fit="cover" />`
-      }
-      return `<el-avatar shape="circle" :size="40" icon="UserFilled" />`
-    }
+    component: Avatar,
+    props: { size: 40 },
   },
-  { 
-    prop: 'status', 
-    label: '状态', 
-    headerAlign: 'center', 
+  {
+    prop: 'status',
+    label: '状态',
+    headerAlign: 'center',
     align: 'center',
-    render: (row: UserRow) => {
-      const type = row.status === 1 ? 'success' : 'danger'
-      const text = row.status === 1 ? '启用' : '禁用'
-      return `<el-tag type="${type}">${text}</el-tag>`
-    }
+    component: StatusTag,
+    props: { status: (row: UserRow) => row.status }
   },
   { prop: 'lastLoginAt', label: '最后登录时间', headerAlign: 'center', align: 'center' },
-  { prop: 'createdAt', label: '创建时间', headerAlign: 'center', align: 'center' }
+  { prop: 'createdAt', label: '创建时间', headerAlign: 'center', align: 'center' },
 ]
 
 /**
@@ -155,13 +152,11 @@ async function resetPassword(id: number | string) {
  */
 function getUserTypeLabel(userType: string) {
   // 使用常量映射返回对应标签，如果找不到则返回原值
-  return USER_TYPE_LABELS[userType as keyof typeof USER_TYPE_LABELS] || userType;
+  return USER_TYPE_LABELS[userType as keyof typeof USER_TYPE_LABELS] || userType
 }
 
 // 用于刷新列表的方法
 function getList() {
   listRef.value?.getList && listRef.value.getList()
 }
-
 </script>
-

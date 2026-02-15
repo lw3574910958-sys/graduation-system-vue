@@ -91,7 +91,7 @@ const props = defineProps({
 // 允许上传的文件类型
 const allowedFileTypes = computed(() => {
   if (props.accept) {
-    return props.accept.split(',').map(ext => ext.trim().toLowerCase())
+    return props.accept.split(',').map((ext) => ext.trim().toLowerCase())
   }
   // 默认只允许图片格式
   return ['jpg', 'jpeg', 'png', 'gif']
@@ -110,9 +110,12 @@ const beforeUpload = (file: File) => {
   // 检查文件类型
   const fileName = file.name.toLowerCase()
   const fileType = fileName.split('.').pop()
-  
+
   // 如果accept属性未指定或指定了特定类型，则检查文件扩展名
-  if (allowedFileTypes.value.length > 0 && !allowedFileTypes.value.some(type => fileName.endsWith(type))) {
+  if (
+    allowedFileTypes.value.length > 0 &&
+    !allowedFileTypes.value.some((type) => fileName.endsWith(type))
+  ) {
     ElMessage.error(`仅支持 ${allowedFileTypes.value.join(', ')} 格式的文件！`)
     return false
   }
@@ -173,7 +176,7 @@ const handleCancel = () => {
 }
 
 // 处理上传
-const handleUpload = async (options: { file: any, onError: Function, onSuccess: Function }) => {
+const handleUpload = async (options: { file: any; onError: Function; onSuccess: Function }) => {
   uploadingCount.value++
   const { file, onError, onSuccess } = options
   const formData = new FormData()
@@ -188,9 +191,9 @@ const handleUpload = async (options: { file: any, onError: Function, onSuccess: 
       background: 'rgba(0, 0, 0, 0.7)',
     })
 
-    const response: any = props.isAvatarUpload ? 
-        await commonApi.uploadAvatar(formData) : 
-        await commonApi.uploadFile(formData)
+    const response: any = props.isAvatarUpload
+      ? await commonApi.uploadAvatar(formData)
+      : await commonApi.uploadFile(formData)
 
     loadingInstance.close()
 

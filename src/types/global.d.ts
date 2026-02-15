@@ -1,10 +1,12 @@
-// 全局类型定义
+/**
+ * 全局类型定义
+ */
 
 // 用户类型枚举
 export enum UserType {
   Student = 'student',
   Teacher = 'teacher',
-  Admin = 'admin'
+  Admin = 'admin',
 }
 
 // 分页查询参数

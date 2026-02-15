@@ -1,16 +1,14 @@
-<template>
-  <base-add-or-update
-    :save-api="documentApi.create"
-    :update-api="documentApi.update"
-    :form-fields="formFields"
-    :form-default="formDefault"
-    :dialog-title="dialogTitle"
-    :form-rules="formRules"
-    @refresh-list="emit('refreshList')"
-    ref="baseRef"
-  >
-  </base-add-or-update>
-</template>
+<!-- <base-add-or-update
+  :save-api="documentApi.create"
+  :update-api="documentApi.update"
+  :form-fields="formFields"
+  :form-default="formDefault"
+  :dialog-title="dialogTitle"
+  :form-rules="formRules"
+  @refresh-list="emit('refreshList')"
+  ref="baseRef"
+>
+</base-add-or-update> -->
 
 <script lang="ts" setup>
 import { ref } from 'vue'
@@ -89,6 +87,10 @@ const formFields = [
 // 表单初始值
 const formDefault = {
   id: undefined,
+  file: null as File | null,
+  businessId: 0,
+  businessType: '',
+  name: '',
   userId: 0,
   topicId: 0,
   fileType: 0,

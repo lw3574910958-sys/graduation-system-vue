@@ -1,5 +1,6 @@
 import { get, post } from '@/utils/request'
 import type { LoginRequest, LoginResponse, CaptchaResponse, CaptchaCheckResponse } from '@/types/api/auth'
+import type { LoginUserInfoResponse } from '@/types/api/user'
 import type { ApiResponse } from '@/types/global'
 
 export const authApi = {
@@ -44,5 +45,13 @@ export const authApi = {
    */
   refreshToken: () => {
     return post<ApiResponse<LoginResponse>>('/api/auth/refresh-token', {})
+  },
+
+  /**
+   * 获取当前登录用户信息
+   * @returns 用户信息
+   */
+  getCurrentUser: () => {
+    return get<ApiResponse<LoginUserInfoResponse>>('/api/auth/me', {})
   },
 }

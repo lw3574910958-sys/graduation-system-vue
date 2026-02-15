@@ -73,14 +73,14 @@ interface Props {
   // API相关
   saveApi: (data: T) => Promise<any>
   updateApi?: (id: number | string, data: Partial<T>) => Promise<any>
-  
+
   // 表单配置
   formFields: FormField[]
   formDefault: T
   dialogTitle: DialogTitle
   dialogWidth?: string
   labelWidth?: string
-  
+
   // 验证规则
   formRules?: Record<string, any>
 }
@@ -88,7 +88,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   dialogWidth: '40%',
   labelWidth: '100px',
-  formRules: () => ({})
+  formRules: () => ({}),
 })
 
 // 定义事件
@@ -102,7 +102,7 @@ const btnLoading = ref(false)
 const formRef = ref()
 
 // 表单数据
-const formData = ref<T>(JSON.parse(JSON.stringify(props.formDefault)))
+const formData = ref<T>(structuredClone(props.formDefault))
 
 // 计算属性：判断是否正在上传（如果有文件上传组件）
 const isUploading = computed(() => {
@@ -114,23 +114,24 @@ const isUploading = computed(() => {
 function showModel(row?: Partial<T>) {
   if (row) {
     // 复制默认值
-    Object.assign(formData.value, JSON.parse(JSON.stringify(props.formDefault)))
+    formData.value = structuredClone(props.formDefault)
     // 覆盖行数据
     Object.assign(formData.value, row)
   } else {
     // 使用默认值
-    Object.assign(formData.value, JSON.parse(JSON.stringify(props.formDefault)))
+    formData.value = structuredClone(props.formDefault)
   }
   visible.value = true
 }
 
 // 提交表单
 async function onSubmit() {
-  await formRef.value.validate()
+  await formRef.value
+    .validate()
     .then(async () => {
       try {
         btnLoading.value = true
-        
+
         if (formData.value.id) {
           // 更新操作
           if (props.updateApi) {
@@ -145,7 +146,7 @@ async function onSubmit() {
           // 新增操作
           await props.saveApi(formData.value)
         }
-        
+
         ElMessage.success(`${!formData.value.id ? '新增' : '修改'}成功`)
         visible.value = false
         emit('refreshList')
@@ -156,8 +157,8 @@ async function onSubmit() {
         btnLoading.value = false
       }
     })
-    .catch((err: any) => {
-      console.log('表单验证失败:', err)
+    .catch(() => {
+      // 表单验证失败，el-form已显示错误提示
     })
 }
 
@@ -169,16 +170,14 @@ function onCancel() {
 
 // 注册动态组件
 const dynamicComponents = {
-  FileUpload
+  FileUpload,
 }
 
 // 暴露方法给父组件
 defineExpose({
   showModel,
-  onCancel
+  onCancel,
 })
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

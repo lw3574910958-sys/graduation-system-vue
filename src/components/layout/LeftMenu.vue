@@ -8,7 +8,7 @@
       text-color="#8a979e"
       router
     >
-      <el-menu-item index="/welcome" @click="$router.push({ path: '/welcome' })">
+      <el-menu-item index="/welcome">
         <el-icon>
           <House />
         </el-icon>
@@ -16,18 +16,22 @@
       </el-menu-item>
 
       <!-- 用户管理 -->
-      <el-sub-menu index="user-management" :popper-class="'pdm-sidebar--dark-popper'">
+      <el-sub-menu
+        index="user-management"
+        :popper-class="'pdm-sidebar--dark-popper'"
+        v-if="isAdmin"
+      >
         <template #title>
           <el-icon>
             <User />
           </el-icon>
           <span>用户管理</span>
         </template>
-        <el-menu-item index="/user/list" @click="$router.push({ path: '/user/list' })">
+        <el-menu-item index="/user/list">
           <el-icon>
             <List />
           </el-icon>
-          <span slot="title">用户列表</span>
+          <span>用户列表</span>
         </el-menu-item>
       </el-sub-menu>
 
@@ -39,11 +43,11 @@
           </el-icon>
           <span>课题管理</span>
         </template>
-        <el-menu-item index="/topic/list" @click="$router.push({ path: '/topic/list' })">
+        <el-menu-item index="/topic/list">
           <el-icon>
             <List />
           </el-icon>
-          <span slot="title">课题列表</span>
+          <span>课题列表</span>
         </el-menu-item>
       </el-sub-menu>
 
@@ -55,11 +59,11 @@
           </el-icon>
           <span>选题管理</span>
         </template>
-        <el-menu-item index="/selection/list" @click="$router.push({ path: '/selection/list' })">
+        <el-menu-item index="/selection/list">
           <el-icon>
             <List />
           </el-icon>
-          <span slot="title">选题列表</span>
+          <span>选题列表</span>
         </el-menu-item>
       </el-sub-menu>
 
@@ -71,11 +75,11 @@
           </el-icon>
           <span>文档管理</span>
         </template>
-        <el-menu-item index="/document/list" @click="$router.push({ path: '/document/list' })">
+        <el-menu-item index="/document/list">
           <el-icon>
             <List />
           </el-icon>
-          <span slot="title">文档列表</span>
+          <span>文档列表</span>
         </el-menu-item>
       </el-sub-menu>
 
@@ -87,59 +91,31 @@
           </el-icon>
           <span>成绩管理</span>
         </template>
-        <el-menu-item index="/grade/list" @click="$router.push({ path: '/grade/list' })">
+        <el-menu-item index="/grade/list">
           <el-icon>
             <List />
           </el-icon>
-          <span slot="title">成绩列表</span>
+          <span>成绩列表</span>
         </el-menu-item>
       </el-sub-menu>
 
       <!-- 院系管理 -->
-      <el-sub-menu index="department-management" :popper-class="'pdm-sidebar--dark-popper'">
+      <el-sub-menu
+        index="department-management"
+        :popper-class="'pdm-sidebar--dark-popper'"
+        v-if="isAdmin"
+      >
         <template #title>
           <el-icon>
             <OfficeBuilding />
           </el-icon>
           <span>院系管理</span>
         </template>
-        <el-menu-item index="/department/list" @click="$router.push({ path: '/department/list' })">
+        <el-menu-item index="/department/list">
           <el-icon>
             <List />
           </el-icon>
-          <span slot="title">院系列表</span>
-        </el-menu-item>
-      </el-sub-menu>
-
-      <!-- 过程管理 -->
-      <el-sub-menu index="process-management" :popper-class="'pdm-sidebar--dark-popper'">
-        <template #title>
-          <el-icon>
-            <Timer />
-          </el-icon>
-          <span>过程管理</span>
-        </template>
-        <el-menu-item index="/process/list" @click="$router.push({ path: '/process/list' })">
-          <el-icon>
-            <List />
-          </el-icon>
-          <span slot="title">过程列表</span>
-        </el-menu-item>
-      </el-sub-menu>
-
-      <!-- 统计管理 -->
-      <el-sub-menu index="statistics-management" :popper-class="'pdm-sidebar--dark-popper'">
-        <template #title>
-          <el-icon>
-            <DataAnalysis />
-          </el-icon>
-          <span>统计管理</span>
-        </template>
-        <el-menu-item index="/statistics/list" @click="$router.push({ path: '/statistics/list' })">
-          <el-icon>
-            <List />
-          </el-icon>
-          <span slot="title">统计列表</span>
+          <span>院系列表</span>
         </el-menu-item>
       </el-sub-menu>
     </el-menu>
@@ -147,6 +123,7 @@
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue'
 import {
   Document,
   House,
@@ -160,6 +137,20 @@ import {
   Timer,
   DataAnalysis,
 } from '@element-plus/icons-vue'
+import { useAuthStore } from '@/stores'
+import { USER_TYPE } from '@/constants'
+
+// 获取用户类型，用于权限控制
+const authStore = useAuthStore()
+
+// 安全的权限判断函数
+const getIsAdmin = computed(() => {
+  if (!authStore.userInfo) return false
+  return authStore.userInfo.userType === USER_TYPE.ADMIN
+})
+
+// 为了向后兼容，保留原来的变量名
+const isAdmin = getIsAdmin
 
 /**
  * 菜单打开事件
@@ -167,7 +158,7 @@ import {
  * @param keyPath
  */
 const handleOpen = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath)
+  // 菜单打开时的处理
 }
 
 /**
@@ -176,6 +167,6 @@ const handleOpen = (key: string, keyPath: string[]) => {
  * @param keyPath
  */
 const handleClose = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath)
+  // 菜单关闭时的处理
 }
 </script>

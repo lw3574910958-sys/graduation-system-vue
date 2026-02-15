@@ -1,129 +1,69 @@
 <template>
-
   <div class="login-container">
-
     <div class="login-content">
-
       <div class="login-header">
-
-        <img src="@/assets/login/logo.png" alt="logo" class="login-logo" />
+        <img :src="logoUrl" alt="logo" class="login-logo" />
 
         <div class="login-title">高校毕业设计管理系统</div>
-
       </div>
 
-
-
       <el-form ref="formRef" :model="loginForm" :rules="loginRules" size="large">
-
         <el-form-item prop="username">
-
           <el-input
-
             v-model="loginForm.username"
-
             :prefix-icon="User"
-
             placeholder="用户名"
-
             autocomplete="off"
-
           />
-
         </el-form-item>
-
-
 
         <el-form-item prop="password">
-
           <el-input
-
             v-model="loginForm.password"
-
             :prefix-icon="Lock"
-
             type="password"
-
             placeholder="密码"
-
             show-password
-
             autocomplete="off"
-
           />
-
         </el-form-item>
 
-
-
         <el-form-item prop="captchaCode">
-
           <div class="captcha-group">
-
             <el-input
-
               v-model="loginForm.captchaCode"
-
               :prefix-icon="Key"
-
               placeholder="请输入验证码"
-
               maxlength="4"
-
               style="flex: 1; margin-right: 10px"
-
             />
 
             <div class="captcha-image" @click="getCaptcha">
-
               <img v-if="captchaImage" :src="captchaImage" alt="验证码" />
 
               <div v-else class="captcha-placeholder">加载中...</div>
-
             </div>
-
           </div>
-
         </el-form-item>
-
-
 
         <el-form-item>
-
           <el-button
-
             type="primary"
-
             size="large"
-
             :loading="loading"
-
             @click="handleLogin"
-
             style="width: 100%"
-
           >
-
             登录
-
           </el-button>
-
         </el-form-item>
-
       </el-form>
 
-
-
       <div class="login-footer">
-
         <p>© 2025 高校毕业设计管理系统</p>
-
       </div>
-
     </div>
-
   </div>
-
 </template>
 
 <script setup lang="ts">
@@ -133,8 +73,9 @@ import { ElMessage } from 'element-plus'
 import { User, Lock, Key } from '@element-plus/icons-vue'
 import { useAuth } from '@/composables/useAuth'
 import { useAuthStore } from '@/stores'
-import { MESSAGE } from '@/constants/user'
+import { MESSAGE, USER_TYPE } from '@/constants'
 import type { FormInstance, FormRules } from 'element-plus'
+import logoUrl from '@/assets/login/logo.png'
 
 interface LoginForm {
   username: string
@@ -179,7 +120,9 @@ const handleLogin = async () => {
     await login(loginForm.username, loginForm.password, loginForm.captchaCode)
 
     ElMessage.success(MESSAGE.LOGIN_SUCCESS)
-    router.push({ path: '/' })
+
+    // 登录成功后统一跳转到主应用布局
+    router.push('/index')
   } catch (error: any) {
     console.error('登录失败:', error)
     let message = MESSAGE.OPERATION_FAILED

@@ -1,45 +1,41 @@
 <template>
-  <el-dialog
-    v-model="visible"
-    :title="!formData.id ? '新增成绩信息' : '修改成绩信息'"
-    width="50%"
-  >
+  <el-dialog v-model="visible" :title="!formData.id ? '新增成绩信息' : '修改成绩信息'" width="50%">
     <el-form :rules="rules" :model="formData" ref="formRef" label-width="100px">
       <el-form-item label="学生ID" prop="studentId">
-        <el-input-number 
-          v-model="formData.studentId" 
-          :min="1" 
-          class="w-60" 
-          placeholder="请输入学生ID" 
+        <el-input-number
+          v-model="formData.studentId"
+          :min="1"
+          class="w-60"
+          placeholder="请输入学生ID"
         />
       </el-form-item>
 
       <el-form-item label="课题ID" prop="topicId">
-        <el-input-number 
-          v-model="formData.topicId" 
-          :min="1" 
-          class="w-60" 
-          placeholder="请输入课题ID" 
+        <el-input-number
+          v-model="formData.topicId"
+          :min="1"
+          class="w-60"
+          placeholder="请输入课题ID"
         />
       </el-form-item>
 
       <el-form-item label="成绩" prop="score">
-        <el-input-number 
-          v-model="formData.score" 
+        <el-input-number
+          v-model="formData.score"
           :min="0"
           :max="100"
           :precision="2"
-          class="w-60" 
-          placeholder="请输入成绩(0-100)" 
+          class="w-60"
+          placeholder="请输入成绩(0-100)"
         />
       </el-form-item>
 
       <el-form-item label="评分教师ID" prop="graderId">
-        <el-input-number 
-          v-model="formData.graderId" 
-          :min="1" 
-          class="w-60" 
-          placeholder="请输入评分教师ID" 
+        <el-input-number
+          v-model="formData.graderId"
+          :min="1"
+          class="w-60"
+          placeholder="请输入评分教师ID"
         />
       </el-form-item>
 
@@ -52,12 +48,12 @@
       </el-form-item>
 
       <el-form-item label="评语" prop="comment">
-        <el-input 
-          v-model="formData.comment" 
-          type="textarea" 
+        <el-input
+          v-model="formData.comment"
+          type="textarea"
           :rows="4"
-          class="w-60" 
-          placeholder="请输入评语" 
+          class="w-60"
+          placeholder="请输入评语"
         />
       </el-form-item>
     </el-form>
@@ -65,13 +61,7 @@
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="onCancel()">取消</el-button>
-        <el-button
-          type="primary"
-          @click="onSubmit()"
-          :loading="btnLoading"
-        >
-          确定
-        </el-button>
+        <el-button type="primary" @click="onSubmit()" :loading="btnLoading"> 确定 </el-button>
       </div>
     </template>
   </el-dialog>
@@ -106,9 +96,11 @@ const formDefault = {
   studentName: '',
   topicId: 0,
   topicTitle: '',
+  teacherId: 0,
   graderId: 0,
   score: 0,
   comment: '',
+  status: 0,
 }
 
 // 表单数据
@@ -146,8 +138,8 @@ async function onSubmit() {
         btnLoading.value = false
       }
     })
-    .catch((err: any) => {
-      console.log('Form validation failed:', err)
+    .catch(() => {
+      // 表单验证失败，el-form已显示错误提示
     })
 }
 

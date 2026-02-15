@@ -3,10 +3,50 @@ export interface TopicResponse {
   id: number
   title: string
   description: string
-  teacherId: number
+  requirement: string
+  difficulty: string
   status: number
-  createdAt?: Date
-  updatedAt?: Date
+  teacherId: number
+  departmentId: number
+  maxStudents: number
+  selectedCount: number
+  createdAt?: string
+  updatedAt?: string
+}
+
+// 题目创建请求类型
+export interface TopicCreateRequest {
+  title: string
+  description: string
+  requirement: string
+  difficulty: string
+  status: number
+  teacherId: number
+  departmentId: number
+  maxStudents: number
+}
+
+// 题目更新请求类型
+export interface TopicUpdateRequest {
+  title?: string
+  description?: string
+  requirement?: string
+  difficulty?: string
+  status?: number
+  teacherId?: number
+  departmentId?: number
+  maxStudents?: number
+}
+
+// 题目查询参数类型
+export interface TopicQueryParams {
+  title?: string
+  difficulty?: string
+  status?: number
+  teacherId?: number
+  departmentId?: number
+  current?: number
+  size?: number
 }
 
 // 题目分页响应类型

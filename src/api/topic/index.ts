@@ -1,16 +1,35 @@
 import { get, post, put, del } from '@/utils/request'
-import type { ApiResponse, PageQuery } from '@/types/global'
-import type { TopicResponse, TopicPageResponse } from '@/types/api/topic'
+import type {
+  TopicResponse,
+  TopicPageResponse,
+  TopicCreateRequest,
+  TopicUpdateRequest,
+  TopicQueryParams,
+} from '@/types/api/topic'
+import type { ApiResponse } from '@/types/global'
 
-// 题目相关API
 export const topicApi = {
+  // 为兼容视图组件而添加的别名方法
+  create: (param: TopicCreateRequest) => {
+    return topicApi.createTopic(param)
+  },
+  update: (id: number | string, param: TopicUpdateRequest) => {
+    return topicApi.updateTopic(Number(id), param)
+  },
+  delete: (id: number | string) => {
+    return topicApi.deleteTopic(id)
+  },
+  getList: (params: TopicQueryParams) => {
+    return topicApi.getTopicPage(params)
+  },
+  
   /**
-   * 获取题目列表
+   * 分页查询题目列表
    * @param params 查询参数
-   * @returns 题目列表
+   * @returns 分页结果
    */
-  getList: (params: PageQuery) => {
-    return get<ApiResponse<TopicPageResponse>>('/api/topic/list', params)
+  getTopicPage: (params: TopicQueryParams) => {
+    return get<ApiResponse<TopicPageResponse>>('/api/topics/page', params)
   },
 
   /**
@@ -18,27 +37,27 @@ export const topicApi = {
    * @param id 题目ID
    * @returns 题目详情
    */
-  getById: (id: number | string) => {
-    return get<ApiResponse<TopicResponse>>(`/api/topic/${id}`, {})
+  getTopicById: (id: number | string) => {
+    return get<ApiResponse<TopicResponse>>(`/api/topics/${id}`, {})
   },
 
   /**
-   * 创建题目
+   * 创建新题目
    * @param param 题目信息
    * @returns 请求结果
    */
-  create: (param: Omit<TopicResponse, 'id'>) => {
-    return post<ApiResponse<void>>('/api/topic', param)
+  createTopic: (param: TopicCreateRequest) => {
+    return post<ApiResponse<void>>('/api/topics', param)
   },
 
   /**
-   * 更新题目
+   * 更新题目信息
    * @param id 题目ID
    * @param param 题目信息
    * @returns 请求结果
    */
-  update: (id: number | string, param: Partial<Omit<TopicResponse, 'id'>>) => {
-    return put<ApiResponse<void>>(`/api/topic/${id}`, param)
+  updateTopic: (id: number, param: TopicUpdateRequest) => {
+    return put<ApiResponse<void>>(`/api/topics/${id}`, param)
   },
 
   /**
@@ -46,7 +65,7 @@ export const topicApi = {
    * @param id 题目ID
    * @returns 请求结果
    */
-  delete: (id: number | string) => {
-    return del<ApiResponse<void>>(`/api/topic/${id}`)
-  }
+  deleteTopic: (id: number | string) => {
+    return del<ApiResponse<void>>(`/api/topics/${id}`)
+  },
 }

@@ -12,8 +12,8 @@ import '@/assets/styles/style.less'
 import router from './router'
 import App from './App.vue'
 
-
 import { permission } from '@/directives/permission'
+import { setupGlobalErrorHandler } from '@/utils/errorHandler'
 
 const app = createApp(App)
 
@@ -26,5 +26,8 @@ app.use(router)
 
 // 注册全局指令
 app.directive('permission', permission)
+
+// 设置全局错误处理
+setupGlobalErrorHandler()
 
 app.mount('#app')
