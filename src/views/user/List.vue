@@ -12,9 +12,6 @@
     >
       <template #operations="{ scope }">
         <el-button @click="update(scope.row)" type="primary" size="small">编辑</el-button>
-        <el-button @click="resetPassword(scope.row.id)" type="warning" size="small"
-          >重置密码</el-button
-        >
         <el-button @click="confirmDel(scope.row.id)" type="danger" size="small">删除</el-button>
       </template>
       <template #dialogs>
@@ -34,19 +31,11 @@ import Avatar from '@/components/common/Avatar.vue'
 import StatusTag from '@/components/common/StatusTag.vue'
 // 导入用户类型常量和消息常量
 import { USER_TYPE_LABELS, MESSAGE } from '@/constants/user'
+import type { UserResponse } from '@/types/api/user'
 import BaseList from '@/components/common/BaseList.vue'
 
-// 用户数据结构
-type UserRow = {
-  id: number | string
-  username: string
-  realName: string
-  userType: string
-  status: number
-  lastLoginAt?: string
-  createdAt: string
-  avatar?: string
-}
+// 使用统一的类型定义
+type UserRow = UserResponse
 
 // 定义操作组件引用--新增/编辑
 const operateRef = ref()
@@ -122,6 +111,8 @@ function add() {
  * 编辑用户
  */
 function update(row: UserRow) {
+  console.log('🔍 List.vue update 方法接收到的 row:', row)
+  console.log('🔍 row.id:', row.id)
   operateRef.value.showModel(row)
 }
 
@@ -129,21 +120,7 @@ function update(row: UserRow) {
  * 删除确认
  */
 function confirmDel(id?: any) {
-  // 由于使用BaseList，删除逻辑已在BaseList中处理
-  // 这里仅保留重置密码功能
-}
-
-/**
- * 重置用户密码
- */
-async function resetPassword(id: number | string) {
-  try {
-    await userApi.resetPassword(Number(id))
-    ElMessage.success(MESSAGE.RESET_PASSWORD_SUCCESS)
-  } catch (error) {
-    console.error(MESSAGE.OPERATION_FAILED, error)
-    ElMessage.error(MESSAGE.OPERATION_FAILED)
-  }
+  // 由于使用 BaseList，删除逻辑已在 BaseList 中处理
 }
 
 /**

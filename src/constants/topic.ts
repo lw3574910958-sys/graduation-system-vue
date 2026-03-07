@@ -1,20 +1,26 @@
 // 导入统一常量
 import { TOPIC_STATUS, TOPIC_STATUS_LABELS } from './index';
 
-// 题目状态常量
+// 保持向后兼容的TopicStatus枚举
 export enum TopicStatus {
-  DRAFT = 'DRAFT',
-  AVAILABLE = 'AVAILABLE',
-  ASSIGNED = 'ASSIGNED',
-  COMPLETED = 'COMPLETED'
+  OPEN = 'OPEN',
+  SELECTED = 'SELECTED',
+  CLOSED = 'CLOSED'
 }
 
+// 向后兼容的状态映射
 export const TOPIC_STATUS_MAP: Record<string, string> = {
-  [TopicStatus.DRAFT]: '草稿',
-  [TopicStatus.AVAILABLE]: '可选',
-  [TopicStatus.ASSIGNED]: '已选',
-  [TopicStatus.COMPLETED]: '完成'
+  [TopicStatus.OPEN]: '开放',
+  [TopicStatus.SELECTED]: '已选',
+  [TopicStatus.CLOSED]: '关闭'
 };
+
+// 与后端枚举值对应的数字状态映射
+export const TOPIC_STATUS_NUMBERS = {
+  OPEN: 1,
+  SELECTED: 2,
+  CLOSED: 3
+} as const;
 
 /**
  * 选题状态常量

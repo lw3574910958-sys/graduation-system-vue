@@ -3,6 +3,7 @@ import type {
   GradeResponse,
   GradePageResponse,
   GradeRequest,
+  GradeInputRequest,
   GradeQueryParams,
 } from '@/types/api/grade'
 import type { ApiResponse } from '@/types/global'
@@ -20,6 +21,15 @@ export const gradeApi = {
   },
   getList: (params: GradeQueryParams) => {
     return gradeApi.getGradePage(params)
+  },
+  
+  /**
+   * 录入成绩
+   * @param param 成绩录入参数
+   * @returns 录入结果
+   */
+  inputGrade: (param: GradeInputRequest) => {
+    return post<ApiResponse<void>>('/api/grades/input', param)
   },
   
   /**

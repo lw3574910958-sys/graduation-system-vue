@@ -1,50 +1,54 @@
-// 题目信息响应类型
+// 题目信息响应类型 (对应后端 TopicVO)
 export interface TopicResponse {
   id: number
   title: string
   description: string
-  requirement: string
-  difficulty: string
-  status: number
   teacherId: number
+  status: number
   departmentId: number
-  maxStudents: number
+  source?: string
+  type?: string
+  nature?: string
+  difficulty?: number
+  workload?: number
+  maxSelections?: number
   selectedCount: number
   createdAt?: string
   updatedAt?: string
 }
 
-// 题目创建请求类型
+// 题目创建请求类型 (对应后端 TopicCreateDTO)
 export interface TopicCreateRequest {
   title: string
   description: string
-  requirement: string
-  difficulty: string
-  status: number
-  teacherId: number
   departmentId: number
-  maxStudents: number
+  source?: string
+  type?: string
+  nature?: string
+  difficulty?: number
+  workload?: number
+  maxSelections?: number
 }
 
-// 题目更新请求类型
+// 题目更新请求类型 (对应后端 TopicUpdateDTO)
 export interface TopicUpdateRequest {
-  title?: string
-  description?: string
-  requirement?: string
-  difficulty?: string
+  id: number
+  title: string
+  description: string
+  source?: string
+  type?: string
+  nature?: string
+  difficulty?: number
+  workload?: number
+  maxSelections?: number
   status?: number
-  teacherId?: number
-  departmentId?: number
-  maxStudents?: number
 }
 
-// 题目查询参数类型
+// 题目查询参数类型 (对应后端 TopicPageQueryDTO)
 export interface TopicQueryParams {
   title?: string
-  difficulty?: string
-  status?: number
   teacherId?: number
-  departmentId?: number
+  status?: number
   current?: number
   size?: number
 }

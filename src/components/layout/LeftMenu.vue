@@ -7,123 +7,51 @@
       active-text-color="#fff"
       text-color="#8a979e"
       router
+      :default-active="activeIndex"
     >
-      <el-menu-item index="/welcome">
-        <el-icon>
-          <House />
-        </el-icon>
-        <span>欢迎页</span>
-      </el-menu-item>
-
-      <!-- 用户管理 -->
-      <el-sub-menu
-        index="user-management"
-        :popper-class="'pdm-sidebar--dark-popper'"
-        v-if="isAdmin"
-      >
-        <template #title>
+      <template v-for="menu in filteredMenus" :key="menu.index">
+        <!-- 单级菜单项 -->
+        <el-menu-item 
+          v-if="!menu.children || menu.children.length === 0" 
+          :index="menu.path || menu.index"
+        >
           <el-icon>
-            <User />
+            <component :is="menu.icon" />
           </el-icon>
-          <span>用户管理</span>
-        </template>
-        <el-menu-item index="/user/list">
-          <el-icon>
-            <List />
-          </el-icon>
-          <span>用户列表</span>
+          <span>{{ menu.title }}</span>
         </el-menu-item>
-      </el-sub-menu>
-
-      <!-- 课题管理 -->
-      <el-sub-menu index="topic-management" :popper-class="'pdm-sidebar--dark-popper'">
-        <template #title>
-          <el-icon>
-            <FolderOpened />
-          </el-icon>
-          <span>课题管理</span>
-        </template>
-        <el-menu-item index="/topic/list">
-          <el-icon>
-            <List />
-          </el-icon>
-          <span>课题列表</span>
-        </el-menu-item>
-      </el-sub-menu>
-
-      <!-- 选题管理 -->
-      <el-sub-menu index="selection-management" :popper-class="'pdm-sidebar--dark-popper'">
-        <template #title>
-          <el-icon>
-            <Collection />
-          </el-icon>
-          <span>选题管理</span>
-        </template>
-        <el-menu-item index="/selection/list">
-          <el-icon>
-            <List />
-          </el-icon>
-          <span>选题列表</span>
-        </el-menu-item>
-      </el-sub-menu>
-
-      <!-- 文档管理 -->
-      <el-sub-menu index="document-management" :popper-class="'pdm-sidebar--dark-popper'">
-        <template #title>
-          <el-icon>
-            <Document />
-          </el-icon>
-          <span>文档管理</span>
-        </template>
-        <el-menu-item index="/document/list">
-          <el-icon>
-            <List />
-          </el-icon>
-          <span>文档列表</span>
-        </el-menu-item>
-      </el-sub-menu>
-
-      <!-- 成绩管理 -->
-      <el-sub-menu index="grade-management" :popper-class="'pdm-sidebar--dark-popper'">
-        <template #title>
-          <el-icon>
-            <Star />
-          </el-icon>
-          <span>成绩管理</span>
-        </template>
-        <el-menu-item index="/grade/list">
-          <el-icon>
-            <List />
-          </el-icon>
-          <span>成绩列表</span>
-        </el-menu-item>
-      </el-sub-menu>
-
-      <!-- 院系管理 -->
-      <el-sub-menu
-        index="department-management"
-        :popper-class="'pdm-sidebar--dark-popper'"
-        v-if="isAdmin"
-      >
-        <template #title>
-          <el-icon>
-            <OfficeBuilding />
-          </el-icon>
-          <span>院系管理</span>
-        </template>
-        <el-menu-item index="/department/list">
-          <el-icon>
-            <List />
-          </el-icon>
-          <span>院系列表</span>
-        </el-menu-item>
-      </el-sub-menu>
+        
+        <!-- 多级菜单项 -->
+        <el-sub-menu 
+          v-else
+          :index="menu.index"
+          :popper-class="'pdm-sidebar--dark-popper'"
+        >
+          <template #title>
+            <el-icon>
+              <component :is="menu.icon" />
+            </el-icon>
+            <span>{{ menu.title }}</span>
+          </template>
+          <el-menu-item 
+            v-for="child in menu.children" 
+            :key="child.index"
+            :index="child.path || child.index"
+          >
+            <el-icon>
+              <component :is="child.icon" />
+            </el-icon>
+            <span>{{ child.title }}</span>
+          </el-menu-item>
+        </el-sub-menu>
+      </template>
     </el-menu>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import {
   Document,
   House,
@@ -138,19 +66,20 @@ import {
   DataAnalysis,
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores'
-import { USER_TYPE } from '@/constants'
+import { filterMenusByUser } from '@/config/menu'
+import { menuConfig } from '@/config/menu'
 
-// 获取用户类型，用于权限控制
+const route = useRoute()
 const authStore = useAuthStore()
 
-// 安全的权限判断函数
-const getIsAdmin = computed(() => {
-  if (!authStore.userInfo) return false
-  return authStore.userInfo.userType === USER_TYPE.ADMIN
-})
+// 当前激活的菜单项
+const activeIndex = computed(() => route.path)
 
-// 为了向后兼容，保留原来的变量名
-const isAdmin = getIsAdmin
+// 根据用户权限过滤菜单
+const filteredMenus = computed(() => {
+  if (!authStore.userInfo) return []
+  return filterMenusByUser(menuConfig, authStore.userInfo)
+})
 
 /**
  * 菜单打开事件

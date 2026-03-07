@@ -14,12 +14,16 @@
       
       <div class="topic-meta">
         <div class="d-flex mb-4">
-          <label class="fw-bold mr-8 w-60px text-right">指导教师:</label>
-          <span>{{ topic.teacherName }}</span>
+          <label class="fw-bold mr-8 w-60px text-right">指导教师ID:</label>
+          <span>{{ topic.teacherId }}</span>
         </div>
         <div class="d-flex mb-4">
-          <label class="fw-bold mr-8 w-60px text-right">学生:</label>
-          <span>{{ topic.studentName || '未分配' }}</span>
+          <label class="fw-bold mr-8 w-60px text-right">院系ID:</label>
+          <span>{{ topic.departmentId }}</span>
+        </div>
+        <div class="d-flex mb-4" v-if="topic.selectedCount !== undefined">
+          <label class="fw-bold mr-8 w-60px text-right">已选人数:</label>
+          <span>{{ topic.selectedCount }}/{{ topic.maxSelections || 1 }}</span>
         </div>
         <div class="d-flex mb-4">
           <label class="fw-bold mr-8 w-60px text-right">创建时间:</label>
@@ -40,17 +44,27 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 
-// 课题类型定义
+// 课题类型定义 (对应后端 TopicVO)
+// 注意：为了保持组件兼容性，保留一些可能需要的扩展字段
 interface Topic {
   id: number
   title: string
   description: string
   teacherId: number
-  teacherName: string
-  studentId?: number
-  studentName?: string
-  status: string
+  status: number
+  departmentId: number
+  source?: string
+  type?: string
+  nature?: string
+  difficulty?: number
+  workload?: number
+  maxSelections?: number
+  selectedCount: number
   createdAt?: string
+  updatedAt?: string
+  // 可选的扩展字段，用于显示教师和学生名称
+  teacherName?: string
+  studentName?: string
 }
 
 // 定义props
@@ -68,35 +82,31 @@ const props = defineProps({
 // 定义事件
 const emit = defineEmits(['view', 'select'])
 
-// 获取状态类型
-const getStatusType = (status: string) => {
-  switch (status.toLowerCase()) {
-    case 'available':
-    case 'open':
+// 获取状态类型 (对应后端状态: 1-开放, 2-已选, 3-关闭)
+const getStatusType = (status: number) => {
+  switch (status) {
+    case 1: // 开放
       return 'success'
-    case 'assigned':
-    case 'selected':
+    case 2: // 已选
       return 'warning'
-    case 'completed':
+    case 3: // 关闭
       return 'info'
     default:
       return 'info'
   }
 }
 
-// 获取状态文本
-const getStatusText = (status: string) => {
-  switch (status.toLowerCase()) {
-    case 'available':
-    case 'open':
-      return '可选'
-    case 'assigned':
-    case 'selected':
+// 获取状态文本 (对应后端状态: 1-开放, 2-已选, 3-关闭)
+const getStatusText = (status: number) => {
+  switch (status) {
+    case 1:
+      return '开放'
+    case 2:
       return '已选'
-    case 'completed':
-      return '完成'
+    case 3:
+      return '关闭'
     default:
-      return status
+      return '未知'
   }
 }
 

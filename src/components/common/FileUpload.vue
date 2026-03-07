@@ -10,7 +10,7 @@
       :class="{ disabled: maxLimit }"
       :http-request="handleUpload"
       :before-upload="beforeUpload"
-      :auto-upload="true"
+      :auto-upload="autoUpload"
       multiple
     >
       <template v-if="listType === 'picture-card'">
@@ -81,10 +81,15 @@ const props = defineProps({
     type: String,
     default: 'picture-card',
   },
-  //是否为头像上传
+  // 是否为头像上传
   isAvatarUpload: {
     type: Boolean,
     default: false,
+  },
+  // 是否自动上传
+  autoUpload: {
+    type: Boolean,
+    default: true,
   },
 })
 
@@ -97,6 +102,33 @@ const allowedFileTypes = computed(() => {
   return ['jpg', 'jpeg', 'png', 'gif']
 })
 
+// 检查文件类型是否允许
+const isFileTypeAllowed = (file: File): boolean => {
+  const fileName = file.name.toLowerCase()
+  const fileType = file.type.toLowerCase() // 获取文件的 MIME 类型
+  
+  // 如果 accept 是 image/*，检查是否为图片类型
+  if (props.accept === 'image/*') {
+    return fileType.startsWith('image/')
+  }
+  
+  // 如果 accept 包含多个类型（如 image/*, .pdf 等）
+  if (props.accept && props.accept.includes('image/*')) {
+    return fileType.startsWith('image/')
+  }
+  
+  // 否则检查文件扩展名
+  const allowedTypes = allowedFileTypes.value
+  if (allowedTypes.length > 0) {
+    return allowedTypes.some((type) => 
+      fileName.endsWith(type) || 
+      (type.startsWith('.') && fileName.endsWith(type))
+    )
+  }
+  
+  return true
+}
+
 // 监听上传状态
 const uploadingCount = ref(0)
 // 上传前检查
@@ -108,15 +140,8 @@ const beforeUpload = (file: File) => {
   }
 
   // 检查文件类型
-  const fileName = file.name.toLowerCase()
-  const fileType = fileName.split('.').pop()
-
-  // 如果accept属性未指定或指定了特定类型，则检查文件扩展名
-  if (
-    allowedFileTypes.value.length > 0 &&
-    !allowedFileTypes.value.some((type) => fileName.endsWith(type))
-  ) {
-    ElMessage.error(`仅支持 ${allowedFileTypes.value.join(', ')} 格式的文件！`)
+  if (!isFileTypeAllowed(file)) {
+    ElMessage.error(`仅支持 ${props.accept || '图片'} 格式的文件！`)
     return false
   }
 
@@ -224,6 +249,7 @@ const handleUpload = async (options: { file: any; onError: Function; onSuccess: 
 
 defineExpose({
   clear,
+  handleUpload, // 暴露手动上传方法
   getValidFiles() {
     return fileList.value.filter((file) => file.url && !file.url.startsWith('blob:'))
   },

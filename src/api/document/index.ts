@@ -4,6 +4,7 @@ import type {
   DocumentPageResponse,
   DocumentUploadRequest,
   DocumentUpdateRequest,
+  DocumentReviewRequest,
   DocumentQueryParams,
 } from '@/types/api/document'
 import type { ApiResponse } from '@/types/global'
@@ -49,13 +50,16 @@ export const documentApi = {
   uploadDocument: (param: DocumentUploadRequest) => {
     const formData = new FormData()
     formData.append('file', param.file)
-    formData.append('businessId', param.businessId.toString())
-    formData.append('businessType', param.businessType)
-    if (param.name) {
-      formData.append('name', param.name)
+    formData.append('topicId', param.topicId.toString())
+    formData.append('fileType', param.fileType.toString())
+    if (param.description) {
+      formData.append('description', param.description)
+    }
+    if (param.version) {
+      formData.append('version', param.version)
     }
     
-    return post<ApiResponse<DocumentResponse>>('/api/documents', formData)
+    return post<ApiResponse<DocumentResponse>>('/api/documents/upload', formData)
   },
 
   /**
@@ -70,12 +74,11 @@ export const documentApi = {
 
   /**
    * 审核文档
-   * @param id 文档ID
    * @param param 审核参数
    * @returns 请求结果
    */
-  reviewDocument: (id: number, param: DocumentUpdateRequest) => {
-    return put<ApiResponse<void>>(`/api/documents/${id}/review`, param)
+  reviewDocument: (param: DocumentReviewRequest) => {
+    return post<ApiResponse<void>>('/api/documents/review', param)
   },
 
   /**

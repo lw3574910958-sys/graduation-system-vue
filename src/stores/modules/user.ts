@@ -1,24 +1,11 @@
+// 注意：此文件已被废弃，请使用 auth.ts 中的 useAuthStore
+// 用户相关信息现在统一在 auth store 中管理
+
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import type { UserResponse } from '@/types/api/user'
 
 export const useUserStore = defineStore('user', () => {
-  // 用户信息
-  const userInfo = ref<UserResponse | null>(null)
-  
-  // 设置用户信息
-  const setUserInfo = (info: UserResponse | null) => {
-    userInfo.value = info
-  }
-  
-  // 清除用户信息
-  const clearUserInfo = () => {
-    userInfo.value = null
-  }
-  
+  // 为了向后兼容，提供空的store
   return {
-    userInfo,
-    setUserInfo,
-    clearUserInfo
+    // 废弃的方法，建议迁移到 useAuthStore
   }
 })

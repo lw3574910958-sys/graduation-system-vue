@@ -6,13 +6,28 @@
       :search-fields="searchFields"
       :table-columns="tableColumns"
       @add="add"
+      v-permission="'teacher'"
       @edit="update"
       @refresh="getList"
       ref="listRef"
     >
       <template #operations="{ scope }">
-        <el-button @click="update(scope.row)" type="primary" size="small">编辑</el-button>
-        <el-button @click="confirmDel(scope.row.id)" type="danger" size="small">删除</el-button>
+        <el-button 
+          @click="update(scope.row)" 
+          type="primary" 
+          size="small"
+          v-permission="'teacher'"
+        >
+          编辑
+        </el-button>
+        <el-button 
+          @click="confirmDel(scope.row.id)" 
+          type="danger" 
+          size="small"
+          v-permission="'teacher'"
+        >
+          删除
+        </el-button>
       </template>
       <template #dialogs>
         <add-or-update @refresh-list="getList" ref="operateRef" />
@@ -27,17 +42,11 @@ import { topicApi } from '@/api/topic'
 import AddOrUpdate from '@/views/topic/AddOrUpdate.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { MESSAGE } from '@/constants/user'
+import type { TopicResponse } from '@/types/api/topic'
 import BaseList from '@/components/common/BaseList.vue'
 
-// 课题数据结构
-type TopicRow = {
-  id: number | string
-  title: string
-  description: string
-  teacherId: number
-  status: number
-  createdAt?: string | Date
-}
+// 使用统一的类型定义
+type TopicRow = TopicResponse
 
 // 定义操作组件引用--新增/编辑
 const operateRef = ref()
@@ -57,18 +66,20 @@ const searchFields = [
     component: 'el-select',
     props: { placeholder: '请选择状态' },
     options: [
-      { label: '开放', value: 0 },
-      { label: '已选', value: 1 },
-      { label: '关闭', value: 2 }
+      { label: '开放', value: 1 },
+      { label: '已选', value: 2 },
+      { label: '关闭', value: 3 }
     ]
   }
 ]
 
 // 表格列配置
 const tableColumns = [
+  { prop: 'id', label: 'ID', headerAlign: 'center', align: 'center' },
   { prop: 'title', label: '课题标题', headerAlign: 'center', align: 'center' },
   { prop: 'description', label: '课题描述', headerAlign: 'center', align: 'center' },
-  { prop: 'teacherId', label: '发布教师ID', headerAlign: 'center', align: 'center' },
+  { prop: 'teacherId', label: '教师ID', headerAlign: 'center', align: 'center' },
+  { prop: 'departmentId', label: '院系ID', headerAlign: 'center', align: 'center' },
   { 
     prop: 'status', 
     label: '状态', 
@@ -76,6 +87,7 @@ const tableColumns = [
     align: 'center',
     render: (row: TopicRow) => getStatusLabel(row.status)
   },
+  { prop: 'selectedCount', label: '已选人数', headerAlign: 'center', align: 'center' },
   { prop: 'createdAt', label: '创建时间', headerAlign: 'center', align: 'center' },
 ]
 
@@ -101,13 +113,13 @@ function confirmDel(id?: number | string) {
 }
 
 /**
- * 获取状态标签
+ * 获取状态标签 (对应后端状态: 1-开放, 2-已选, 3-关闭)
  */
 function getStatusLabel(status: number) {
   switch(status) {
-    case 0: return '开放'
-    case 1: return '已选'
-    case 2: return '关闭'
+    case 1: return '开放'
+    case 2: return '已选'
+    case 3: return '关闭'
     default: return '未知'
   }
 }

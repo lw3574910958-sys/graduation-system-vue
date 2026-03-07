@@ -4,6 +4,8 @@ import type {
   SelectionPageResponse,
   SelectionCreateRequest,
   SelectionUpdateRequest,
+  SelectionApplyRequest,
+  SelectionReviewRequest,
   SelectionQueryParams,
 } from '@/types/api/selection'
 import type { ApiResponse } from '@/types/global'
@@ -21,6 +23,42 @@ export const selectionApi = {
   },
   getList: (params: SelectionQueryParams) => {
     return selectionApi.getSelectionPage(params)
+  },
+  
+  /**
+   * 学生申请选题
+   * @param applyRequest 申请参数
+   * @returns 申请结果
+   */
+  applySelection: (applyRequest: SelectionApplyRequest) => {
+    return post<ApiResponse<SelectionResponse>>('/api/selections/apply', applyRequest)
+  },
+
+  /**
+   * 教师审核选题申请
+   * @param reviewRequest 审核参数
+   * @returns 审核结果
+   */
+  reviewSelection: (reviewRequest: SelectionReviewRequest) => {
+    return post<ApiResponse<SelectionResponse>>('/api/selections/review', reviewRequest)
+  },
+
+  /**
+   * 学生确认选题
+   * @param id 选题ID
+   * @returns 确认结果
+   */
+  confirmSelection: (id: number) => {
+    return post<ApiResponse<SelectionResponse>>(`/api/selections/${id}/confirm`, {})
+  },
+
+  /**
+   * 学生撤销选题申请
+   * @param id 选题ID
+   * @returns 撤销结果
+   */
+  cancelSelection: (id: number) => {
+    return del<ApiResponse<void>>(`/api/selections/${id}/cancel`)
   },
   
   /**

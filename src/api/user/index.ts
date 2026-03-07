@@ -19,11 +19,11 @@ export const userApi = {
   },
 
   /**
-   * 根据ID获取用户详情
-   * @param id 用户ID
+   * 根据 ID 获取用户详情
+   * @param id 用户 ID
    * @returns 用户详情
    */
-  getUserById: (id: number | string) => {
+  getUserById: (id: string) => {
     return get<ApiResponse<UserResponse>>(`/api/users/${id}`, {})
   },
 
@@ -38,29 +38,20 @@ export const userApi = {
 
   /**
    * 更新用户信息
-   * @param id 用户ID
+   * @param id 用户 ID
    * @param param 用户信息
    * @returns 请求结果
    */
-  updateUser: (id: number, param: UserUpdateRequest) => {
+  updateUser: (id: string, param: UserUpdateRequest) => {
     return put<ApiResponse<void>>(`/api/users/${id}`, param)
   },
-
+  
   /**
    * 删除用户
-   * @param id 用户ID
+   * @param id 用户 ID
    * @returns 请求结果
    */
-  deleteUser: (id: number | string) => {
+  deleteUser: (id: string) => {
     return del<ApiResponse<void>>(`/api/users/${id}`)
-  },
-
-  /**
-   * 重置用户密码
-   * @param id 用户ID
-   * @returns 请求结果
-   */
-  resetPassword: (id: number | string) => {
-    return post<ApiResponse<void>>(`/api/users/${id}/reset-password`, {})
   },
 }

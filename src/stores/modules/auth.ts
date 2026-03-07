@@ -10,6 +10,7 @@ import type { ApiResponse } from '@/types/global'
 import storageUtil from '@/utils/storage'
 import constants from '@/utils/constants'
 import { fetchUserInfoWithTimeout } from '@/utils/user-utils'
+import { tokenManager, type TokenInfo } from '@/utils/tokenManager'
 
 export const useAuthStore = defineStore('auth', () => {
   // token
@@ -44,17 +45,25 @@ export const useAuthStore = defineStore('auth', () => {
     }
   })
 
-  // 设置 token
-  const setToken = (newToken: string) => {
-    token.value = newToken
-    storageUtil.set(constants.TOKEN_NAME, newToken)
-    isAuthenticated.value = true
+  // 设置 token（使用新的token管理器）
+  const setToken = (newToken: string | TokenInfo) => {
+    if (typeof newToken === 'string') {
+      // 兼容旧的字符串token
+      token.value = newToken
+      storageUtil.set(constants.TOKEN_NAME, newToken)
+      isAuthenticated.value = true
+    } else {
+      // 使用新的TokenInfo对象
+      tokenManager.setToken(newToken)
+      token.value = newToken.token
+      isAuthenticated.value = true
+    }
   }
 
   // 清除认证信息
   const clearAuth = () => {
     token.value = ''
-    storageUtil.remove(constants.TOKEN_NAME)
+    tokenManager.clearTokens()
     userInfo.value = null
     isAuthenticated.value = false
   }

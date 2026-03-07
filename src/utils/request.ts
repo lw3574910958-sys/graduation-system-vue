@@ -13,15 +13,32 @@ import constants from '@/utils/constants'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores'
 import { MESSAGE } from '@/constants/user'
-import ErrorHandler from '@/utils/errorHandler'
+import { handleHttpError } from '@/utils/errorHandler'
 
 let isAlreadyLoggingOut = false
+
+// 自定义 JSON 解析器，解决大数字精度丢失问题
+const customParse = (text: string): any => {
+  // 在 JSON 解析前，使用正则表达式将所有大数字（雪花算法 ID）添加引号转为字符串
+  // 匹配模式："key":1234567890123456789  -> "key":"1234567890123456789"
+  const normalizedText = text.replace(/(:\s*)(\d{16,})/g, (match, prefix, numberStr) => {
+    // 如果数字超过 16 位（雪花算法 ID 通常 18-19 位），转为字符串
+    const num = Number(numberStr)
+    if (num > 9007199253740991) {
+      return `${prefix}"${numberStr}"`
+    }
+    return match
+  })
+  
+  return JSON.parse(normalizedText)
+}
 
 // 创建基础 axios 实例（无拦截器，用于 refreshToken）
 const baseService = axios.create({
   baseURL: constants.BASE_URL,
   timeout: constants.REQUEST_TIMEOUT,
   withCredentials: false,
+  transformResponse: [(text) => customParse(text)], // 使用自定义 JSON 解析
 })
 
 // 主 axios 实例（带拦截器）
@@ -29,6 +46,7 @@ const service = axios.create({
   baseURL: constants.BASE_URL,
   timeout: constants.REQUEST_TIMEOUT,
   withCredentials: false,
+  transformResponse: [(text) => customParse(text)], // 使用自定义 JSON 解析
 })
 
 //退出登录
@@ -99,6 +117,7 @@ service.interceptors.response.use(
 
     // 后端统一响应结构：{ code: number, message: string, data: T }
     const res = response.data
+    // 注意：大数字已经在 transformResponse 中转为字符串了
 
     //成功
     if (res.code === 200) {
@@ -108,12 +127,12 @@ service.interceptors.response.use(
     // 使用统一错误处理
     const error = new Error(res.message || '请求失败，请稍后重试！')
     ;(error as any).response = { data: res, status: res.code }
-    ErrorHandler.handleGlobalError(error)
+    handleHttpError(error as any)
     return Promise.reject(error)
   },
   (error: AxiosError) => {
     // 使用统一错误处理
-    ErrorHandler.handleGlobalError(error)
+    handleHttpError(error)
     return Promise.reject(error)
   },
 )

@@ -1,25 +1,24 @@
 <template>
   <div class="department-list">
-    <el-card>
-      <base-list
-        :get-list-api="departmentApi.getList"
-        :delete-api="departmentApi.delete"
-        :search-fields="searchFields"
-        :table-columns="tableColumns"
-        @add="handleAdd"
-        @edit="handleEdit"
-        @refresh="onRefreshList"
-        ref="listRef"
-      >
-        <template #operations="{ scope }">
-          <el-button @click="handleEdit(scope.row)" type="primary" size="small">编辑</el-button>
-          <el-button @click="confirmDel(scope.row.id)" type="danger" size="small">删除</el-button>
-        </template>
-        <template #dialogs>
-          <add-or-update @refresh-list="onRefreshList" ref="operateRef" />
-        </template>
-      </base-list>
-    </el-card>
+    <base-list
+      :get-list-api="departmentApi.getList"
+      :delete-api="departmentApi.delete"
+      :search-fields="searchFields"
+      :table-columns="tableColumns"
+      :show-operations="true"
+      @add="handleAdd"
+      @edit="handleEdit"
+      @refresh="onRefreshList"
+      ref="listRef"
+    >
+      <template #operations="{ scope }">
+        <el-button @click="handleEdit(scope.row)" type="primary" size="small">编辑</el-button>
+        <el-button @click="confirmDel(scope.row.id)" type="danger" size="small">删除</el-button>
+      </template>
+      <template #dialogs>
+        <add-or-update @refresh-list="onRefreshList" ref="operateRef" />
+      </template>
+    </base-list>
   </div>
 </template>
 
@@ -106,21 +105,4 @@ function onRefreshList() {
 </script>
 
 <style scoped>
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.text {
-  font-size: 14px;
-}
-
-.item {
-  margin-bottom: 18px;
-}
-
-.box-card {
-  width: 100%;
-}
 </style>

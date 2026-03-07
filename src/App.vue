@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores'
+import GlobalLoading from '@/components/common/GlobalLoading.vue'
 
 // 初始化认证状态
 const authStore = useAuthStore();
@@ -15,6 +16,7 @@ if (authStore.checkAuth()) {
 
 <template>
   <RouterView />
+  <GlobalLoading ref="globalLoading" />
 </template>
 
 <style scoped>

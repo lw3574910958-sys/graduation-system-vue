@@ -11,19 +11,51 @@ export const API_STATUS = {
   SERVER_ERROR: 500,
 } as const
 
-// 用户类型
-export const USER_TYPE = {
-  STUDENT: 'student',
-  TEACHER: 'teacher',
-  ADMIN: 'admin',
-} as const
+// 导入后端同步的枚举定义
+import {
+  USER_TYPE_ENUM,
+  SYSTEM_ROLE,
+  SYSTEM_ROLE_LABELS,
+  ACCOUNT_STATUS,
+  ACCOUNT_STATUS_LABELS,
+  TOPIC_STATUS,
+  TOPIC_STATUS_LABELS,
+  SELECTION_STATUS,
+  SELECTION_STATUS_LABELS,
+  DOCUMENT_FILE_TYPE,
+  DOCUMENT_FILE_TYPE_LABELS,
+  REVIEW_STATUS,
+  REVIEW_STATUS_LABELS,
+  GRADE_LEVEL,
+  GRADE_LEVEL_LABELS
+} from './enums'
 
-// 用户类型标签映射
+// 保持向后兼容的导出
+export const USER_TYPE = USER_TYPE_ENUM
 export const USER_TYPE_LABELS = {
   [USER_TYPE.STUDENT]: '学生',
   [USER_TYPE.TEACHER]: '教师',
   [USER_TYPE.ADMIN]: '管理员',
 } as const
+
+// 导出后端同步的枚举常量
+export {
+  USER_TYPE_ENUM,
+  ACCOUNT_STATUS,
+  ACCOUNT_STATUS_LABELS,
+  TOPIC_STATUS,
+  TOPIC_STATUS_LABELS,
+  SELECTION_STATUS,
+  SELECTION_STATUS_LABELS,
+  DOCUMENT_FILE_TYPE,
+  DOCUMENT_FILE_TYPE_LABELS,
+  REVIEW_STATUS,
+  REVIEW_STATUS_LABELS,
+  GRADE_LEVEL,
+  GRADE_LEVEL_LABELS,
+  SYSTEM_ROLE,
+  SYSTEM_ROLE_LABELS
+}
 
 // 通用消息
 export const MESSAGE = {
@@ -31,6 +63,10 @@ export const MESSAGE = {
   SELECT_DATA: '请至少选择一条数据',
   CONFIRM_DELETE: '确定要删除选中的数据吗？',
   DELETE_SUCCESS: '删除成功',
+  CREATE_SUCCESS: '创建成功',
+  UPDATE_SUCCESS: '更新成功',
+  CREATE_FAILED: '创建失败',
+  UPDATE_FAILED: '更新失败',
   OPERATION_FAILED: '操作失败',
   CANCEL_DELETE: '已取消删除',
   NETWORK_ERROR: '网络连接异常，请检查网络后重试',
@@ -77,16 +113,4 @@ export const USER_STATUS_LABELS = {
   [USER_STATUS.INACTIVE]: '禁用',
 } as const
 
-// 课题状态
-export const TOPIC_STATUS = {
-  OPEN: 0,
-  SELECTED: 1,
-  CLOSED: 2,
-} as const
 
-// 课题状态标签映射
-export const TOPIC_STATUS_LABELS = {
-  [TOPIC_STATUS.OPEN]: '开放',
-  [TOPIC_STATUS.SELECTED]: '已选',
-  [TOPIC_STATUS.CLOSED]: '关闭',
-} as const

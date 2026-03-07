@@ -11,46 +11,72 @@
       ref="listRef"
     >
       <template #operations="{ scope }">
-        <el-button @click="update(scope.row)" type="primary" size="small">编辑</el-button>
-        <el-button @click="confirmDel(scope.row.id)" type="danger" size="small">删除</el-button>
+        <el-button 
+          @click="previewDocument(scope.row)" 
+          type="primary" 
+          size="small"
+          v-permission="'student'"
+        >
+          预览
+        </el-button>
+        <el-button 
+          @click="downloadDocument(scope.row.id)" 
+          type="success" 
+          size="small"
+          v-permission="'student'"
+        >
+          下载
+        </el-button>
+        <el-button 
+          @click="handleReview(scope.row)" 
+          type="warning" 
+          size="small"
+          v-permission="'teacher'"
+          :disabled="!canReview(scope.row)"
+        >
+          审核
+        </el-button>
       </template>
+      
       <template #dialogs>
-        <add-or-update @refresh-list="getList" ref="operateRef" />
+        <document-review-form @success="handleReviewSuccess" ref="reviewFormRef" />
       </template>
     </base-list>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { documentApi } from '@/api/document'
 import AddOrUpdate from '@/views/document/AddOrUpdate.vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import DocumentReviewForm from '@/views/document/DocumentReviewForm.vue'
+import FilePreview from '@/components/common/FilePreview.vue'
+import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 // 导入用户类型常量和消息常量
 import { REVIEW_STATUS_LABELS, FILE_TYPE_LABELS, MESSAGE } from '@/constants/user'
+import type { DocumentResponse, DocumentReviewRequest } from '@/types/api/document'
 import BaseList from '@/components/common/BaseList.vue'
 
-// 文档数据结构
-type DocumentRow = {
-  id: number | string
-  userId: number
-  topicId: number
-  fileType: number
-  originalFilename: string
-  storedPath: string
-  fileSize: number
-  reviewStatus: number
-  reviewedAt?: string | Date
-  reviewerId?: number
-  feedback?: string
-  uploadedAt?: string | Date
-  createdAt?: string | Date
-  updatedAt?: string | Date
-}
+// 使用统一的类型定义
+type DocumentRow = DocumentResponse
 
 // 定义操作组件引用--新增/编辑
 const operateRef = ref()
 const listRef = ref()
+
+// 审核对话框相关
+const reviewDialogVisible = ref(false)
+const currentDocumentId = ref<number | null>(null)
+
+// 预览对话框相关
+const previewDialogVisible = ref(false)
+const currentFileInfo = ref<any>({})
+
+// 组件引用
+const reviewFormRef = ref()
+
+// 对话框可见性
+const reviewVisible = ref(false)
 
 // 搜索字段配置
 const searchFields = [
@@ -60,9 +86,11 @@ const searchFields = [
     component: 'el-select',
     props: { placeholder: '请选择文件类型' },
     options: [
-      { label: '开题报告', value: '0' },
-      { label: '中期报告', value: '1' },
-      { label: '毕业论文', value: '2' },
+      { label: '开题报告', value: 0 },
+      { label: '中期报告', value: 1 },
+      { label: '毕业论文', value: 2 },
+      { label: '外文翻译', value: 3 },
+      { label: '其他文档', value: 4 },
     ],
   },
   {
@@ -80,6 +108,7 @@ const searchFields = [
 
 // 表格列配置
 const tableColumns = [
+  { prop: 'id', label: 'ID', headerAlign: 'center', align: 'center' },
   { prop: 'originalFilename', label: '原始文件名', headerAlign: 'center', align: 'center' },
   {
     prop: 'fileType',
@@ -88,9 +117,9 @@ const tableColumns = [
     align: 'center',
     render: (row: DocumentRow) => getFileTypeLabel(row.fileType),
   },
-  { prop: 'fileSize', label: '文件大小', headerAlign: 'center', align: 'center' },
-  { prop: 'userId', label: '上传人ID', headerAlign: 'center', align: 'center' },
-  { prop: 'topicId', label: '课题ID', headerAlign: 'center', align: 'center' },
+  { prop: 'fileSizeDisplay', label: '文件大小', headerAlign: 'center', align: 'center' },
+  { prop: 'userName', label: '上传人', headerAlign: 'center', align: 'center' },
+  { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center' },
   {
     prop: 'reviewStatus',
     label: '审核状态',
@@ -127,9 +156,7 @@ function confirmDel(id?: any) {
  * 使用常量映射，便于维护和国际化
  */
 function getFileTypeLabel(fileType: number) {
-  // 将数字转换为字符串并查找对应的标签
-  const fileTypeString = fileType.toString()
-  return FILE_TYPE_LABELS[fileTypeString as unknown as keyof typeof FILE_TYPE_LABELS] || '未知'
+  return FILE_TYPE_LABELS[fileType as keyof typeof FILE_TYPE_LABELS] || '未知'
 }
 
 /**
@@ -137,13 +164,98 @@ function getFileTypeLabel(fileType: number) {
  * 使用常量映射，便于维护和国际化
  */
 function getReviewStatusLabel(reviewStatus: number) {
-  // 将数字转换为字符串并查找对应的标签
-  const statusString = reviewStatus.toString()
-  return REVIEW_STATUS_LABELS[statusString as unknown as keyof typeof REVIEW_STATUS_LABELS] || '未知'
+  return REVIEW_STATUS_LABELS[reviewStatus as keyof typeof REVIEW_STATUS_LABELS] || '未知'
 }
 
 // 用于刷新列表的方法
 function getList() {
   listRef.value?.getList && listRef.value.getList()
+}
+
+/**
+ * 预览文档
+ */
+function previewDocument(row: DocumentRow) {
+  currentFileInfo.value = {
+    id: row.id,
+    filename: row.originalFilename,
+    fileExtension: row.fileExtension
+  }
+  previewDialogVisible.value = true
+}
+
+/**
+ * 下载文档
+ */
+async function downloadDocument(id: number) {
+  try {
+    // 显示加载状态
+    const loadingInstance = ElLoading.service({
+      text: '正在下载文档...',
+      background: 'rgba(0, 0, 0, 0.7)'
+    })
+    
+    // 调用后端下载接口
+    const token = localStorage.getItem('user_token')
+    const response = await fetch(`/api/documents/${id}/download`, {
+      method: 'GET',
+      headers: {
+        'Authorization': token ? `Bearer ${token.replace(/^Bearer\s*/i, '').trim()}` : ''
+      }
+    })
+    
+    if (!response.ok) {
+      throw new Error(`下载失败: ${response.status} ${response.statusText}`)
+    }
+    
+    // 获取文件名
+    const contentDisposition = response.headers.get('content-disposition')
+    let filename = 'document.pdf'
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
+      if (filenameMatch && filenameMatch[1]) {
+        filename = decodeURIComponent(filenameMatch[1].replace(/['"]/g, ''))
+      }
+    }
+    
+    // 获取文件内容
+    const blob = await response.blob()
+    
+    // 创建下载链接
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.style.display = 'none'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    
+    loadingInstance.close()
+    ElMessage.success('文档下载成功')
+  } catch (error) {
+    console.error('下载失败:', error)
+    ElMessage.error('文档下载失败')
+  }
+}
+
+/**
+ * 处理文档审核
+ */
+function handleReview(row: DocumentRow) {
+  reviewFormRef.value?.show(row)
+}
+
+/**
+ * 审核成功回调
+ */
+function handleReviewSuccess() {
+  getList()
+}
+
+// 判断是否可以审核文档
+function canReview(row: DocumentRow): boolean {
+  return row.reviewStatus === 0 // 只有待审核的文档可以审核
 }
 </script>

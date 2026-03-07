@@ -13,8 +13,13 @@ export const topicApi = {
   create: (param: TopicCreateRequest) => {
     return topicApi.createTopic(param)
   },
-  update: (id: number | string, param: TopicUpdateRequest) => {
-    return topicApi.updateTopic(Number(id), param)
+  update: (id: number | string, param: Omit<TopicUpdateRequest, 'id'>) => {
+    // 注意：后端的update方法需要完整的TopicUpdateRequest，包括id
+    const updateParam: TopicUpdateRequest = {
+      id: Number(id),
+      ...param
+    } as TopicUpdateRequest
+    return topicApi.updateTopic(Number(id), updateParam)
   },
   delete: (id: number | string) => {
     return topicApi.deleteTopic(id)

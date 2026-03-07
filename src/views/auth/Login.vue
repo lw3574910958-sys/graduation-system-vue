@@ -2,7 +2,7 @@
   <div class="login-container">
     <div class="login-content">
       <div class="login-header">
-        <img :src="logoUrl" alt="logo" class="login-logo" />
+        <img :src="logoImageUrl" alt="logo" class="login-logo" />
 
         <div class="login-title">高校毕业设计管理系统</div>
       </div>
@@ -75,7 +75,7 @@ import { useAuth } from '@/composables/useAuth'
 import { useAuthStore } from '@/stores'
 import { MESSAGE, USER_TYPE } from '@/constants'
 import type { FormInstance, FormRules } from 'element-plus'
-import logoUrl from '@/assets/login/logo.png'
+import logoUrl from '@/assets/login/logo.png?url'
 
 interface LoginForm {
   username: string
@@ -90,6 +90,9 @@ const authStore = useAuthStore()
 const formRef = ref<FormInstance>()
 
 const { loading, captchaImage, captchaKey, getCaptcha, login } = useAuth()
+
+// Logo URL作为响应式变量
+const logoImageUrl = logoUrl
 
 const loginForm = reactive<LoginForm>({
   username: '',

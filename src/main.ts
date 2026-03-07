@@ -14,6 +14,7 @@ import App from './App.vue'
 
 import { permission } from '@/directives/permission'
 import { setupGlobalErrorHandler } from '@/utils/errorHandler'
+import { webSocketService } from '@/utils/webSocketService'
 
 const app = createApp(App)
 
@@ -29,5 +30,8 @@ app.directive('permission', permission)
 
 // 设置全局错误处理
 setupGlobalErrorHandler()
+
+// 初始化WebSocket服务
+webSocketService.connect()
 
 app.mount('#app')

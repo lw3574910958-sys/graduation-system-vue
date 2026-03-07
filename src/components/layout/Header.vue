@@ -2,7 +2,7 @@
   <div class="header">
     <div class="header-menu">
       <div class="header-logo">
-        <img :src="logoUrl" />
+        <img :src="logoImageUrl" />
         <div class="header-title">高校毕业设计管理系统</div>
       </div>
       <div class="header-rinfo">
@@ -22,12 +22,15 @@ import { useAuthStore } from '@/stores'
 import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
-import logoUrl from '@/assets/login/logo.png'
+import logoUrl from '@/assets/login/logo.png?url'
 
 const authStore = useAuthStore()
 const { userInfo } = storeToRefs(authStore)
 
 const router = useRouter()
+
+// Logo URL作为响应式变量
+const logoImageUrl = logoUrl
 
 async function loginOut() {
   try {

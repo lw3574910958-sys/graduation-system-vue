@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores'
 import { USER_TYPE } from '@/constants'
+import { webSocketService } from '@/utils/webSocketService'
 import authRoutes from './modules/auth'
 import userRoutes from './modules/user'
 import departmentRoutes from './modules/department'
@@ -83,6 +84,17 @@ const router = createRouter({
  */
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+
+  // 管理WebSocket连接
+  if (authStore.checkAuth()) {
+    // 已登录且WebSocket未连接时，尝试连接
+    if (!webSocketService.isConnectedStatus()) {
+      webSocketService.connect()
+    }
+  } else {
+    // 未登录时断开WebSocket连接
+    webSocketService.disconnect()
+  }
 
   if (to.meta.requiresAuth) {
     if (authStore.checkAuth()) {

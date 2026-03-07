@@ -65,37 +65,48 @@ const formFields = [
     label: '密码',
     component: 'el-input',
     props: { type: 'password', style: { width: '50%' }, placeholder: '至少包含字母和数字，长度≥6位', showPassword: true },
-  },
-  {
-    prop: 'phone',
-    label: '手机号',
-    component: 'el-input',
-    props: { style: { width: '50%' }, placeholder: '请输入手机号码' },
-  },
-  {
-    prop: 'email',
-    label: '邮箱',
-    component: 'el-input',
-    props: { style: { width: '50%' }, placeholder: '请输入邮箱地址' },
+    // 编辑时可选（不传则不修改密码）
+    optional: true,
   },
   {
     prop: 'avatar',
     label: '头像',
-    component: 'el-input', // 实际上应该用文件上传组件，这里简化处理
-    props: { style: { width: '50%' }, placeholder: '头像URL或存储路径' },
+    component: 'FileUpload', // 使用文件上传组件
+    props: { 
+      isAvatarUpload: true, // 标记为头像上传
+      accept: 'image/*', // 只允许图片格式
+      listType: 'picture-card', // 图片卡片样式
+      maxUploadSize: 1, // 最多上传 1 张图片
+      maxSize: 2, // 最大 2MB
+      autoUpload: false, // 禁用自动上传，在表单提交时统一处理
+    },
   }
 ]
 
 // 表单初始值
-const formDefault = {
+interface FormDataType {
+  id?: string
+  username?: string
+  password?: string
+  realName?: string
+  userType?: string
+  email?: string
+  phone?: string
+  departmentId?: number
+  status?: number
+  avatar?: string
+}
+
+const formDefault: FormDataType = {
   id: undefined,
   username: undefined,
   password: undefined,
   realName: undefined,
   userType: undefined,
-  status: 1,
-  phone: undefined,
   email: undefined,
+  phone: undefined,
+  departmentId: undefined,
+  status: 1,
   avatar: undefined,
 }
 
@@ -124,12 +135,6 @@ const formRules = {
       required: true,
       message: '请输入真实姓名',
       trigger: 'blur',
-    },
-    {
-      min: 2,
-      max: 20,
-      message: '姓名长度应在2-20个字符之间',
-      trigger: 'blur',
     }
   ],
   userType: [
@@ -157,10 +162,13 @@ const formRules = {
         // 只在创建用户时验证密码
         const formData = baseRef.value?.formData || {}
         if (!formData.id && !value) {
+          // 创建用户时必填
           callback(new Error('请输入密码'));
         } else if (value && (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/.test(value))) {
+          // 编辑时如果填写了密码，则验证格式
           callback(new Error('密码必须至少包含一个字母和一个数字，长度至少为6位'));
         } else {
+          // 编辑时不填密码也可以
           callback();
         }
       },
@@ -173,29 +181,32 @@ const formRules = {
       message: '请选择状态',
       trigger: 'blur',
     },
-  ],
-  phone: [
-    {
-      pattern: /^1[3-9]\d{9}$/,
-      message: '请输入正确的手机号码',
-      trigger: 'blur',
-    }
-  ],
-  email: [
-    {
-      pattern: /^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/, 
-      message: '请输入正确的邮箱地址',
-      trigger: 'blur',
-    }
   ]
 }
 
-// 包装API方法以适配类型
-const createUser = (data: any) => userApi.createUser(data)
-const updateUser = (id: string | number, data: any) => {
-  // 转换ID为数字类型，以匹配API期望的类型
-  const numericId = typeof id === 'string' ? parseInt(id, 10) : id
-  return userApi.updateUser(numericId, data)
+import type { UserCreateRequest, UserUpdateRequest } from '@/types/api/user'
+
+const createUser = (data: FormDataType) => {
+  const requestData: UserCreateRequest = {
+    username: data.username!,
+    realName: data.realName!,
+    userType: data.userType!,
+    password: data.password!,
+    status: data.status,
+    avatar: data.avatar
+  }
+  return userApi.createUser(requestData)
+}
+const updateUser = (id: string, data: Partial<UserUpdateRequest>) => {
+  // 构建更新数据，如果密码为空则不传递
+  const updateData: Partial<UserUpdateRequest> = {}
+  if (data.realName) updateData.realName = data.realName
+  if (data.userType) updateData.userType = data.userType
+  if (data.password) updateData.password = data.password  // 只有填写了密码才传递
+  if (data.status !== undefined) updateData.status = data.status
+  if (data.avatar !== undefined) updateData.avatar = data.avatar
+  
+  return userApi.updateUser(id, updateData)
 }
 
 // 暴露方法给父组件调用
