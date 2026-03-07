@@ -178,9 +178,14 @@ const emit = defineEmits(['update:value'])
 const fileList = ref<any[]>([])
 const previewVisible = ref(false)
 const previewUrl = ref('')
+const isInitialized = ref(false) // ✅ 标志：是否已初始化
 
 // ✅ 新增：监听 value 属性变化，用于编辑时初始化文件列表
+// 只在组件首次加载时执行一次，避免上传成功后重复触发
 watch(() => props.value, (newValue) => {
+  // 如果已经初始化过，不再执行（避免上传成功后 watch 再次触发）
+  if (isInitialized.value) return
+  
   if (newValue && typeof newValue === 'string') {
     // 将数据库存储的路径字符串转换为文件列表
     fileList.value = newValue
@@ -200,6 +205,9 @@ watch(() => props.value, (newValue) => {
     // 如果 value 为空，清空文件列表
     fileList.value = []
   }
+  
+  // 标记已初始化
+  isInitialized.value = true
 }, { immediate: true })
 
 // 是否达到最大上传限制
