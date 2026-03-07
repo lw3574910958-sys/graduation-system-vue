@@ -178,37 +178,22 @@ const emit = defineEmits(['update:value'])
 const fileList = ref<any[]>([])
 const previewVisible = ref(false)
 const previewUrl = ref('')
-const isInitialized = ref(false) // ✅ 标志：是否已初始化
 
-// ✅ 新增：监听 value 属性变化，用于编辑时初始化文件列表
-// 只在组件首次加载时执行一次，避免上传成功后重复触发
-watch(() => props.value, (newValue) => {
-  // 如果已经初始化过，不再执行（避免上传成功后 watch 再次触发）
-  if (isInitialized.value) return
-  
-  if (newValue && typeof newValue === 'string') {
-    // 将数据库存储的路径字符串转换为文件列表
-    fileList.value = newValue
-      .split(',')
-      .map((item) => item.trim())
-      .filter((item) => item)
-      .map((item) => ({
-        name: item.substring(item.lastIndexOf('/') + 1), // 从路径中提取文件名
-        url: item.startsWith('/files') 
-          ? `${import.meta.env.VITE_API_BASE_URL}${item}`
-          : item.startsWith('/')
-            ? `${import.meta.env.VITE_API_BASE_URL}/files${item}`
-            : `${import.meta.env.VITE_API_BASE_URL}/files/${item}`,
-        status: 'success' as const,
+// ✅ 借鉴 my-admin：监听 defaultFileList 而不是 value
+// 这样可以避免上传成功后 updateValue() 触发 watch 导致重复
+watch(
+  () => props.defaultFileList,
+  (newVal) => {
+    if (Array.isArray(newVal)) {
+      fileList.value = newVal.map((item: any) => ({
+        name: item.name || '',
+        url: item.url || item,
+        status: item.status || 'success',
       }))
-  } else if (!newValue) {
-    // 如果 value 为空，清空文件列表
-    fileList.value = []
-  }
-  
-  // 标记已初始化
-  isInitialized.value = true
-}, { immediate: true })
+    }
+  },
+  { immediate: true },
+)
 
 // 是否达到最大上传限制
 const maxLimit = computed(() => {

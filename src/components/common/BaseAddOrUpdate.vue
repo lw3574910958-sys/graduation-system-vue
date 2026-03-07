@@ -17,6 +17,7 @@
             :ref="`fileUpload_${index}`"
             v-model:value="formData[field.prop]"
             v-bind="field.props || {}"
+            :default-file-list="getFileList(field.prop)"
             :components="dynamicComponents"
           />
         </template>
@@ -62,6 +63,7 @@ import { ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import FileUpload from '@/components/common/FileUpload.vue'
 import { MESSAGE } from '@/constants/user'
+import { urls2FileList } from '@/utils/utils'
 
 // 表单项类型定义
 interface FormField {
@@ -123,6 +125,15 @@ const isUploading = computed(() => {
   return false
 })
 
+// ✅ 借鉴 my-admin：获取文件列表用于传递给 FileUpload 组件
+const getFileList = (prop: string) => {
+  const fieldValue = formData.value[prop as keyof T]
+  if (fieldValue && typeof fieldValue === 'string') {
+    return urls2FileList(fieldValue)
+  }
+  return []
+}
+
 // 显示对话框
 function showModel(row?: Partial<T>) {
   console.log('🔍 showModel 接收到的 row:', row)
@@ -159,7 +170,7 @@ async function onSubmit() {
           }
         })
 
-        // 上传所有文件
+        // 上传所有文件（只上传未上传的文件）
         for (const fileUpload of fileUploadFields) {
           const uploadComponent = fileUpload.ref
           const files = uploadComponent.getValidFiles()
@@ -167,19 +178,26 @@ async function onSubmit() {
           // 如果有未上传的文件，执行上传
           if (files && files.length > 0) {
             for (const file of files) {
+              // 只有当文件没有 URL 或者 URL 是 blob 开头时才需要上传
               if (!file.url || file.url.startsWith('blob:')) {
-                // 手动触发上传
-                await uploadComponent.handleUpload({
-                  file: file.raw,
-                  onError: () => {
-                    throw new Error('文件上传失败')
-                  },
-                  onSuccess: (response: any) => {
-                    if (response && response.data) {
-                      file.url = response.data.url || response.data.name
+                try {
+                  // 手动触发上传
+                  await uploadComponent.handleUpload({
+                    file: file.raw,
+                    onError: (error: any) => {
+                      throw new Error('文件上传失败：' + (error?.message || '未知错误'))
+                    },
+                    onSuccess: (response: any) => {
+                      if (response && response.data) {
+                        // 更新文件 URL
+                        file.url = response.data.url || response.data.name
+                      }
                     }
-                  }
-                })
+                  })
+                } catch (uploadError: any) {
+                  console.error('文件上传失败:', uploadError)
+                  throw new Error(`文件 ${file.name} 上传失败：${uploadError.message}`)
+                }
               }
             }
           }
@@ -212,7 +230,7 @@ async function onSubmit() {
         emit('refreshList')
       } catch (e: any) {
         console.error('提交表单失败:', e)
-        ElMessage.error(MESSAGE.SUBMIT_FAILED)
+        ElMessage.error(e?.message || MESSAGE.SUBMIT_FAILED)
       } finally {
         btnLoading.value = false
       }
