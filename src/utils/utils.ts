@@ -46,6 +46,12 @@ export const urls2FileList = (url: string | null | undefined): FileItem[] => {
     .filter((item) => item)
     .map((item) => ({
       name: item,
-      url: item.startsWith('/') ? normalizePath(constants.BASE_URL, item) : item,
+      // 如果路径不以 / 开头，添加 /files 前缀（因为数据库存储的是相对路径如 avatar/xxx.jpg）
+      // 如果路径以 / 但不以 /files 开头，也添加 /files 前缀
+      url: item.startsWith('/files') 
+        ? normalizePath(constants.BASE_URL, item)
+        : item.startsWith('/')
+          ? normalizePath(constants.BASE_URL, '/files' + item)
+          : normalizePath(constants.BASE_URL, '/files/' + item),
     }))
 }
