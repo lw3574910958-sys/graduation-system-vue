@@ -46,12 +46,13 @@ export const urls2FileList = (url: string | null | undefined): FileItem[] => {
     .filter((item) => item)
     .map((item) => ({
       name: item,
-      // 如果路径不以 / 开头，添加 /files 前缀（因为数据库存储的是相对路径如 avatar/xxx.jpg）
-      // 如果路径以 / 但不以 /files 开头，也添加 /files 前缀
-      url: item.startsWith('/files') 
-        ? normalizePath(constants.BASE_URL, item)
-        : item.startsWith('/')
-          ? normalizePath(constants.BASE_URL, '/files' + item)
-          : normalizePath(constants.BASE_URL, '/files/' + item),
+      // ✅ 修复：如果已经是完整 URL，直接使用，不再拼接
+      url: item.startsWith('http')
+        ? item  // 已经是完整 URL，直接使用
+        : item.startsWith('/files') 
+          ? normalizePath(constants.BASE_URL, item)  // 有 /files 前缀
+          : item.startsWith('/')
+            ? normalizePath(constants.BASE_URL, '/files' + item)  // 有 / 但没有 /files
+            : normalizePath(constants.BASE_URL, '/files/' + item),  // 没有 /
     }))
 }
