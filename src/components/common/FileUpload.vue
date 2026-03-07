@@ -179,6 +179,29 @@ const fileList = ref<any[]>([])
 const previewVisible = ref(false)
 const previewUrl = ref('')
 
+// ✅ 新增：监听 value 属性变化，用于编辑时初始化文件列表
+watch(() => props.value, (newValue) => {
+  if (newValue && typeof newValue === 'string') {
+    // 将数据库存储的路径字符串转换为文件列表
+    fileList.value = newValue
+      .split(',')
+      .map((item) => item.trim())
+      .filter((item) => item)
+      .map((item) => ({
+        name: item.substring(item.lastIndexOf('/') + 1), // 从路径中提取文件名
+        url: item.startsWith('/files') 
+          ? `${import.meta.env.VITE_API_BASE_URL}${item}`
+          : item.startsWith('/')
+            ? `${import.meta.env.VITE_API_BASE_URL}/files${item}`
+            : `${import.meta.env.VITE_API_BASE_URL}/files/${item}`,
+        status: 'success' as const,
+      }))
+  } else if (!newValue) {
+    // 如果 value 为空，清空文件列表
+    fileList.value = []
+  }
+}, { immediate: true })
+
 // 是否达到最大上传限制
 const maxLimit = computed(() => {
   return fileList.value.length >= props.maxUploadSize
