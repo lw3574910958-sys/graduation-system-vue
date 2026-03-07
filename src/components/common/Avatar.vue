@@ -59,19 +59,22 @@ const avatarUrl = computed(() => {
     return ''
   }
   
-  // 如果是相对路径，添加基础 URL 前缀
-  if (props.avatar.startsWith('/')) {
-    return `${import.meta.env.VITE_API_BASE_URL}${props.avatar}`
-  }
-  
-  // 如果是完整 URL，直接返回
+  // 如果已经是完整 URL，直接返回
   if (props.avatar.startsWith('http')) {
     return props.avatar
   }
   
-  // 其他情况，假设为相对路径
+  // 如果是相对路径，需要添加 /files 前缀和基础 URL
+  // 数据库存储的是：avatar/用户 ID/时间戳.jpg
+  // 需要转换为：/files/avatar/用户 ID/时间戳.jpg
+  const pathWithPrefix = props.avatar.startsWith('/files')
+    ? props.avatar  // 已经有 /files 前缀
+    : props.avatar.startsWith('/')
+      ? '/files' + props.avatar  // 有 / 但没有 /files
+      : '/files/' + props.avatar  // 没有 /，添加 /files/
+  
   hasAvatar.value = true
-  return `${import.meta.env.VITE_API_BASE_URL}/${props.avatar}`
+  return `${import.meta.env.VITE_API_BASE_URL}${pathWithPrefix}`
 })
 
 // 计算是否显示默认头像
