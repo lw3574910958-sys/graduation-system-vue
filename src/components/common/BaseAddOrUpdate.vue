@@ -172,9 +172,11 @@ async function onSubmit() {
 
         // 上传所有文件（只上传未上传的文件）
         for (const fileUpload of fileUploadFields) {
+          // ✅ 关键：上传成功后，确保 formData 中的对应字段被更新
+          // 这样在提交时才能传递最新的文件路径
           const uploadComponent = fileUpload.ref
           const files = uploadComponent.getValidFiles()
-          
+                  
           // 如果有未上传的文件，执行上传
           if (files && files.length > 0) {
             for (const file of files) {
@@ -189,8 +191,11 @@ async function onSubmit() {
                     },
                     onSuccess: (response: any) => {
                       if (response && response.data) {
-                        // 更新文件 URL
+                        // 更新文件 URL（相对路径）
                         file.url = response.data.url || response.data.name
+                        // ✅ 关键：同时更新 formData 中对应的字段
+                        formData.value[fileUpload.prop] = response.data.storedPath || response.data.url || response.data.name
+                        console.log('✅ 文件上传成功，已更新 formData.' + fileUpload.prop + ':', formData.value[fileUpload.prop])
                       }
                     }
                   })
