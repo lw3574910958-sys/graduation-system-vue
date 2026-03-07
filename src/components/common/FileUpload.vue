@@ -260,13 +260,16 @@ const handleUpload = async (options: { file: any; onError: Function; onSuccess: 
       // 在 fileList 中找到 uid 相同的文件项
       const existingFile = fileList.value.find((item) => item.uid === file.uid)
       if (existingFile) {
-        // 使用响应数据中的存储路径（相对路径）更新文件
-        const fileUrl = response.data.storedPath || response.data.url || response.data.name
+        // ✅ 关键修复：使用完整 URL 用于前端显示
+        // 优先使用后端返回的 url（完整 URL），如果没有则使用 storedPath 并转换为完整 URL
+        const fileUrl = response.data.url 
+          ? response.data.url  // 后端返回的完整 URL
+          : getFileUrl(response.data.storedPath || response.data.name)  // 转换为完整 URL
         existingFile.url = fileUrl
         existingFile.status = 'success'
         existingFile.response = response // 保存完整响应以便后续使用
       }
-      updateValue() // 触发父组件更新
+      updateValue() // 触发父组件更新（会提取相对路径）
       onSuccess(response)
       ElMessage.success(MESSAGE.UPLOAD_SUCCESS)
     } else {
