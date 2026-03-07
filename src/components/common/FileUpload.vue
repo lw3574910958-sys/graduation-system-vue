@@ -38,6 +38,7 @@ import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
 import { commonApi } from '@/api/common'
 import { getFileUrl } from '@/utils/utils'
 import { MESSAGE } from '@/constants/user'
+import constants from '@/utils/constants'
 
 const props = defineProps({
   value: String,
@@ -163,14 +164,30 @@ const handleRemove = (file: any, fileListParam: any[]) => {
   updateValue()
 }
 
-// 更新值方法
+// 更新值方法 - 只返回相对路径给父组件
 const updateValue = () => {
-  // 获取所有有效文件的URL
-  const validUrls = fileList.value
-    .filter((file) => file.url && !file.url.startsWith('blob:'))
-    .map((file) => file.url)
+  // 获取所有有效文件的 URL
+  const validFiles = fileList.value.filter((file) => file.url && !file.url.startsWith('blob:'))
+  
+  // 提取相对路径（去掉 BASE_URL 和 /files 前缀）
+  const relativePaths = validFiles.map((file) => {
+    let url = file.url
+    // 如果是完整 URL，需要提取相对路径
+    if (url.startsWith(constants.BASE_URL)) {
+      // 去掉 BASE_URL
+      url = url.replace(constants.BASE_URL, '')
+      // 去掉 /files 前缀
+      if (url.startsWith('/files/')) {
+        url = url.substring(7) // '/files/'.length = 7
+      } else if (url.startsWith('/files')) {
+        url = url.substring(6) // '/files'.length = 6
+      }
+    }
+    return url
+  })
+  
   // 如果没有有效文件，返回空字符串
-  const urls = validUrls.length > 0 ? validUrls.join(',') : ''
+  const urls = relativePaths.length > 0 ? relativePaths.join(',') : ''
   emit('update:value', urls)
 }
 const emit = defineEmits(['update:value'])
@@ -243,9 +260,8 @@ const handleUpload = async (options: { file: any; onError: Function; onSuccess: 
       // 在 fileList 中找到 uid 相同的文件项
       const existingFile = fileList.value.find((item) => item.uid === file.uid)
       if (existingFile) {
-        // ✅ 关键修复：使用响应数据中的完整 URL，而不是相对路径
-        // 这样 updateValue() emit 的也是完整 URL，避免 urls2FileList 重复拼接
-        const fileUrl = response.data.url || response.data.storedPath || response.data.name
+        // 使用响应数据中的存储路径（相对路径）更新文件
+        const fileUrl = response.data.storedPath || response.data.url || response.data.name
         existingFile.url = fileUrl
         existingFile.status = 'success'
         existingFile.response = response // 保存完整响应以便后续使用
