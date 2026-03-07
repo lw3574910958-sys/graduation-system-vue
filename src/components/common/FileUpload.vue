@@ -243,8 +243,9 @@ const handleUpload = async (options: { file: any; onError: Function; onSuccess: 
       // 在 fileList 中找到 uid 相同的文件项
       const existingFile = fileList.value.find((item) => item.uid === file.uid)
       if (existingFile) {
-        // 使用响应数据中的存储路径（相对路径）更新文件，避免使用完整 URL
-        const fileUrl = response.data.storedPath || response.data.url || response.data.name
+        // ✅ 关键修复：使用响应数据中的完整 URL，而不是相对路径
+        // 这样 updateValue() emit 的也是完整 URL，避免 urls2FileList 重复拼接
+        const fileUrl = response.data.url || response.data.storedPath || response.data.name
         existingFile.url = fileUrl
         existingFile.status = 'success'
         existingFile.response = response // 保存完整响应以便后续使用
