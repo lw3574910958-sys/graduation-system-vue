@@ -260,11 +260,15 @@ const handleUpload = async (options: { file: any; onError: Function; onSuccess: 
       // 在 fileList 中找到 uid 相同的文件项
       const existingFile = fileList.value.find((item) => item.uid === file.uid)
       if (existingFile) {
-        // ✅ 关键修复：使用完整 URL 用于前端显示
+        // ✅ 与编辑保持一致：使用完整 URL 用于前端显示
         // 优先使用后端返回的 url（完整 URL），如果没有则使用 storedPath 并转换为完整 URL
-        const fileUrl = response.data.url 
-          ? response.data.url  // 后端返回的完整 URL
-          : getFileUrl(response.data.storedPath || response.data.name)  // 转换为完整 URL
+        let fileUrl: string
+        if (response.data.url) {
+          fileUrl = response.data.url  // 后端返回的完整 URL
+        } else {
+          // 使用 storedPath 或 name，并转换为完整 URL
+          fileUrl = getFileUrl(response.data.storedPath || response.data.name)
+        }
         existingFile.url = fileUrl
         existingFile.status = 'success'
         existingFile.response = response // 保存完整响应以便后续使用
