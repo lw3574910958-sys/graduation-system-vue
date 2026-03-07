@@ -78,7 +78,7 @@ const formFields = [
       listType: 'picture-card', // 图片卡片样式
       maxUploadSize: 1, // 最多上传 1 张图片
       maxSize: 2, // 最大 2MB
-      autoUpload: false, // 禁用自动上传，在表单提交时统一处理
+      autoUpload: true, // ✅ 启用自动上传，选择图片后立即调用后端接口
     },
   }
 ]

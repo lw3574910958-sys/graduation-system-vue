@@ -151,8 +151,20 @@ const beforeUpload = (file: File) => {
 
 // 处理文件变化
 const handleChange = (file: any, fileListParam: any[]) => {
-  // Element Plus的el-upload组件管理文件列表，直接使用其提供的列表
-  fileList.value = fileListParam
+  // Element Plus 的 el-upload 组件管理文件列表，直接使用其提供的列表
+  // ✅ 关键：使用 splice 更新而不是直接赋值，保持响应式引用
+  // ✅ 修复：保留已上传成功文件的 url，避免被 blob 覆盖
+  const uploadedFiles = fileList.value.filter((item) => item.response && item.response.code === 200)
+  
+  // 过滤掉未上传的文件（这些会在 fileListParam 中）
+  const newFiles = fileListParam.filter((paramFile) => 
+    !paramFile.response || paramFile.response.code !== 200
+  )
+  
+  // 合并已上传文件和新文件
+  const allFiles = [...uploadedFiles, ...newFiles]
+  fileList.value.splice(0, fileList.value.length, ...allFiles)
+  
   // 在文件状态变化时也更新值
   updateValue()
 }
@@ -160,7 +172,8 @@ const handleChange = (file: any, fileListParam: any[]) => {
 // 处理文件移除
 const handleRemove = (file: any, fileListParam: any[]) => {
   // 使用组件更新后的文件列表
-  fileList.value = fileListParam
+  // ✅ 同样使用 splice 更新而不是直接替换
+  fileList.value.splice(0, fileList.value.length, ...fileListParam)
   updateValue()
 }
 
@@ -186,8 +199,14 @@ const updateValue = () => {
     return url
   })
   
-  // 如果没有有效文件，返回空字符串
-  const urls = relativePaths.length > 0 ? relativePaths.join(',') : ''
+  // ✅ 关键修复：根据场景返回合适的值
+  // 1. 有有效文件：返回文件路径（多个文件用逗号分隔）
+  // 2. 没有文件但有原值（编辑场景）：保留原值
+  // 3. 没有文件且没有原值（新增场景）：返回空字符串
+  const urls = relativePaths.length > 0 
+    ? relativePaths.join(',') 
+    : (props.value ? props.value : '')
+  
   emit('update:value', urls)
 }
 const emit = defineEmits(['update:value'])
@@ -257,23 +276,29 @@ const handleUpload = async (options: { file: any; onError: Function; onSuccess: 
     loadingInstance.close()
 
     if (response && response.code === 200 && response.data) {
-      // 在 fileList 中找到 uid 相同的文件项
-      const existingFile = fileList.value.find((item) => item.uid === file.uid)
-      if (existingFile) {
-        // ✅ 与编辑保持一致：使用完整 URL 用于前端显示
-        // 优先使用后端返回的 url（完整 URL），如果没有则使用 storedPath 并转换为完整 URL
-        let fileUrl: string
-        if (response.data.url) {
-          fileUrl = response.data.url  // 后端返回的完整 URL
-        } else {
-          // 使用 storedPath 或 name，并转换为完整 URL
-          fileUrl = getFileUrl(response.data.storedPath || response.data.name)
+      // ✅ 关键修复：确保 fileList 中有这个文件
+      let existingFile = fileList.value.find((item) => item.uid === file.uid)
+      
+      // 如果找不到（可能是因为 el-upload 还没更新 fileList），创建新文件项
+      if (!existingFile) {
+        existingFile = {
+          uid: file.uid,
+          name: file.name || 'avatar',
+          status: 'success',
         }
-        existingFile.url = fileUrl
-        existingFile.status = 'success'
-        existingFile.response = response // 保存完整响应以便后续使用
+        // 添加到 fileList
+        fileList.value.push(existingFile)
       }
-      updateValue() // 触发父组件更新（会提取相对路径）
+      
+      // 使用响应数据中的存储路径（相对路径）更新文件
+      const fileUrl = response.data.url || response.data.storedPath || response.data.name
+      existingFile.url = fileUrl
+      existingFile.status = 'success'
+      existingFile.response = response // 保存完整响应以便后续使用
+      
+      // ✅ 关键：立即触发 updateValue，确保父组件 formData 更新
+      updateValue()
+      
       onSuccess(response)
       ElMessage.success(MESSAGE.UPLOAD_SUCCESS)
     } else {

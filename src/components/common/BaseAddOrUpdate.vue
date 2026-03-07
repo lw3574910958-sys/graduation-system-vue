@@ -159,54 +159,10 @@ async function onSubmit() {
       try {
         btnLoading.value = true
 
-        // 先处理文件上传（如果有 FileUpload 组件）
-        const fileUploadFields: { prop: string; ref: any }[] = []
-        props.formFields.forEach((field: FormField, index: number) => {
-          if (field.component === 'FileUpload') {
-            const fileUploadRef = (formRef.value as any)?.$refs[`fileUpload_${index}`]
-            if (fileUploadRef && fileUploadRef[0]) {
-              fileUploadFields.push({ prop: field.prop, ref: fileUploadRef[0] })
-            }
-          }
-        })
-
-        // 上传所有文件（只上传未上传的文件）
-        for (const fileUpload of fileUploadFields) {
-          // ✅ 关键：上传成功后，确保 formData 中的对应字段被更新
-          // 这样在提交时才能传递最新的文件路径
-          const uploadComponent = fileUpload.ref
-          const files = uploadComponent.getValidFiles()
-                  
-          // 如果有未上传的文件，执行上传
-          if (files && files.length > 0) {
-            for (const file of files) {
-              // 只有当文件没有 URL 或者 URL 是 blob 开头时才需要上传
-              if (!file.url || file.url.startsWith('blob:')) {
-                try {
-                  // 手动触发上传
-                  await uploadComponent.handleUpload({
-                    file: file.raw,
-                    onError: (error: any) => {
-                      throw new Error('文件上传失败：' + (error?.message || '未知错误'))
-                    },
-                    onSuccess: (response: any) => {
-                      if (response && response.data) {
-                        // 更新文件 URL（相对路径）
-                        file.url = response.data.url || response.data.name
-                        // ✅ 关键：同时更新 formData 中对应的字段
-                        formData.value[fileUpload.prop] = response.data.storedPath || response.data.url || response.data.name
-                        console.log('✅ 文件上传成功，已更新 formData.' + fileUpload.prop + ':', formData.value[fileUpload.prop])
-                      }
-                    }
-                  })
-                } catch (uploadError: any) {
-                  console.error('文件上传失败:', uploadError)
-                  throw new Error(`文件 ${file.name} 上传失败：${uploadError.message}`)
-                }
-              }
-            }
-          }
-        }
+        // ✅ 关键：由于启用了 autoUpload，文件在选择后已自动上传
+        // 这里只需要确保 formData 中的值是正确的即可
+        // 文件上传组件的 updateValue 会自动更新 formData 中的对应字段
+        console.log('✅ 文件已自动上传，无需手动处理')
 
         // 调试：打印 formData
         console.log('🔍 提交表单数据:', formData.value)
