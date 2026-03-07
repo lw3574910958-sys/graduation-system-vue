@@ -32,7 +32,7 @@ export interface FileItem {
 }
 
 /**
- * url转fileList
+ * url 转 fileList
  * @param url
  * @returns
  */
@@ -46,6 +46,6 @@ export const urls2FileList = (url: string | null | undefined): FileItem[] => {
     .filter((item) => item)
     .map((item) => ({
       name: item,
-      url: getFileUrl(item),
+      url: item.startsWith('/') ? normalizePath(constants.BASE_URL, item) : item,
     }))
 }

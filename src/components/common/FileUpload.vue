@@ -216,6 +216,7 @@ const handleUpload = async (options: { file: any; onError: Function; onSuccess: 
       background: 'rgba(0, 0, 0, 0.7)',
     })
 
+    // 根据是否为头像上传选择不同的 API
     const response: any = props.isAvatarUpload
       ? await commonApi.uploadAvatar(formData)
       : await commonApi.uploadFile(formData)
@@ -226,22 +227,41 @@ const handleUpload = async (options: { file: any; onError: Function; onSuccess: 
       // 在 fileList 中找到 uid 相同的文件项
       const existingFile = fileList.value.find((item) => item.uid === file.uid)
       if (existingFile) {
-        existingFile.url = getFileUrl(response.data.url || response.data.name) // 更新为真实路径
+        // 使用响应数据中的存储路径（相对路径）更新文件，避免使用完整 URL
+        const fileUrl = response.data.storedPath || response.data.url || response.data.name
+        existingFile.url = fileUrl
         existingFile.status = 'success'
+        existingFile.response = response // 保存完整响应以便后续使用
       }
       updateValue() // 触发父组件更新
       onSuccess(response)
       ElMessage.success(MESSAGE.UPLOAD_SUCCESS)
     } else {
+      // 服务器返回失败信息
       onError()
-      ElMessage.error(response?.msg || response?.message || MESSAGE.UPLOAD_FAILED)
+      const errorMsg = response?.msg || response?.message || MESSAGE.UPLOAD_FAILED
+      ElMessage.error(errorMsg)
+      throw new Error(errorMsg)
     }
   } catch (error: any) {
     if (loadingInstance) {
       loadingInstance.close()
     }
+    
+    // 详细的错误处理
+    let errorMessage: string = MESSAGE.UPLOAD_FAILED
+    if (error?.response?.status === 401) {
+      errorMessage = '未授权访问，请重新登录'
+    } else if (error?.response?.status === 403) {
+      errorMessage = '没有权限上传文件'
+    } else if (error?.message) {
+      errorMessage = error.message
+    }
+    
     onError(error)
-    ElMessage.error(error?.msg || error?.message || MESSAGE.UPLOAD_FAILED)
+    console.error('文件上传失败:', error)
+    ElMessage.error(errorMessage)
+    throw error // 重新抛出错误以便调用方处理
   } finally {
     uploadingCount.value--
   }
