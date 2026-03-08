@@ -88,15 +88,17 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
-  // 管理WebSocket连接
+  // 管理 WebSocket连接
   if (authStore.checkAuth()) {
-    // 已登录且WebSocket未连接时，尝试连接
+    // 已登录且 WebSocket 未连接时，尝试连接
     if (!webSocketService.isConnectedStatus()) {
+      console.log('路由守卫：用户已登录，WebSocket 未连接，开始连接...')
       webSocketService.connect()
     }
   } else {
-    // 未登录时断开WebSocket连接
-    webSocketService.disconnect()
+    // 未登录时断开 WebSocket连接，并禁止重连（永久断开）
+    console.log('路由守卫：用户未登录，断开 WebSocket连接')
+    webSocketService.disconnect(true)
   }
 
   if (to.meta.requiresAuth) {

@@ -23,13 +23,14 @@ import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import logoUrl from '@/assets/login/logo.png?url'
+import { webSocketService } from '@/utils/webSocketService'
 
 const authStore = useAuthStore()
 const { userInfo } = storeToRefs(authStore)
 
 const router = useRouter()
 
-// Logo URL作为响应式变量
+// Logo URL 作为响应式变量
 const logoImageUrl = logoUrl
 
 async function loginOut() {
@@ -39,7 +40,13 @@ async function loginOut() {
   } catch (error) {
     console.error('退出登录失败:', error)
   } finally {
+    // 先断开 WebSocket连接（永久断开）
+    webSocketService.disconnect(true)
+    
+    // 清除认证信息
     authStore.clearAuth()
+    
+    // 跳转到登录页
     router.push('/login')
   }
 }
