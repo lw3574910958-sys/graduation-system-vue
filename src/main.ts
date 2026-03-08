@@ -31,7 +31,7 @@ app.directive('permission', permission)
 // 设置全局错误处理
 setupGlobalErrorHandler()
 
-// 初始化WebSocket服务
-webSocketService.connect()
+// 注意：不在这里连接 WebSocket，而是在路由守卫中根据登录状态连接
+// webSocketService.connect() // 已删除
 
 app.mount('#app')
