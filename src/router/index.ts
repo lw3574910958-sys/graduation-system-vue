@@ -9,6 +9,7 @@ import topicRoutes from './modules/topic'
 import selectionRoutes from './modules/selection'
 import documentRoutes from './modules/document'
 import gradeRoutes from './modules/grade'
+import noticeRoutes from './modules/notice'
 import { ElMessage } from 'element-plus'
 
 const router = createRouter({
@@ -71,6 +72,8 @@ const router = createRouter({
         ...documentRoutes,
         // 成绩管理模块
         ...gradeRoutes,
+        // 通知公告模块
+        ...noticeRoutes,
       ],
     },
 

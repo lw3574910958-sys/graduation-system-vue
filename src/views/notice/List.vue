@@ -3,30 +3,33 @@
     <BaseList
       ref="listRef"
       :get-list-api="noticeApi.getNoticePage"
+      :delete-api="noticeApi.deleteNotice"
       :search-fields="searchFields"
       :table-columns="tableColumns"
       @add="handleAdd"
       @edit="handleEdit"
-      @delete="handleDelete"
+      @refresh="getList"
     >
       <template #operations="{ scope }">
         <el-button @click="handlePublish(scope.row)" type="success" size="small" v-if="scope.row.status === 0">发布</el-button>
         <el-button @click="handleRecall(scope.row)" type="warning" size="small" v-if="scope.row.status === 1">撤回</el-button>
+        <el-button @click="handleEdit(scope.row)" type="primary" size="small">编辑</el-button>
+        <el-button @click="confirmDel(scope.row.id)" type="danger" size="small">删除</el-button>
+      </template>
+      <template #dialogs>
+        <NoticeForm
+          v-model="dialogVisible"
+          :notice="currentNotice"
+          @success="handleSuccess"
+        />
       </template>
     </BaseList>
-    
-    <!-- 通知表单对话框 -->
-    <NoticeForm
-      v-model="dialogVisible"
-      :notice="currentNotice"
-      @success="handleSuccess"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { noticeApi } from '@/api/notice'
 import type { NoticeResponse } from '@/types'
 import NoticeForm from './NoticeForm.vue'
@@ -97,12 +100,13 @@ const searchFields = [
 
 // 表格列配置
 const tableColumns = [
-  { prop: 'title', label: '标题', headerAlign: 'center', align: 'center', width: 200 },
+  { prop: 'title', label: '标题', headerAlign: 'center', align: 'center', minWidth: 180 },
   { 
     prop: 'type', 
     label: '类型', 
     headerAlign: 'center', 
     align: 'center',
+    minWidth: 80,
     render: (row: NoticeResponse) => String(noticeTypeMap[row.type as keyof typeof noticeTypeMap] || row.type)
   },
   { 
@@ -110,10 +114,10 @@ const tableColumns = [
     label: '优先级', 
     headerAlign: 'center', 
     align: 'center',
+    minWidth: 70,
     render: (row: NoticeResponse) => {
       const priority = noticePriorityMap[row.priority as keyof typeof noticePriorityMap] || row.priority
-      const color = row.priority === 3 ? 'danger' : row.priority === 2 ? 'warning' : 'info'
-      return `<el-tag type="${color}" size="small">${String(priority)}</el-tag>`
+      return String(priority)
     }
   },
   { 
@@ -121,6 +125,7 @@ const tableColumns = [
     label: '状态', 
     headerAlign: 'center', 
     align: 'center',
+    minWidth: 80,
     render: (row: NoticeResponse) => String(noticeStatusMap[row.status as keyof typeof noticeStatusMap] || row.status)
   },
   { 
@@ -128,11 +133,12 @@ const tableColumns = [
     label: '目标范围', 
     headerAlign: 'center', 
     align: 'center',
+    minWidth: 90,
     render: (row: NoticeResponse) => String(targetScopeMap[row.targetScope as keyof typeof targetScopeMap] || row.targetScope)
   },
-  { prop: 'publisherName', label: '发布人', headerAlign: 'center', align: 'center' },
-  { prop: 'publishTime', label: '发布时间', headerAlign: 'center', align: 'center' },
-  { prop: 'createdAt', label: '创建时间', headerAlign: 'center', align: 'center' }
+  { prop: 'publisherName', label: '发布人', headerAlign: 'center', align: 'center', minWidth: 90 },
+  { prop: 'publishedAt', label: '发布时间', headerAlign: 'center', align: 'center', minWidth: 160 },
+  { prop: 'createdAt', label: '创建时间', headerAlign: 'center', align: 'center', minWidth: 160 }
 ]
 
 // 添加操作
@@ -147,30 +153,76 @@ function handleEdit(row: NoticeResponse) {
   dialogVisible.value = true
 }
 
-// 删除操作
-function handleDelete(id: string | number) {
-  console.log('删除通知:', id)
+// 确认删除
+async function confirmDel(id?: any) {
+  console.log('🔍 List.vue confirmDel 方法接收到的 id:', id)
+  // 由于使用 BaseList，删除逻辑已在 BaseList 中处理
+  // 这里需要手动触发 BaseList 的 confirmDel 方法
+  listRef.value?.confirmDel && listRef.value.confirmDel(id)
 }
 
 // 发布操作
-function handlePublish(row: NoticeResponse) {
-  ElMessage.info('发布功能待实现')
+async function handlePublish(row: NoticeResponse) {
+  try {
+    await ElMessageBox.confirm('确定要发布该通知吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    
+    const response = await noticeApi.publishNotice(row.id)
+    if (response?.code === 200) {
+      ElMessage.success('发布成功')
+      // 重新获取列表
+      listRef.value?.getList && listRef.value.getList()
+    } else {
+      ElMessage.error(response?.message || '发布失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('发布通知失败:', error)
+      ElMessage.error('发布失败')
+    }
+  }
 }
 
 // 撤回操作
-function handleRecall(row: NoticeResponse) {
-  ElMessage.info('撤回功能待实现')
+async function handleRecall(row: NoticeResponse) {
+  try {
+    await ElMessageBox.confirm('确定要撤回该通知吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    
+    const response = await noticeApi.withdrawNotice(row.id)
+    if (response?.code === 200) {
+      ElMessage.success('撤回成功')
+      // 重新获取列表
+      listRef.value?.getList && listRef.value.getList()
+    } else {
+      ElMessage.error(response?.message || '撤回失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('撤回通知失败:', error)
+      ElMessage.error('撤回失败')
+    }
+  }
+}
+
+// 用于刷新列表的方法
+function getList() {
+  listRef.value?.getList && listRef.value.getList()
 }
 
 // 成功回调
 function handleSuccess() {
-  listRef.value?.getList && listRef.value.getList()
+  getList()
   dialogVisible.value = false
 }
 </script>
 
 <style scoped>
-.list-container {
-  padding: 20px;
-}
+/* 样式已由 BaseList 组件统一处理 */
 </style>

@@ -111,6 +111,20 @@ export const menuConfig: MenuItem[] = [
         path: '/department/list'
       }
     ]
+  },
+  {
+    index: 'notice-management',
+    title: '公告管理',
+    icon: 'Bell',
+    userType: [USER_TYPE_ENUM.ADMIN],
+    children: [
+      {
+        index: 'notice-list',
+        title: '公告列表',
+        icon: 'Document',
+        path: '/notice/list'
+      }
+    ]
   }
 ]
 
