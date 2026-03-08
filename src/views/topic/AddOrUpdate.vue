@@ -1,21 +1,26 @@
-<!-- <base-add-or-update
-  :save-api="topicApi.create"
-  :update-api="topicApi.update"
-  :form-fields="formFields"
-  :form-default="formDefault"
-  :dialog-title="dialogTitle"
-  :form-rules="formRules"
-  @refresh-list="emit('refreshList')"
-  ref="baseRef"
->
-</base-add-or-update> -->
+<template>
+  <base-add-or-update
+    :save-api="topicApi.create"
+    :update-api="topicApi.update"
+    :form-fields="formFields"
+    :form-default="formDefault"
+    :dialog-title="dialogTitle"
+    :form-rules="formRules"
+    dialog-width="700px"
+    label-width="100px"
+    @refresh-list="emit('refreshList')"
+    ref="baseRef"
+  >
+  </base-add-or-update>
+</template>
 
-<script lang="ts" setup>
+<script lang="ts" setup name="TopicAddOrUpdate">
 import { ref } from 'vue'
 import { topicApi } from '@/api/topic'
 import { ElMessage } from 'element-plus'
 import { MESSAGE } from '@/constants/user'
 import BaseAddOrUpdate from '@/components/common/BaseAddOrUpdate.vue'
+import type { TopicCreateRequest, TopicUpdateRequest } from '@/types/api/topic'
 
 // 触发自定义事件
 const emit = defineEmits(['refreshList'])
@@ -39,9 +44,9 @@ const formFields = [
   },
   {
     prop: 'teacherId',
-    label: '发布教师ID',
+    label: '发布教师 ID',
     component: 'el-input-number',
-    props: { min: 1, style: { width: '60%' }, placeholder: '请输入发布教师ID' },
+    props: { min: 1, style: { width: '60%' }, placeholder: '请输入发布教师 ID' },
   },
 
   {
@@ -57,17 +62,17 @@ const formFields = [
   }
 ]
 
-// 表单初始值
-const formDefault = {
-  id: undefined,
+// 表单初始值 - 使用 TopicCreateRequest 类型
+const formDefault: TopicCreateRequest = {
   title: '',
   description: '',
-  requirement: '',
-  difficulty: '',
-  teacherId: 0,
   departmentId: 0,
-  maxStudents: 1,
-  status: 0,
+  source: '',
+  type: '',
+  nature: '',
+  difficulty: 0,
+  workload: 0,
+  maxSelections: 1,
 }
 
 // 对话框标题

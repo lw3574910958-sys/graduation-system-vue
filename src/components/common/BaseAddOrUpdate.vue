@@ -14,6 +14,7 @@
           v-show="shouldShowField(field)"
           :required="isFieldRequired(field)"
           :class="{ 'full-width': field.component === 'FileUpload' }"
+          :style="field.style || {}"
         >
           <!-- 特殊处理 FileUpload 组件 -->
           <template v-if="field.component === 'FileUpload'">
@@ -84,7 +85,7 @@
   </el-dialog>
 </template>
 
-<script setup lang="ts" generic="T = any">
+<script setup lang="ts" generic="T = any" name="BaseAddOrUpdate">
 import { ref, reactive, computed, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import FileUpload from '@/components/common/FileUpload.vue'
@@ -103,6 +104,7 @@ interface FormField {
   readonlyWhenUpdate?: boolean // 更新时只读
   showWhen?: (formData: T) => boolean // 条件显示字段
   required?: boolean | ((formData: T) => boolean) // 是否必填，支持函数
+  style?: Record<string, any> // 自定义样式
 }
 
 // 对话框标题配置
@@ -115,7 +117,7 @@ interface DialogTitle {
 interface Props {
   // API 相关
   saveApi: (data: T) => Promise<any>
-  updateApi?: (id: string, data: Partial<T>) => Promise<any>
+  updateApi?: (id: number | string, data: T) => Promise<any>
 
   // 表单配置
   formFields: FormField[]
@@ -289,6 +291,7 @@ defineExpose({
   display: grid;
   grid-template-columns: repeat(2, 1fr); /* 两列等宽布局 */
   gap: 16px 24px; /* 行间距 16px，列间距 24px */
+  padding: 0 12px; /* 添加左右内边距，使两侧边距与中间 gap 视觉一致 */
 }
 
 /* 头像字段独占一行 */

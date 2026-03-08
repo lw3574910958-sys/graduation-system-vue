@@ -8,10 +8,12 @@
 import { computed } from 'vue'
 
 interface Props {
-  status: number | string
+  status?: number | string
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  status: 0 // 默认值为 0（禁用状态）
+})
 
 // 计算状态类型
 const statusType = computed(() => {

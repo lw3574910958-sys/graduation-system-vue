@@ -209,6 +209,7 @@ const handleClose = () => {
       :model="formData"
       :rules="formRules"
       label-width="100px"
+      class="unified-form"
     >
       <el-form-item label="通知标题" prop="title">
         <el-input
@@ -327,5 +328,16 @@ const handleClose = () => {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+/* 统一表单样式 */
+.unified-form :deep(.el-input),
+.unified-form :deep(.el-select),
+.unified-form :deep(.el-textarea) {
+  width: 100%;
+}
+
+.unified-form :deep(.el-form-item) {
+  margin-bottom: 20px;
 }
 </style>

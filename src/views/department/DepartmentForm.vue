@@ -6,6 +6,8 @@
     :form-default="formDefault"
     :dialog-title="dialogTitle"
     :form-rules="formRules"
+    dialog-width="500px"
+    label-width="100px"
     @refresh-list="emit('refreshList')"
     ref="baseRef"
   >
@@ -30,19 +32,19 @@ const formFields = [
     prop: 'name',
     label: '院系名称',
     component: 'el-input',
-    props: { placeholder: '请输入院系名称' },
+    props: { 
+      placeholder: '请输入院系名称',
+      style: { width: '100%' } // 输入框占满可用空间
+    }
   },
   {
     prop: 'code',
     label: '院系代码',
     component: 'el-input',
-    props: { placeholder: '请输入院系代码' },
-  },
-  {
-    prop: 'description',
-    label: '描述',
-    component: 'el-input',
-    props: { type: 'textarea', rows: 3, placeholder: '请输入描述' },
+    props: { 
+      placeholder: '请输入院系代码',
+      style: { width: '100%' } // 输入框占满可用空间
+    }
   }
 ]
 
@@ -51,7 +53,6 @@ const formDefault = {
   id: undefined,
   name: '',
   code: '',
-  description: '',
   status: 1, // 默认启用状态
 }
 

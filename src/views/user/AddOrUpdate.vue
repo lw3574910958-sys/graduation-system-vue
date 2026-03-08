@@ -14,7 +14,7 @@
   </base-add-or-update>
 </template>
 
-<script lang="ts" setup>
+<script lang="ts" setup name="UserAddOrUpdate">
 import { reactive, ref, onMounted } from 'vue'
 import { userApi } from '@/api/user'
 import { departmentApi } from '@/api/department'
@@ -371,7 +371,7 @@ const createUser = (data: FormDataType) => {
   }
   return userApi.createUser(requestData)
 }
-const updateUser = (id: string, data: Partial<UserUpdateRequest>) => {
+const updateUser = (id: string | number, data: Partial<UserUpdateRequest>) => {
   // 构建更新数据，如果密码为空则不传递
   const updateData: Partial<UserUpdateRequest> = {}
   if (data.realName) updateData.realName = data.realName
@@ -391,7 +391,8 @@ const updateUser = (id: string, data: Partial<UserUpdateRequest>) => {
   // 管理员特有字段
   if (data.adminId !== undefined) updateData.adminId = data.adminId
   
-  return userApi.updateUser(id, updateData)
+  // 将 id 转换为 string 类型，确保与 userApi.updateUser 的类型一致
+  return userApi.updateUser(String(id), updateData)
 }
 
 // 暴露方法给父组件调用

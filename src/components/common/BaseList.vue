@@ -6,12 +6,30 @@
         :key="searchField.prop"
         :label="searchField.label"
       >
-        <component
-          :is="searchField.component || 'el-input'"
-          v-model="queryForm[searchField.prop]"
-          v-bind="searchField.props || {}"
-          :placeholder="searchField.placeholder || `请输入${searchField.label}`"
-        />
+        <!-- 特殊处理 el-select 组件 -->
+        <template v-if="searchField.component === 'el-select'">
+          <el-select
+            v-model="queryForm[searchField.prop]"
+            v-bind="searchField.props || {}"
+            :placeholder="searchField.placeholder || `请输入${searchField.label}`"
+          >
+            <el-option
+              v-for="option in (typeof searchField.props?.options === 'function' ? searchField.props.options() : searchField.props?.options)"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </el-select>
+        </template>
+        <!-- 其他组件 -->
+        <template v-else>
+          <component
+            :is="searchField.component || 'el-input'"
+            v-model="queryForm[searchField.prop]"
+            v-bind="searchField.props || {}"
+            :placeholder="searchField.placeholder || `请输入${searchField.label}`"
+          />
+        </template>
       </el-form-item>
 
       <el-form-item>
@@ -96,10 +114,10 @@
             size="default"
             style="width: 100px"
           >
-            <el-option label="10 条" :value="10" />
-            <el-option label="50 条" :value="50" />
-            <el-option label="100 条" :value="100" />
-            <el-option label="500 条" :value="500" />
+            <el-option label="10 条/页" :value="10" />
+            <el-option label="50 条/页" :value="50" />
+            <el-option label="100 条/页" :value="100" />
+            <el-option label="500 条/页" :value="500" />
           </el-select>
         </div>
         
@@ -122,7 +140,7 @@
   </div>
 </template>
 
-<script setup lang="ts" generic="T = any">
+<script setup lang="ts" generic="T = any" name="BaseList">
 import { ref, reactive, onMounted, computed, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import constants from '@/utils/constants'
@@ -312,9 +330,9 @@ function handlePageSizeChange(size: number) {
 
 // 重置查询条件
 function resetQuery() {
-  // 重置所有搜索字段
+  // 重置所有搜索字段为 undefined，让后端使用默认值
   props.searchFields.forEach(field => {
-    (queryForm as any)[field.prop] = ''
+    (queryForm as any)[field.prop] = undefined
   })
   
   // 重置分页

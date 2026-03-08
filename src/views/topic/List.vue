@@ -36,7 +36,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" name="TopicList">
 import { ref } from 'vue'
 import { topicApi } from '@/api/topic'
 import AddOrUpdate from '@/views/topic/AddOrUpdate.vue'

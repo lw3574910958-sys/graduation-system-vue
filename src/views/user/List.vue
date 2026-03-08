@@ -66,12 +66,14 @@ const searchFields = [
     prop: 'userType',
     label: '用户类型：',
     component: 'el-select',
-    props: { placeholder: '请选择用户类型' },
-    options: [
-      { label: '学生', value: 'student' },
-      { label: '教师', value: 'teacher' },
-      { label: '管理员', value: 'admin' },
-    ],
+    props: { 
+      placeholder: '请选择用户类型',
+      options: [
+        { label: '学生', value: 'student' },
+        { label: '教师', value: 'teacher' },
+        { label: '管理员', value: 'admin' },
+      ]
+    },
   },
 ]
 

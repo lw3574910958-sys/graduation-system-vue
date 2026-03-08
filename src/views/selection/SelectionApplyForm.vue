@@ -11,6 +11,7 @@
       :rules="formRules"
       label-width="100px"
       @submit.prevent
+      class="unified-form"
     >
       <el-form-item label="课题标题" prop="topicTitle">
         <el-input
@@ -182,5 +183,16 @@ const emits = defineEmits<{
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+/* 统一表单样式 */
+.unified-form :deep(.el-input),
+.unified-form :deep(.el-select),
+.unified-form :deep(.el-textarea) {
+  width: 100%;
+}
+
+.unified-form :deep(.el-form-item) {
+  margin-bottom: 20px;
 }
 </style>
