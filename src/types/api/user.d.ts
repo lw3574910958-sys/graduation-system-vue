@@ -13,6 +13,17 @@ export interface UserResponse {
   updatedAt?: string
   lastLoginAt?: string
   avatar?: string
+  // 学生特有字段
+  studentId?: string
+  gender?: number
+  major?: string
+  className?: string
+  // 教师特有字段
+  teacherId?: string
+  title?: string
+  // 管理员特有字段
+  adminId?: string
+  roleLevel?: number  // 只读，由后端根据院系 ID 自动计算
 }
 
 // 用户创建请求类型 (与后端 UserCreateDTO 完全对应)
@@ -26,6 +37,16 @@ export interface UserCreateRequest {
   departmentId?: number
   status?: number
   avatar?: string
+  // 学生特有字段
+  studentId?: string
+  gender?: number
+  major?: string
+  className?: string
+  // 教师特有字段
+  teacherId?: string
+  title?: string
+  // 管理员特有字段
+  adminId?: string
 }
 
 // 用户更新请求类型
@@ -38,6 +59,16 @@ export interface UserUpdateRequest {
   departmentId?: number
   status?: number
   avatar?: string
+  // 学生特有字段
+  studentId?: string
+  gender?: number
+  major?: string
+  className?: string
+  // 教师特有字段
+  teacherId?: string
+  title?: string
+  // 管理员特有字段
+  adminId?: string
 }
 
 // 用户分页响应类型

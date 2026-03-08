@@ -5,41 +5,67 @@
     :width="dialogWidth"
   >
     <el-form :rules="formRules" :model="formData" ref="formRef" :label-width="labelWidth">
-      <el-form-item
-        v-for="(field, index) in formFields"
-        :key="field.prop"
-        :label="field.label"
-        :prop="field.prop"
-      >
-        <!-- 特殊处理 FileUpload 组件 -->
-        <template v-if="field.component === 'FileUpload'">
-          <FileUpload
-            :ref="`fileUpload_${index}`"
-            v-model:value="formData[field.prop]"
-            v-bind="field.props || {}"
-            :default-file-list="getFileList(field.prop)"
-            :components="dynamicComponents"
-          />
-        </template>
-        <!-- 其他组件 -->
-        <template v-else>
-          <component
-            :is="field.component || 'el-input'"
-            v-model:model-value="formData[field.prop]"
-            v-bind="field.props || {}"
-            :readonly="field.readonly || (formData.id && field.readonlyWhenUpdate)"
-            :components="dynamicComponents"
-          >
-            <template v-for="option in field.options || []" :key="option.value" #default>
-              <component
-                :is="field.optionComponent || 'el-option'"
-                :label="option.label"
-                :value="option.value"
-              />
+      <div class="form-grid">
+        <el-form-item
+          v-for="(field, index) in formFields"
+          :key="field.prop"
+          :label="field.label"
+          :prop="field.prop"
+          v-show="shouldShowField(field)"
+          :required="isFieldRequired(field)"
+          :class="{ 'full-width': field.component === 'FileUpload' }"
+        >
+          <!-- 特殊处理 FileUpload 组件 -->
+          <template v-if="field.component === 'FileUpload'">
+            <FileUpload
+              :ref="`fileUpload_${index}`"
+              v-model:value="formData[field.prop]"
+              v-bind="field.props || {}"
+              :default-file-list="getFileList(field.prop)"
+              :components="dynamicComponents"
+            />
+          </template>
+          <!-- 其他组件 -->
+          <template v-else>
+            <!-- 特殊处理 el-select 组件，单独绑定 change 事件 -->
+            <template v-if="field.component === 'el-select'">
+              <el-select
+                v-model:model-value="formData[field.prop]"
+                v-bind="field.props || {}"
+                :readonly="field.readonly || (formData.id && field.readonlyWhenUpdate)"
+                @change="field.props?.onChange ? field.props.onChange(formData[field.prop]) : null"
+              >
+                <el-option
+                  v-for="option in (typeof field.options === 'function' ? field.options() : field.options)"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                />
+              </el-select>
             </template>
-          </component>
-        </template>
-      </el-form-item>
+            <!-- 其他组件 -->
+            <template v-else>
+              <component
+                :is="field.component || 'el-input'"
+                v-model:model-value="formData[field.prop]"
+                v-bind="field.props || {}"
+                :readonly="field.readonly || (formData.id && field.readonlyWhenUpdate)"
+                :components="dynamicComponents"
+              >
+                <!-- 特殊处理 el-select 的选项 -->
+                <template v-if="field.component === 'el-select' && field.options">
+                  <el-option
+                    v-for="option in (typeof field.options === 'function' ? field.options() : field.options)"
+                    :key="option.value"
+                    :label="option.label"
+                    :value="option.value"
+                  />
+                </template>
+              </component>
+            </template>
+          </template>
+        </el-form-item>
+      </div>
     </el-form>
 
     <template #footer>
@@ -59,7 +85,7 @@
 </template>
 
 <script setup lang="ts" generic="T = any">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import FileUpload from '@/components/common/FileUpload.vue'
 import { MESSAGE } from '@/constants/user'
@@ -71,10 +97,12 @@ interface FormField {
   label: string
   component?: string
   props?: Record<string, any>
-  options?: Array<{ label: string; value: any }>
+  options?: Array<{ label: string; value: any }> | (() => Array<{ label: string; value: any }>)
   optionComponent?: string
   readonly?: boolean
   readonlyWhenUpdate?: boolean // 更新时只读
+  showWhen?: (formData: T) => boolean // 条件显示字段
+  required?: boolean | ((formData: T) => boolean) // 是否必填，支持函数
 }
 
 // 对话框标题配置
@@ -134,21 +162,44 @@ const getFileList = (prop: string) => {
   return []
 }
 
+// ✅ 判断字段是否应该显示
+const shouldShowField = (field: FormField): boolean => {
+  // 如果没有配置 showWhen，默认显示
+  if (!field.showWhen) {
+    return true
+  }
+  // 调用 showWhen 函数判断是否显示
+  return field.showWhen(formData.value)
+}
+
+// ✅ 判断字段是否必填
+const isFieldRequired = (field: FormField): boolean => {
+  // 如果没有配置 required，默认不显示必填标记
+  if (field.required === undefined) {
+    return false
+  }
+  // 如果是函数，调用函数判断
+  if (typeof field.required === 'function') {
+    return field.required(formData.value)
+  }
+  // 如果是布尔值，直接返回
+  return field.required
+}
+
 // 显示对话框
 function showModel(row?: Partial<T>) {
-  console.log('🔍 showModel 接收到的 row:', row)
+  // 重置表单数据为默认值
+  formData.value = structuredClone(props.formDefault)
+  
   if (row) {
-    // 复制默认值
-    formData.value = structuredClone(props.formDefault)
-    console.log('🔍 复制默认值后的 formData:', formData.value)
-    // 覆盖行数据
+    // 覆盖行数据 - 使用 Object.assign 确保所有字段都被正确赋值
     Object.assign(formData.value, row)
-    console.log('🔍 Object.assign 后的 formData:', formData.value)
-  } else {
-    // 使用默认值
-    formData.value = structuredClone(props.formDefault)
   }
-  visible.value = true
+  
+  // 确保在下一帧再显示对话框，让 Vue 有足够的时间响应式更新
+  nextTick(() => {
+    visible.value = true
+  })
 }
 
 // 提交表单
@@ -233,4 +284,29 @@ defineExpose({
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 两列等宽布局 */
+  gap: 16px 24px; /* 行间距 16px，列间距 24px */
+}
+
+/* 头像字段独占一行 */
+.form-grid .full-width {
+  grid-column: 1 / -1; /* 跨越所有列 */
+  margin-top: 8px; /* 上方间距减小 */
+}
+
+/* 优化表单项底部间距 */
+.form-grid .el-form-item {
+  margin-bottom: 0; /* 移除默认底部间距 */
+}
+
+/* 响应式：小屏幕时变为单列 */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr; /* 单列布局 */
+    gap: 16px; /* 统一间距 */
+  }
+}
+</style>

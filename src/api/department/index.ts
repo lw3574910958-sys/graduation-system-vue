@@ -15,7 +15,7 @@ export const departmentApi = {
     return departmentApi.createDepartment(param)
   },
   update: (id: number | string, param: DepartmentUpdateRequest) => {
-    return departmentApi.updateDepartment(Number(id), param)
+    return departmentApi.updateDepartment(String(id), param)
   },
   delete: (id: number | string) => {
     return departmentApi.deleteDepartment(id)
@@ -69,11 +69,11 @@ export const departmentApi = {
 
   /**
    * 更新部门信息
-   * @param id 部门ID
+   * @param id 部门 ID
    * @param param 部门信息
    * @returns 请求结果
    */
-  updateDepartment: (id: number, param: DepartmentUpdateRequest) => {
+  updateDepartment: (id: number | string, param: DepartmentUpdateRequest) => {
     return put<ApiResponse<void>>(`/api/departments/${id}`, param)
   },
 

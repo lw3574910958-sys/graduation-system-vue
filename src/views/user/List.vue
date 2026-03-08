@@ -11,11 +11,13 @@
       ref="listRef"
     >
       <template #operations="{ scope }">
+        <el-button @click="viewDetail(scope.row)" type="info" size="small">详情</el-button>
         <el-button @click="update(scope.row)" type="primary" size="small">编辑</el-button>
         <el-button @click="confirmDel(scope.row.id)" type="danger" size="small">删除</el-button>
       </template>
       <template #dialogs>
         <add-or-update @refresh-list="getList" ref="operateRef" />
+        <user-detail-dialog v-model="detailDialogVisible" ref="detailDialogRef" />
       </template>
     </base-list>
   </div>
@@ -25,6 +27,7 @@
 import { ref, reactive } from 'vue'
 import { userApi } from '@/api/user'
 import AddOrUpdate from '@/views/user/AddOrUpdate.vue'
+import UserDetailDialog from '@/components/user/UserDetailDialog.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { UserFilled } from '@element-plus/icons-vue'
 import Avatar from '@/components/common/Avatar.vue'
@@ -40,6 +43,10 @@ type UserRow = UserResponse
 // 定义操作组件引用--新增/编辑
 const operateRef = ref()
 const listRef = ref()
+
+// 详情对话框相关
+const detailDialogVisible = ref(false)
+const detailDialogRef = ref()
 
 // 搜索字段配置
 const searchFields = [
@@ -101,6 +108,14 @@ const tableColumns = [
 ]
 
 /**
+ * 查看用户详情
+ */
+function viewDetail(row: UserRow) {
+  detailDialogRef.value?.loadUserDetail(row.id)
+  detailDialogVisible.value = true
+}
+
+/**
  * 新增用户
  */
 function add() {
@@ -120,7 +135,10 @@ function update(row: UserRow) {
  * 删除确认
  */
 function confirmDel(id?: any) {
+  console.log('🔍 List.vue confirmDel 方法接收到的 id:', id)
   // 由于使用 BaseList，删除逻辑已在 BaseList 中处理
+  // 这里需要手动触发 BaseList 的 confirmDel 方法
+  listRef.value?.confirmDel && listRef.value.confirmDel(id)
 }
 
 /**

@@ -185,17 +185,23 @@ const updateValue = () => {
   // 提取相对路径（去掉 BASE_URL 和 /files 前缀）
   const relativePaths = validFiles.map((file) => {
     let url = file.url
-    // 如果是完整 URL，需要提取相对路径
+    
+    // ✅ 修复：处理多种 URL 格式
+    // 情况 1：完整 URL（包含 BASE_URL）
     if (url.startsWith(constants.BASE_URL)) {
       // 去掉 BASE_URL
       url = url.replace(constants.BASE_URL, '')
-      // 去掉 /files 前缀
+    }
+    
+    // 情况 2：以 /files 开头（可能是 /files/... 或 /files/...
+    if (url.startsWith('/files')) {
       if (url.startsWith('/files/')) {
         url = url.substring(7) // '/files/'.length = 7
-      } else if (url.startsWith('/files')) {
+      } else {
         url = url.substring(6) // '/files'.length = 6
       }
     }
+    
     return url
   })
   

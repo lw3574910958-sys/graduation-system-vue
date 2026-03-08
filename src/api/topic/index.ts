@@ -14,12 +14,12 @@ export const topicApi = {
     return topicApi.createTopic(param)
   },
   update: (id: number | string, param: Omit<TopicUpdateRequest, 'id'>) => {
-    // 注意：后端的update方法需要完整的TopicUpdateRequest，包括id
+    // 注意：后端的 update 方法需要完整的 TopicUpdateRequest，包括 id
     const updateParam: TopicUpdateRequest = {
-      id: Number(id),
+      id: String(id),
       ...param
     } as TopicUpdateRequest
-    return topicApi.updateTopic(Number(id), updateParam)
+    return topicApi.updateTopic(String(id), updateParam)
   },
   delete: (id: number | string) => {
     return topicApi.deleteTopic(id)
@@ -57,11 +57,11 @@ export const topicApi = {
 
   /**
    * 更新题目信息
-   * @param id 题目ID
+   * @param id 题目 ID
    * @param param 题目信息
    * @returns 请求结果
    */
-  updateTopic: (id: number, param: TopicUpdateRequest) => {
+  updateTopic: (id: number | string, param: TopicUpdateRequest) => {
     return put<ApiResponse<void>>(`/api/topics/${id}`, param)
   },
 

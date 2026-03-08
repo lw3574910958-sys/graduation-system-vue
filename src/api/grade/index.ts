@@ -14,7 +14,7 @@ export const gradeApi = {
     return gradeApi.saveGrade(param)
   },
   update: (id: number | string, param: Partial<GradeRequest>) => {
-    return gradeApi.updateGrade(Number(id), param)
+    return gradeApi.updateGrade(String(id), param)
   },
   delete: (id: number | string) => {
     return gradeApi.deleteGrade(id)
@@ -61,11 +61,11 @@ export const gradeApi = {
 
   /**
    * 更新成绩信息
-   * @param id 成绩ID
+   * @param id 成绩 ID
    * @param param 成绩信息
    * @returns 请求结果
    */
-  updateGrade: (id: number, param: Partial<GradeRequest>) => {
+  updateGrade: (id: number | string, param: Partial<GradeRequest>) => {
     return put<ApiResponse<void>>(`/api/grades/${id}`, param)
   },
 
@@ -80,31 +80,31 @@ export const gradeApi = {
 
   /**
    * 获取学生成绩列表
-   * @param studentId 学生ID
+   * @param studentId 学生 ID
    * @param params 查询参数
    * @returns 成绩列表
    */
-  getGradesByStudent: (studentId: number, params: GradeQueryParams) => {
+  getGradesByStudent: (studentId: number | string, params: GradeQueryParams) => {
     return get<ApiResponse<GradePageResponse>>(`/api/grades/student/${studentId}`, params)
   },
-
+  
   /**
    * 获取课题成绩列表
-   * @param topicId 课题ID
+   * @param topicId 课题 ID
    * @param params 查询参数
    * @returns 成绩列表
    */
-  getGradesByTopic: (topicId: number, params: GradeQueryParams) => {
+  getGradesByTopic: (topicId: number | string, params: GradeQueryParams) => {
     return get<ApiResponse<GradePageResponse>>(`/api/grades/topic/${topicId}`, params)
   },
-
+  
   /**
    * 获取教师评分成绩列表
-   * @param graderId 教师ID
+   * @param graderId 教师 ID
    * @param params 查询参数
    * @returns 成绩列表
    */
-  getGradesByGrader: (graderId: number, params: GradeQueryParams) => {
+  getGradesByGrader: (graderId: number | string, params: GradeQueryParams) => {
     return get<ApiResponse<GradePageResponse>>(`/api/grades/grader/${graderId}`, params)
   },
 

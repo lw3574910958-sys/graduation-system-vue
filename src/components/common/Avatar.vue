@@ -17,16 +17,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useAttrs, ref } from 'vue'
+import { computed, useAttrs, ref, watch } from 'vue'
 import { Loading } from '@element-plus/icons-vue'
 
 const props = defineProps({
-  // 头像URL
+  // 头像 URL
   avatar: {
     type: String,
     default: ''
   },
-  // 形状: circle 或 square
+  // 形状：circle 或 square
   shape: {
     type: String,
     default: 'circle'
@@ -52,6 +52,15 @@ const attrs = useAttrs()
 const isLoading = ref(false)
 const hasAvatar = ref(true) // 标记是否有头像
 
+// ✅ 监听 avatar 变化，确保组件复用时状态正确重置
+watch(() => props.avatar, (newVal: string) => {
+  if (!newVal) {
+    hasAvatar.value = false
+  } else {
+    hasAvatar.value = true
+  }
+}, { immediate: true })
+
 // 计算头像 URL，处理空值和相对路径
 const avatarUrl = computed(() => {
   if (!props.avatar) {
@@ -65,8 +74,6 @@ const avatarUrl = computed(() => {
   }
   
   // 如果是相对路径，需要添加 /files 前缀和基础 URL
-  // 数据库存储的是：avatar/用户 ID/时间戳.jpg
-  // 需要转换为：/files/avatar/用户 ID/时间戳.jpg
   const pathWithPrefix = props.avatar.startsWith('/files')
     ? props.avatar  // 已经有 /files 前缀
     : props.avatar.startsWith('/')

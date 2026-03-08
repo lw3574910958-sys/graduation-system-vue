@@ -52,6 +52,7 @@ export const userApi = {
    * @returns 请求结果
    */
   deleteUser: (id: string) => {
+    console.log('🔍 deleteUser API called with id:', id)
     return del<ApiResponse<void>>(`/api/users/${id}`)
   },
 }

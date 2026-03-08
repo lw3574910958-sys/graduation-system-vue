@@ -54,6 +54,17 @@
       </el-select>
     </el-form-item>
     
+    <el-form-item label="状态" prop="status">
+      <el-select
+        v-model="formData.status"
+        placeholder="请选择状态"
+        clearable
+      >
+        <el-option label="启用" :value="1" />
+        <el-option label="禁用" :value="0" />
+      </el-select>
+    </el-form-item>
+    
     <el-form-item label="所属部门" prop="departmentId">
       <el-select
         v-model="formData.departmentId"
@@ -78,7 +89,6 @@
         {{ submitLoading ? '提交中...' : '提交' }}
       </el-button>
       <el-button @click="handleReset">重置</el-button>
-      <el-button @click="handleValidateFields">验证特定字段</el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -92,7 +102,6 @@ import {
   phone, 
   username,
   enhancedSubmit,
-  validateFields,
   resetForm
 } from '@/utils/formValidator'
 import { departmentApi } from '@/api/department'
@@ -110,6 +119,7 @@ const formData = reactive<Partial<UserCreateRequest>>({
   email: '',
   phone: '',
   userType: undefined,
+  status: 1,
   departmentId: undefined
 })
 
@@ -123,6 +133,7 @@ const formRules = reactive<FormRules>({
   email: email(),
   phone: phone(),
   userType: required('请选择用户类型'),
+  status: required('请选择状态'),
   departmentId: required('请选择所属部门')
 })
 
@@ -131,9 +142,9 @@ const submitLoading = ref(false)
 
 // 用户类型选项
 const userTypeOptions = [
-  { value: 1, label: '学生' },
-  { value: 2, label: '教师' },
-  { value: 3, label: '管理员' }
+  { value: 'student', label: '学生' },
+  { value: 'teacher', label: '教师' },
+  { value: 'admin', label: '管理员' }
 ]
 
 // 部门选项
@@ -191,13 +202,6 @@ const handleSubmit = async () => {
   } finally {
     submitLoading.value = false
   }
-}
-
-// 验证特定字段
-const handleValidateFields = async () => {
-  const fieldsToValidate = ['username', 'email']
-  const isValid = await validateFields(formRef.value, fieldsToValidate)
-  console.log('特定字段验证结果:', isValid)
 }
 
 // 重置表单

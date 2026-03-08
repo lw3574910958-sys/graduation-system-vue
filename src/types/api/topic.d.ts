@@ -32,7 +32,7 @@ export interface TopicCreateRequest {
 
 // 题目更新请求类型 (对应后端 TopicUpdateDTO)
 export interface TopicUpdateRequest {
-  id: number
+  id: number | string
   title: string
   description: string
   source?: string

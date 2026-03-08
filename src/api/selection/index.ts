@@ -16,7 +16,7 @@ export const selectionApi = {
     return selectionApi.createSelection(param)
   },
   update: (id: number | string, param: SelectionUpdateRequest) => {
-    return selectionApi.updateSelection(Number(id), param)
+    return selectionApi.updateSelection(String(id), param)
   },
   delete: (id: number | string) => {
     return selectionApi.deleteSelection(id)
@@ -45,19 +45,19 @@ export const selectionApi = {
 
   /**
    * 学生确认选题
-   * @param id 选题ID
+   * @param id 选题 ID
    * @returns 确认结果
    */
-  confirmSelection: (id: number) => {
+  confirmSelection: (id: number | string) => {
     return post<ApiResponse<SelectionResponse>>(`/api/selections/${id}/confirm`, {})
   },
-
+  
   /**
    * 学生撤销选题申请
-   * @param id 选题ID
+   * @param id 选题 ID
    * @returns 撤销结果
    */
-  cancelSelection: (id: number) => {
+  cancelSelection: (id: number | string) => {
     return del<ApiResponse<void>>(`/api/selections/${id}/cancel`)
   },
   
@@ -90,11 +90,11 @@ export const selectionApi = {
 
   /**
    * 更新选题信息
-   * @param id 选题ID
+   * @param id 选题 ID
    * @param param 选题信息
    * @returns 请求结果
    */
-  updateSelection: (id: number, param: SelectionUpdateRequest) => {
+  updateSelection: (id: number | string, param: SelectionUpdateRequest) => {
     return put<ApiResponse<void>>(`/api/selections/${id}`, param)
   },
 
@@ -109,21 +109,21 @@ export const selectionApi = {
 
   /**
    * 获取学生选题记录
-   * @param studentId 学生ID
+   * @param studentId 学生 ID
    * @param params 查询参数
    * @returns 选题列表
    */
-  getSelectionsByStudent: (studentId: number, params: SelectionQueryParams) => {
+  getSelectionsByStudent: (studentId: number | string, params: SelectionQueryParams) => {
     return get<ApiResponse<SelectionPageResponse>>(`/api/selections/student/${studentId}`, params)
   },
-
+  
   /**
    * 获取课题选题记录
-   * @param topicId 课题ID
+   * @param topicId 课题 ID
    * @param params 查询参数
    * @returns 选题列表
    */
-  getSelectionsByTopic: (topicId: number, params: SelectionQueryParams) => {
+  getSelectionsByTopic: (topicId: number | string, params: SelectionQueryParams) => {
     return get<ApiResponse<SelectionPageResponse>>(`/api/selections/topic/${topicId}`, params)
   },
 }

@@ -23,10 +23,10 @@ export const noticeApi = {
 
   /**
    * 获取通知详情
-   * @param id 通知ID
+   * @param id 通知 ID
    * @returns 通知详情
    */
-  getNoticeById: (id: number) => {
+  getNoticeById: (id: number | string) => {
     return get<ApiResponse<NoticeResponse>>(`/api/notices/${id}`)
   },
 
@@ -41,38 +41,38 @@ export const noticeApi = {
 
   /**
    * 更新通知
-   * @param id 通知ID
+   * @param id 通知 ID
    * @param updateRequest 更新参数
    * @returns 更新结果
    */
-  updateNotice: (id: number, updateRequest: NoticeUpdateRequest) => {
+  updateNotice: (id: number | string, updateRequest: NoticeUpdateRequest) => {
     return put<ApiResponse<void>>(`/api/notices/${id}`, updateRequest)
   },
-
+  
   /**
    * 发布通知
-   * @param id 通知ID
+   * @param id 通知 ID
    * @returns 发布结果
    */
-  publishNotice: (id: number) => {
+  publishNotice: (id: number | string) => {
     return post<ApiResponse<void>>(`/api/notices/${id}/publish`)
   },
-
+  
   /**
    * 撤回通知
-   * @param id 通知ID
+   * @param id 通知 ID
    * @returns 撤回结果
    */
-  withdrawNotice: (id: number) => {
+  withdrawNotice: (id: number | string) => {
     return post<ApiResponse<void>>(`/api/notices/${id}/withdraw`)
   },
-
+  
   /**
    * 删除通知
-   * @param id 通知ID
+   * @param id 通知 ID
    * @returns 删除结果
    */
-  deleteNotice: (id: number) => {
+  deleteNotice: (id: number | string) => {
     return del<ApiResponse<void>>(`/api/notices/${id}`)
   },
 
@@ -97,10 +97,10 @@ export const noticeApi = {
 
   /**
    * 增加通知阅读次数
-   * @param id 通知ID
+   * @param id 通知 ID
    * @returns 增加后的阅读次数
    */
-  increaseReadCount: (id: number) => {
+  increaseReadCount: (id: number | string) => {
     return post<ApiResponse<number>>(`/api/notices/${id}/read`)
   }
 }

@@ -15,7 +15,7 @@ export const documentApi = {
     return documentApi.uploadDocument(param)
   },
   update: (id: number | string, param: DocumentUpdateRequest) => {
-    return documentApi.updateDocument(Number(id), param)
+    return documentApi.updateDocument(String(id), param)
   },
   delete: (id: number | string) => {
     return documentApi.deleteDocument(id)
@@ -64,11 +64,11 @@ export const documentApi = {
 
   /**
    * 更新文档信息
-   * @param id 文档ID
+   * @param id 文档 ID
    * @param param 更新参数
    * @returns 请求结果
    */
-  updateDocument: (id: number, param: DocumentUpdateRequest) => {
+  updateDocument: (id: number | string, param: DocumentUpdateRequest) => {
     return put<ApiResponse<void>>(`/api/documents/${id}`, param)
   },
 
@@ -83,41 +83,41 @@ export const documentApi = {
 
   /**
    * 获取用户文档列表
-   * @param userId 用户ID
+   * @param userId 用户 ID
    * @param params 查询参数
    * @returns 文档列表
    */
-  getDocumentsByUser: (userId: number, params: DocumentQueryParams) => {
+  getDocumentsByUser: (userId: number | string, params: DocumentQueryParams) => {
     return get<ApiResponse<DocumentPageResponse>>(`/api/documents/user/${userId}`, params)
   },
-
+  
   /**
    * 获取选题文档列表
-   * @param topicId 选题ID
+   * @param topicId 选题 ID
    * @param params 查询参数
    * @returns 文档列表
    */
-  getDocumentsByTopic: (topicId: number, params: DocumentQueryParams) => {
+  getDocumentsByTopic: (topicId: number | string, params: DocumentQueryParams) => {
     return get<ApiResponse<DocumentPageResponse>>(`/api/documents/topic/${topicId}`, params)
   },
-
+  
   /**
    * 获取指定类型文档列表
    * @param fileType 文件类型
    * @param params 查询参数
    * @returns 文档列表
    */
-  getDocumentsByType: (fileType: number, params: DocumentQueryParams) => {
+  getDocumentsByType: (fileType: number | string, params: DocumentQueryParams) => {
     return get<ApiResponse<DocumentPageResponse>>(`/api/documents/type/${fileType}`, params)
   },
-
+  
   /**
    * 获取指定状态文档列表
    * @param reviewStatus 审核状态
    * @param params 查询参数
    * @returns 文档列表
    */
-  getDocumentsByStatus: (reviewStatus: number, params: DocumentQueryParams) => {
+  getDocumentsByStatus: (reviewStatus: number | string, params: DocumentQueryParams) => {
     return get<ApiResponse<DocumentPageResponse>>(`/api/documents/status/${reviewStatus}`, params)
   },
 

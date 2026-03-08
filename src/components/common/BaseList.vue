@@ -59,6 +59,7 @@
               <template v-else-if="column.component">
                 <component
                   :is="column.component"
+                  :key="`${scope.row.id}-${column.prop}`"
                   v-bind="getComponentProps(column.props, scope.row)"
                   :avatar="scope.row[column.prop]"
                 />
@@ -80,7 +81,7 @@
             <template #default="scope">
               <slot name="operations" :scope="scope">
                 <el-button @click="update(scope.row)" type="primary" size="small" v-if="showEditButton">编辑</el-button>
-                <el-button @click="confirmDel(scope.row.id)" type="danger" size="small" v-if="showDeleteButtonInRow">删除</el-button>
+                <el-button @click="confirmDel(scope.row?.id)" type="danger" size="small" v-if="showDeleteButtonInRow">删除</el-button>
               </slot>
             </template>
           </el-table-column>
@@ -88,6 +89,20 @@
       </div>
 
       <div class="pagination-container">
+        <div class="pagination-left">
+          <el-select 
+            v-model="queryForm.size" 
+            @change="handlePageSizeChange"
+            size="default"
+            style="width: 100px"
+          >
+            <el-option label="10 条" :value="10" />
+            <el-option label="50 条" :value="50" />
+            <el-option label="100 条" :value="100" />
+            <el-option label="500 条" :value="500" />
+          </el-select>
+        </div>
+        
         <el-pagination
           @current-change="handlePageChange"
           :page-size="queryForm.size"
@@ -95,6 +110,7 @@
           background
           layout="total, prev, pager, next, jumper"
           :total="total"
+          :pager-count="5"
           class="pagination"
           v-if="showPagination"
         />
@@ -287,6 +303,13 @@ function handlePageChange(page: number) {
   getList()
 }
 
+// 处理每页显示条数变化
+function handlePageSizeChange(size: number) {
+  queryForm.current = 1 // 重置到第一页
+  queryForm.size = size
+  getList()
+}
+
 // 重置查询条件
 function resetQuery() {
   // 重置所有搜索字段
@@ -318,13 +341,29 @@ function update(row: T) {
 // 删除操作
 async function del(id?: number | string) {
   if (!props.deleteApi) {
-    ElMessage.warning('未提供删除API')
+    ElMessage.warning('未提供删除 API')
     return
   }
 
   try {
     listLoading.value = true
-    const ids = id ? [Number(id)] : multipeSelection.value.map((item: any) => Number(item.id))
+    
+    let ids: string[] = []
+    if (id !== undefined) {
+      // 单个删除：保持字符串格式，避免精度丢失
+      console.log('🔍 BaseList del method - single delete id:', id, 'type:', typeof id)
+      ids = [String(id)]
+    } else {
+      // 批量删除：从选中记录中提取 ID，保持字符串格式
+      console.log('🔍 BaseList del method - batch delete from selections:', multipeSelection.value)
+      ids = multipeSelection.value.map((item: any) => {
+        const itemId = item.id
+        console.log('  📝 Selection item id:', itemId, 'type:', typeof itemId)
+        return String(itemId)
+      })
+    }
+    
+    console.log('🔍 BaseList del method - IDs to delete:', ids)
     
     if (ids.length === 0) {
       ElMessage.warning(MESSAGE.SELECT_DATA)
@@ -332,7 +371,8 @@ async function del(id?: number | string) {
     }
     
     // 批量删除需要逐个调用删除接口
-    const promises = ids.map(id => props.deleteApi!(String(id)))
+    const promises = ids.map(id => props.deleteApi!(id))
+    console.log('🔍 Calling delete APIs:', promises.length, 'requests')
     await Promise.allSettled(promises)
     
     ElMessage.success(MESSAGE.DELETE_SUCCESS)
@@ -340,7 +380,7 @@ async function del(id?: number | string) {
     emit('refresh')
   } catch (e: any) {
     console.error(MESSAGE.OPERATION_FAILED, e)
-    ElMessage.error(MESSAGE.OPERATION_FAILED)
+    ElMessage.error(e.message || MESSAGE.OPERATION_FAILED)
   } finally {
     listLoading.value = false
   }
@@ -381,7 +421,8 @@ function confirmDel(id?: number | string) {
 defineExpose({
   getList,
   resetQuery,
-  onSearch
+  onSearch,
+  confirmDel  // 暴露删除确认方法
 })
 </script>
 
@@ -436,7 +477,7 @@ defineExpose({
 
 .pagination-container {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
   background: #fff;
@@ -444,6 +485,13 @@ defineExpose({
   flex-shrink: 0;
   width: 100%;
   box-sizing: border-box;
+}
+
+.pagination-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 0; /* ✅ 紧贴左边界 */
 }
 
 .pagination {
