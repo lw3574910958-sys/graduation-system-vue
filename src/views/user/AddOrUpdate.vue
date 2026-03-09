@@ -171,8 +171,13 @@ const formFields = [
   {
     prop: 'password',
     label: '密码',
-    component: 'el-input',
-    props: { type: 'password', style: { width: '100%' }, placeholder: '至少包含字母和数字，长度≥6 位', showPassword: true },
+    component: 'PasswordWithGenerator', // 使用带生成器的密码输入组件
+    props: { 
+      type: 'password', 
+      style: { width: '100%' }, 
+      placeholder: '至少包含字母和数字，长度≥6 位', 
+      showPassword: true 
+    },
     // 编辑时可选（不传则不修改密码）
     optional: true,
   },

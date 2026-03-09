@@ -26,6 +26,13 @@
               :components="dynamicComponents"
             />
           </template>
+          <!-- 特殊处理 PasswordWithGenerator 组件 -->
+          <template v-else-if="field.component === 'PasswordWithGenerator'">
+            <PasswordWithGenerator
+              v-model="formData[field.prop]"
+              v-bind="field.props || {}"
+            />
+          </template>
           <!-- 其他组件 -->
           <template v-else>
             <!-- 特殊处理 el-select 组件，单独绑定 change 事件 -->
@@ -89,6 +96,7 @@
 import { ref, reactive, computed, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import FileUpload from '@/components/common/FileUpload.vue'
+import PasswordWithGenerator from '@/components/common/PasswordWithGenerator.vue'
 import { MESSAGE } from '@/constants/user'
 import { urls2FileList } from '@/utils/utils'
 
@@ -277,6 +285,7 @@ function onCancel() {
 // 注册动态组件
 const dynamicComponents = {
   FileUpload,
+  PasswordWithGenerator,
 }
 
 // 暴露方法给父组件
