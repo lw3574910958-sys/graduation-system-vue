@@ -55,4 +55,22 @@ export const userApi = {
     console.log('🔍 deleteUser API called with id:', id)
     return del<ApiResponse<void>>(`/api/users/${id}`)
   },
+
+  /**
+   * 启用用户
+   * @param id 用户 ID
+   * @returns 请求结果
+   */
+  enableUser: (id: string) => {
+    return post<ApiResponse<void>>(`/api/users/${id}/enable`)
+  },
+
+  /**
+   * 禁用用户
+   * @param id 用户 ID
+   * @returns 请求结果
+   */
+  disableUser: (id: string) => {
+    return post<ApiResponse<void>>(`/api/users/${id}/disable`)
+  },
 }

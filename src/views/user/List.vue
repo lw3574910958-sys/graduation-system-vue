@@ -32,6 +32,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { UserFilled } from '@element-plus/icons-vue'
 import Avatar from '@/components/common/Avatar.vue'
 import StatusTag from '@/components/common/StatusTag.vue'
+import StatusSwitch from '@/components/common/StatusSwitch.vue'
 // 导入用户类型常量和消息常量
 import { USER_TYPE_LABELS, MESSAGE } from '@/constants/user'
 import type { UserResponse } from '@/types/api/user'
@@ -102,8 +103,12 @@ const tableColumns = [
     label: '状态',
     headerAlign: 'center',
     align: 'center',
-    component: StatusTag,
-    props: { status: (row: UserRow) => row.status }
+    width: 120,
+    component: StatusSwitch,
+    props: {
+      row: (row: UserRow) => row,
+      onToggle: (row: UserRow) => () => toggleStatus(row),
+    },
   },
   { prop: 'lastLoginAt', label: '最后登录时间', headerAlign: 'center', align: 'center' },
   { prop: 'createdAt', label: '创建时间', headerAlign: 'center', align: 'center' },
@@ -141,6 +146,47 @@ function confirmDel(id?: any) {
   // 由于使用 BaseList，删除逻辑已在 BaseList 中处理
   // 这里需要手动触发 BaseList 的 confirmDel 方法
   listRef.value?.confirmDel && listRef.value.confirmDel(id)
+}
+
+/**
+ * 切换用户状态
+ * @param row 用户行数据
+ * @returns Promise<void>
+ */
+async function toggleStatus(row: UserRow): Promise<void> {
+  const isEnabled = row.status === 1
+  const action = isEnabled ? '禁用' : '启用'
+  
+  try {
+    await ElMessageBox.confirm(
+      `确定要${action}该用户吗？`,
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: isEnabled ? 'warning' : 'success',
+      }
+    )
+    
+    // 调用 API
+    if (isEnabled) {
+      await userApi.disableUser(String(row.id))
+    } else {
+      await userApi.enableUser(String(row.id))
+    }
+    
+    ElMessage.success(`${action}成功`)
+    
+    // 刷新列表
+    getList()
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      console.error(`${action}失败:`, error)
+      ElMessage.error(error?.message || `${action}失败`)
+      throw error // 抛出错误，让组件知道操作失败
+    }
+    throw error // 用户取消时也抛出错误
+  }
 }
 
 /**

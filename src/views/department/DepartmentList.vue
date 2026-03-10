@@ -49,6 +49,12 @@ const searchFields = [
     label: '院系名称：',
     component: 'el-input',
     props: { placeholder: '请输入院系名称' }
+  },
+  {
+    prop: 'code',
+    label: '院系代码：',
+    component: 'el-input',
+    props: { placeholder: '请输入院系代码' }
   }
 ]
 
@@ -73,13 +79,14 @@ function handleEdit(row: DepartmentRow) {
 // 确认删除
 async function confirmDel(id: number | string) {
   try {
-    await ElMessageBox.confirm('确定要删除吗?', '提示', {
+    await ElMessageBox.confirm('确定要删除吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',
     })
     
-    const response = await departmentApi.delete(Number(id))
+    // 保持 ID 为字符串格式，避免雪花 ID 精度丢失
+    const response = await departmentApi.delete(String(id))
     if (response?.code === 200) {
       ElMessage.success(MESSAGE.DELETE_SUCCESS)
       // 重新获取列表
