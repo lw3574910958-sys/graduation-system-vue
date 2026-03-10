@@ -68,10 +68,7 @@
             <template #default="scope">
               <!-- 如果有 render 函数且没有 component -->
               <template v-if="column.render && !column.component">
-                <SafeText 
-                  :content="column.render(scope.row, scope.$index, scope.column)" 
-                  :allow-html="false" 
-                />
+                <span v-html="column.render(scope.row, scope.$index, scope.column)"></span>
               </template>
               <!-- 如果有 component 组件 -->
               <template v-else-if="column.component">

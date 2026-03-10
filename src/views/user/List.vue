@@ -76,6 +76,18 @@ const searchFields = [
       ]
     },
   },
+  {
+    prop: 'status',
+    label: '状态：',
+    component: 'el-select',
+    props: {
+      placeholder: '请选择状态',
+      options: [
+        { label: '启用', value: 1 },
+        { label: '禁用', value: 0 }
+      ]
+    }
+  }
 ]
 
 // 表格列配置

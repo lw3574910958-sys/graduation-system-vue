@@ -60,14 +60,38 @@ const formData = reactive<NoticeCreateRequest & NoticeUpdateRequest>({
 const formRules = {
   title: [
     { required: true, message: '请输入通知标题', trigger: 'blur' },
-    { min: 2, max: 100, message: '标题长度应在2-100个字符之间', trigger: 'blur' }
+    { min: 2, max: 100, message: '标题长度应在 2-100 个字符之间', trigger: 'blur' }
   ],
   content: [
     { required: true, message: '请输入通知内容', trigger: 'blur' },
-    { min: 10, message: '内容至少10个字符', trigger: 'blur' }
+    { min: 10, message: '内容至少 10 个字符', trigger: 'blur' }
   ],
   type: [
     { required: true, message: '请选择通知类型', trigger: 'change' }
+  ],
+  startTime: [
+    { 
+      validator: (rule: any, value: string, callback: any) => {
+        if (value && formData.endTime && value > formData.endTime) {
+          callback(new Error('开始时间不能晚于结束时间'))
+        } else {
+          callback()
+        }
+      }, 
+      trigger: 'change' 
+    }
+  ],
+  endTime: [
+    { 
+      validator: (rule: any, value: string, callback: any) => {
+        if (value && formData.startTime && value < formData.startTime) {
+          callback(new Error('结束时间不能早于开始时间'))
+        } else {
+          callback()
+        }
+      }, 
+      trigger: 'change' 
+    }
   ]
 }
 
@@ -131,16 +155,62 @@ const resetForm = () => {
     attachmentUrl: '',
     publishNow: false
   })
+  // 清除表单验证错误
+  formRef.value?.clearValidate()
   formRef.value?.resetFields()
+}
+
+// 关闭对话框并重置表单
+const closeDialogAndReset = () => {
+  dialogVisible.value = false
+  // 等待对话框关闭动画完成后重置表单
+  setTimeout(() => {
+    resetForm()
+  }, 200)
+}
+
+// 提交表单 - 创建模式
+const handleSubmitCreate = async (publishNow = false) => {
+  try {
+    await formRef.value.validate()
+    
+    // 创建模式
+    const createData: NoticeCreateRequest = {
+      title: formData.title,
+      content: formData.content,
+      type: formData.type,
+      priority: formData.priority,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      isSticky: formData.isSticky,
+      targetScope: formData.targetScope,
+      attachmentUrl: formData.attachmentUrl,
+      publishNow: publishNow  // 根据参数决定是否立即发布
+    }
+    
+    const res = await noticeApi.createNotice(createData)
+    if (res.code === 200) {
+      ElMessage.success(publishNow ? '创建成功' : '暂存成功')
+      closeDialogAndReset()  // 关闭对话框并重置表单
+      emit('success')
+    }
+  } catch (error: any) {
+    console.error('提交失败:', error)
+    if (error.response?.data?.message) {
+      ElMessage.error(error.response.data.message)
+    } else {
+      ElMessage.error('创建失败')
+    }
+  }
 }
 
 // 提交表单
 const handleSubmit = async () => {
-  try {
-    await formRef.value.validate()
-    
-    if (isEditMode.value) {
-      // 编辑模式
+  if (isEditMode.value) {
+    // 编辑模式
+    try {
+      await formRef.value.validate()
+      
       const updateData: NoticeUpdateRequest = {
         title: formData.title,
         content: formData.content,
@@ -156,44 +226,26 @@ const handleSubmit = async () => {
       const res = await noticeApi.updateNotice(props.notice!.id, updateData)
       if (res.code === 200) {
         ElMessage.success('更新成功')
-        dialogVisible.value = false
+        closeDialogAndReset()  // 关闭对话框并重置表单
         emit('success')
       }
-    } else {
-      // 新建模式
-      const createData: NoticeCreateRequest = {
-        title: formData.title,
-        content: formData.content,
-        type: formData.type,
-        priority: formData.priority,
-        startTime: formData.startTime,
-        endTime: formData.endTime,
-        isSticky: formData.isSticky,
-        targetScope: formData.targetScope,
-        attachmentUrl: formData.attachmentUrl,
-        publishNow: formData.publishNow
-      }
-      
-      const res = await noticeApi.createNotice(createData)
-      if (res.code === 200) {
-        ElMessage.success('创建成功')
-        dialogVisible.value = false
-        emit('success')
+    } catch (error: any) {
+      console.error('提交失败:', error)
+      if (error.response?.data?.message) {
+        ElMessage.error(error.response.data.message)
+      } else {
+        ElMessage.error('更新失败')
       }
     }
-  } catch (error: any) {
-    console.error('提交失败:', error)
-    if (error.response?.data?.message) {
-      ElMessage.error(error.response.data.message)
-    } else {
-      ElMessage.error(isEditMode.value ? '更新失败' : '创建失败')
-    }
+  } else {
+    // 新增模式：根据 publishNow 开关决定调用哪个方法
+    handleSubmitCreate(formData.publishNow)
   }
 }
 
 // 关闭对话框
 const handleClose = () => {
-  dialogVisible.value = false
+  closeDialogAndReset()
 }
 </script>
 
@@ -281,12 +333,11 @@ const handleClose = () => {
         />
       </el-form-item>
       
-      <el-form-item v-if="!isEditMode" label="立即发布">
-        <el-switch
-          v-model="formData.publishNow"
-          active-text="是"
-          inactive-text="否"
-        />
+      <el-form-item v-if="!isEditMode" label="发布设置">
+        <el-radio-group v-model="formData.publishNow" style="width: 100%">
+          <el-radio :label="true">立即发布</el-radio>
+          <el-radio :label="false">暂存为草稿</el-radio>
+        </el-radio-group>
       </el-form-item>
       
       <el-form-item label="附件链接">
@@ -310,9 +361,15 @@ const handleClose = () => {
     
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">
-          {{ isEditMode ? '更新' : '创建' }}
+        <el-button @click="closeDialogAndReset">取消</el-button>
+        <el-button v-if="!isEditMode && !formData.publishNow" type="primary" @click="handleSubmit">
+          暂存
+        </el-button>
+        <el-button v-if="!isEditMode && formData.publishNow" type="primary" @click="handleSubmit">
+          立即发布
+        </el-button>
+        <el-button v-if="isEditMode" type="primary" @click="handleSubmit">
+          更新
         </el-button>
       </span>
     </template>
