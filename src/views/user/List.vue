@@ -72,7 +72,8 @@ const searchFields = [
       options: [
         { label: '学生', value: 'student' },
         { label: '教师', value: 'teacher' },
-        { label: '管理员', value: 'admin' },
+        { label: '系统管理员', value: 'system_admin' },
+        { label: '院系管理员', value: 'department_admin' },
       ],
     },
   },

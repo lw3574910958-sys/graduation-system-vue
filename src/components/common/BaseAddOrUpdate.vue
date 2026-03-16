@@ -41,6 +41,7 @@
                 v-model:model-value="formData[field.prop]"
                 v-bind="field.props || {}"
                 :readonly="field.readonly || (formData.id && field.readonlyWhenUpdate)"
+                :disabled="field.disabled || (formData.id && field.disabledWhenUpdate)"
                 @change="field.props?.onChange ? field.props.onChange(formData[field.prop]) : null"
               >
                 <el-option
@@ -58,6 +59,7 @@
                 v-model:model-value="formData[field.prop]"
                 v-bind="field.props || {}"
                 :readonly="field.readonly || (formData.id && field.readonlyWhenUpdate)"
+                :disabled="field.disabled || (formData.id && field.disabledWhenUpdate)"
                 :components="dynamicComponents"
               >
                 <!-- 特殊处理 el-select 的选项 -->
@@ -110,6 +112,8 @@ interface FormField {
   optionComponent?: string
   readonly?: boolean
   readonlyWhenUpdate?: boolean // 更新时只读
+  disabled?: boolean
+  disabledWhenUpdate?: boolean // 更新时禁用
   showWhen?: (formData: T) => boolean // 条件显示字段
   required?: boolean | ((formData: T) => boolean) // 是否必填，支持函数
   style?: Record<string, any> // 自定义样式

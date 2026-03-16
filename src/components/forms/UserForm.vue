@@ -144,7 +144,8 @@ const submitLoading = ref(false)
 const userTypeOptions = [
   { value: 'student', label: '学生' },
   { value: 'teacher', label: '教师' },
-  { value: 'admin', label: '管理员' }
+  { value: 'system_admin', label: '系统管理员' },
+  { value: 'department_admin', label: '院系管理员' }
 ]
 
 // 部门选项

@@ -6,8 +6,9 @@
 // 用户类型枚举 (对应后端 UserType)
 export const USER_TYPE_ENUM = {
   STUDENT: 'student',
-  TEACHER: 'teacher', 
-  ADMIN: 'admin'
+  TEACHER: 'teacher',
+  SYSTEM_ADMIN: 'system_admin',
+  DEPARTMENT_ADMIN: 'department_admin'
 } as const
 
 // 系统角色枚举 (对应后端 SystemRole)

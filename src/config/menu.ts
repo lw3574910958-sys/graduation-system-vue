@@ -26,13 +26,13 @@ export const menuConfig: MenuItem[] = [
     title: '欢迎页',
     icon: 'House',
     path: '/welcome',
-    userType: [USER_TYPE_ENUM.STUDENT, USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.ADMIN]
+    userType: [USER_TYPE_ENUM.STUDENT, USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN]
   },
   {
     index: 'user-management',
     title: '用户管理',
     icon: 'User',
-    userType: [USER_TYPE_ENUM.ADMIN],
+    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN],
     children: [
       {
         index: 'user-list',
@@ -46,7 +46,7 @@ export const menuConfig: MenuItem[] = [
     index: 'topic-management',
     title: '课题管理',
     icon: 'FolderOpened',
-    userType: [USER_TYPE_ENUM.STUDENT, USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.ADMIN],
+    userType: [USER_TYPE_ENUM.STUDENT, USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN],
     children: [
       {
         index: 'topic-list',
@@ -60,7 +60,7 @@ export const menuConfig: MenuItem[] = [
     index: 'selection-management',
     title: '选题管理',
     icon: 'Collection',
-    userType: [USER_TYPE_ENUM.STUDENT, USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.ADMIN],
+    userType: [USER_TYPE_ENUM.STUDENT, USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN],
     children: [
       {
         index: 'selection-list',
@@ -74,7 +74,7 @@ export const menuConfig: MenuItem[] = [
     index: 'document-management',
     title: '文档管理',
     icon: 'Document',
-    userType: [USER_TYPE_ENUM.STUDENT, USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.ADMIN],
+    userType: [USER_TYPE_ENUM.STUDENT, USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN],
     children: [
       {
         index: 'document-list',
@@ -88,7 +88,7 @@ export const menuConfig: MenuItem[] = [
     index: 'grade-management',
     title: '成绩管理',
     icon: 'Star',
-    userType: [USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.ADMIN],
+    userType: [USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN],
     children: [
       {
         index: 'grade-list',
@@ -102,7 +102,7 @@ export const menuConfig: MenuItem[] = [
     index: 'department-management',
     title: '院系管理',
     icon: 'OfficeBuilding',
-    userType: [USER_TYPE_ENUM.ADMIN],
+    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN],
     children: [
       {
         index: 'department-list',
@@ -116,7 +116,7 @@ export const menuConfig: MenuItem[] = [
     index: 'notice-management',
     title: '公告管理',
     icon: 'Bell',
-    userType: [USER_TYPE_ENUM.ADMIN],
+    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN],
     children: [
       {
         index: 'notice-list',

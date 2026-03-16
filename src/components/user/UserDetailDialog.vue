@@ -64,7 +64,7 @@
 
       <!-- 管理员详细信息 -->
       <el-divider content-position="left">🔧 管理员信息</el-divider>
-      <el-descriptions :column="2" border v-if="userData.userType === 'admin'">
+      <el-descriptions :column="2" border v-if="userData.userType === 'system_admin' || userData.userType === 'department_admin'">
         <el-descriptions-item label="管理员编号">{{
           userData.adminId || '-'
         }}</el-descriptions-item>
@@ -147,7 +147,8 @@ const getUserTypeTag = (userType: string) => {
   const tagMap: Record<string, any> = {
     student: 'primary',
     teacher: 'success',
-    admin: 'warning',
+    system_admin: 'danger',
+    department_admin: 'warning',
   }
   return tagMap[userType] || 'info'
 }

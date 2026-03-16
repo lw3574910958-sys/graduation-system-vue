@@ -35,7 +35,8 @@ export const USER_TYPE = USER_TYPE_ENUM
 export const USER_TYPE_LABELS = {
   [USER_TYPE.STUDENT]: '学生',
   [USER_TYPE.TEACHER]: '教师',
-  [USER_TYPE.ADMIN]: '管理员',
+  [USER_TYPE.SYSTEM_ADMIN]: '系统管理员',
+  [USER_TYPE.DEPARTMENT_ADMIN]: '院系管理员',
 } as const
 
 // 导出后端同步的枚举常量

@@ -6,7 +6,8 @@
 export enum UserType {
   Student = 'student',
   Teacher = 'teacher',
-  Admin = 'admin',
+  SystemAdmin = 'system_admin',
+  DepartmentAdmin = 'department_admin',
 }
 
 // 分页查询参数

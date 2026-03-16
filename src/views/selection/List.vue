@@ -54,7 +54,7 @@
         </template>
         
         <!-- 管理员角色操作 -->
-        <template v-if="userType === 'admin'">
+        <template v-if="userType === 'system_admin' || userType === 'department_admin'">
           <el-button @click="viewDetails(scope.row)" type="info" size="small">查看详情</el-button>
         </template>
       </template>

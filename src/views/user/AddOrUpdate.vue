@@ -63,10 +63,12 @@ const formFields = [
     label: '用户类型',
     component: 'el-select',
     props: { placeholder: '请选择用户类型', style: { width: '100%' } },
+    disabledWhenUpdate: true, // 编辑时禁用用户类型字段，防止数据多变
     options: [
       { label: '学生', value: 'student' },
       { label: '教师', value: 'teacher' },
-      { label: '管理员', value: 'admin' },
+      { label: '系统管理员', value: 'system_admin' },
+      { label: '院系管理员', value: 'department_admin' },
     ],
   },
   // 学号/工号/管理员编号 (根据用户类型动态显示)
@@ -89,7 +91,7 @@ const formFields = [
     label: '管理员编号',
     component: 'el-input',
     props: { style: { width: '100%' }, placeholder: '请输入管理员编号' },
-    showWhen: (formData: any) => formData.userType === 'admin',
+    showWhen: (formData: any) => formData.userType === 'system_admin' || formData.userType === 'department_admin',
   },
   // 性别字段 (学生和教师需要)
   {
@@ -272,7 +274,7 @@ const formRules = {
     },
     {
       validator: (rule: any, value: any, callback: (error?: Error | undefined) => void) => {
-        const validTypes = ['student', 'teacher', 'admin'];
+        const validTypes = ['student', 'teacher', 'system_admin', 'department_admin'];
         if (!value || !validTypes.includes(value)) {
           callback(new Error('请选择有效的用户类型'));
         } else {
