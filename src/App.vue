@@ -6,8 +6,8 @@ import GlobalLoading from '@/components/common/GlobalLoading.vue'
 // 初始化认证状态
 const authStore = useAuthStore();
 
-// 如果已登录，尝试获取用户信息
-if (authStore.checkAuth()) {
+// 如果已登录且用户信息不存在，尝试获取用户信息
+if (authStore.checkAuth() && !authStore.userInfo && !authStore.isFetchingUserInfo) {
   authStore.fetchUserInfo().catch(error => {
     console.warn('获取用户信息失败:', error);
   });

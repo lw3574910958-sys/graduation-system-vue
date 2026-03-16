@@ -25,60 +25,60 @@
 
       <!-- 学生详细信息 -->
       <el-divider content-position="left">🎓 学生信息</el-divider>
-      <el-descriptions :column="2" border v-if="userData.userType === 'student' && studentDetail">
-        <el-descriptions-item label="学号">{{ studentDetail.studentId }}</el-descriptions-item>
+      <el-descriptions :column="2" border v-if="userData.userType === 'student'">
+        <el-descriptions-item label="学号">{{ userData.studentId }}</el-descriptions-item>
         <el-descriptions-item label="性别">
-          {{ studentDetail.gender === 1 ? '男' : '女' }}
+          {{ userData.gender === 1 ? '男' : '女' }}
         </el-descriptions-item>
-        <el-descriptions-item label="专业">{{ studentDetail.major }}</el-descriptions-item>
-        <el-descriptions-item label="班级">{{ studentDetail.className }}</el-descriptions-item>
+        <el-descriptions-item label="专业">{{ userData.major }}</el-descriptions-item>
+        <el-descriptions-item label="班级">{{ userData.className }}</el-descriptions-item>
         <el-descriptions-item label="所属院系">
-          {{ getDepartmentName(studentDetail.departmentId) }}
+          {{ getDepartmentName(userData.departmentId) }}
         </el-descriptions-item>
         <el-descriptions-item label="邮箱">
-          {{ studentDetail.email || '-' }}
+          {{ userData.email || '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="手机号">
-          {{ studentDetail.phone || '-' }}
+          {{ userData.phone || '-' }}
         </el-descriptions-item>
       </el-descriptions>
 
       <!-- 教师详细信息 -->
       <el-divider content-position="left">👨‍🏫 教师信息</el-divider>
-      <el-descriptions :column="2" border v-if="userData.userType === 'teacher' && teacherDetail">
-        <el-descriptions-item label="工号">{{ teacherDetail.teacherId }}</el-descriptions-item>
+      <el-descriptions :column="2" border v-if="userData.userType === 'teacher'">
+        <el-descriptions-item label="工号">{{ userData.teacherId }}</el-descriptions-item>
         <el-descriptions-item label="性别">
-          {{ teacherDetail.gender === 1 ? '男' : '女' }}
+          {{ userData.gender === 1 ? '男' : '女' }}
         </el-descriptions-item>
-        <el-descriptions-item label="职称">{{ teacherDetail.title }}</el-descriptions-item>
+        <el-descriptions-item label="职称">{{ userData.title }}</el-descriptions-item>
         <el-descriptions-item label="所属院系">
-          {{ getDepartmentName(teacherDetail.departmentId) }}
+          {{ getDepartmentName(userData.departmentId) }}
         </el-descriptions-item>
         <el-descriptions-item label="邮箱">
-          {{ teacherDetail.email || '-' }}
+          {{ userData.email || '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="手机号">
-          {{ teacherDetail.phone || '-' }}
+          {{ userData.phone || '-' }}
         </el-descriptions-item>
       </el-descriptions>
 
       <!-- 管理员详细信息 -->
       <el-divider content-position="left">🔧 管理员信息</el-divider>
-      <el-descriptions :column="2" border v-if="userData.userType === 'admin' && adminDetail">
-        <el-descriptions-item label="管理员编号">{{ adminDetail.adminId || '-' }}</el-descriptions-item>
+      <el-descriptions :column="2" border v-if="userData.userType === 'admin'">
+        <el-descriptions-item label="管理员编号">{{ userData.adminId || '-' }}</el-descriptions-item>
         <el-descriptions-item label="角色级别">
-          <el-tag :type="adminDetail.roleLevel === 0 ? 'danger' : 'primary'">
-            {{ adminDetail.roleLevelDesc || '-' }}
+          <el-tag :type="userData.roleLevel === 0 ? 'danger' : 'primary'">
+            {{ userData.roleLevel === 0 ? '系统管理员' : '院系管理员' }}
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="所属院系" :span="2">
-          {{ adminDetail.departmentName || '-' }}
+          {{ getDepartmentName(userData.departmentId) }}
         </el-descriptions-item>
         <el-descriptions-item label="手机号">
-          {{ adminDetail.phone || '-' }}
+          {{ userData.phone || '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="邮箱">
-          {{ adminDetail.email || '-' }}
+          {{ userData.email || '-' }}
         </el-descriptions-item>
       </el-descriptions>
 
@@ -93,14 +93,8 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
 import { userApi } from '@/api/user'
-import { studentApi } from '@/api/student'
-import { teacherApi } from '@/api/teacher'
-import { adminApi } from '@/api/admin'
 import { departmentApi } from '@/api/department'
 import type { UserResponse } from '@/types/api/user'
-import type { StudentDetailResponse } from '@/types/api/student'
-import type { TeacherDetailResponse } from '@/types/api/teacher'
-import type { AdminDetailResponse } from '@/types/api/admin'
 import { USER_TYPE_LABELS } from '@/constants/user'
 import type { DepartmentResponse } from '@/types/api/department'
 
@@ -123,9 +117,6 @@ const dialogVisible = ref(false)
 
 // 用户数据
 const userData = ref<UserResponse>({} as UserResponse)
-const studentDetail = ref<StudentDetailResponse | null>(null)
-const teacherDetail = ref<TeacherDetailResponse | null>(null)
-const adminDetail = ref<AdminDetailResponse | null>(null)
 
 // 加载状态
 const loading = ref(false)
@@ -180,36 +171,13 @@ const getDepartmentName = (departmentId?: number) => {
 const loadUserDetail = async (userId: string) => {
   loading.value = true
   try {
-    // 先清空之前的数据
-    studentDetail.value = null
-    teacherDetail.value = null
-    adminDetail.value = null
-    
     // 获取用户基本信息
-    const userRes = await userApi.getUserById(userId)
+    const userRes = await userApi.getUserByUserId(userId)
     if (userRes.code === 200 && userRes.data) {
       userData.value = userRes.data
       
       // 加载院系数据
       await loadDepartments()
-      
-      // 根据用户类型获取详细信息
-      if (userRes.data.userType === 'student') {
-        const studentRes = await studentApi.getStudentByUserId(userId)
-        if (studentRes.code === 200 && studentRes.data) {
-          studentDetail.value = studentRes.data
-        }
-      } else if (userRes.data.userType === 'teacher') {
-        const teacherRes = await teacherApi.getTeacherByUserId(userId)
-        if (teacherRes.code === 200 && teacherRes.data) {
-          teacherDetail.value = teacherRes.data
-        }
-      } else if (userRes.data.userType === 'admin') {
-        const adminRes = await adminApi.getAdminByUserId(userId)
-        if (adminRes.code === 200 && adminRes.data) {
-          adminDetail.value = adminRes.data
-        }
-      }
     }
   } catch (error) {
     console.error('获取用户详情失败:', error)
@@ -233,8 +201,6 @@ const loadDepartments = async () => {
 // 关闭对话框后的清理
 const handleClosed = () => {
   userData.value = {} as UserResponse
-  studentDetail.value = null
-  teacherDetail.value = null
 }
 
 // 暴露方法给父组件

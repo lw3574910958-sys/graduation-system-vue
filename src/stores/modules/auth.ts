@@ -19,6 +19,8 @@ export const useAuthStore = defineStore('auth', () => {
   const userInfo = ref<LoginUserInfoResponse | null>(null)
   // 登录状态
   const isAuthenticated = ref(!!token.value)
+  // 防止重复获取用户信息的标志
+  const isFetchingUserInfo = ref(false)
 
   // 👇 监听 localStorage 变化（跨标签页同步）
   const handleStorageChange = (e: StorageEvent) => {
@@ -74,7 +76,14 @@ export const useAuthStore = defineStore('auth', () => {
       throw new Error('未登录')
     }
 
+    // 防止重复调用
+    if (isFetchingUserInfo.value) {
+      console.log('用户信息正在获取中，跳过本次请求')
+      return userInfo.value
+    }
+
     try {
+      isFetchingUserInfo.value = true
       const userData = await fetchUserInfoWithTimeout(constants.USER_INFO_FETCH_TIMEOUT)
       userInfo.value = userData
       isAuthenticated.value = true
@@ -87,6 +96,8 @@ export const useAuthStore = defineStore('auth', () => {
       }
       clearAuth()
       throw error
+    } finally {
+      isFetchingUserInfo.value = false
     }
   }
 
@@ -99,6 +110,7 @@ export const useAuthStore = defineStore('auth', () => {
     token,
     userInfo,
     isAuthenticated,
+    isFetchingUserInfo,
     setToken,
     clearAuth,
     fetchUserInfo,

@@ -19,12 +19,21 @@ export const userApi = {
   },
 
   /**
-   * 根据 ID 获取用户详情
+   * 根据ID获取用户详情
    * @param id 用户 ID
    * @returns 用户详情
    */
   getUserById: (id: string) => {
     return get<ApiResponse<UserResponse>>(`/api/users/${id}`, {})
+  },
+  
+  /**
+   * 根据用户 ID获取用户详情（统一接口）
+   * @param userId 用户 ID
+   * @returns 用户详情
+   */
+  getUserByUserId: (userId: string) => {
+    return get<ApiResponse<UserResponse>>(`/api/users/${userId}`, {})
   },
 
   /**

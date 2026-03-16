@@ -103,16 +103,22 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.meta.requiresAuth) {
     if (authStore.checkAuth()) {
-      try {
-        await authStore.fetchUserInfo()
-        next()
-      } catch (error: any) {
-        if (error.message === 'UNAUTHORIZED') {
-          next('/login')
-        } else {
-          ElMessage.error('获取用户信息失败')
-          next('/login')
+      // 只有在用户信息不存在且没有在获取中时才调用接口
+      if (!authStore.userInfo && !authStore.isFetchingUserInfo) {
+        try {
+          await authStore.fetchUserInfo()
+          next()
+        } catch (error: any) {
+          if (error.message === 'UNAUTHORIZED') {
+            next('/login')
+          } else {
+            ElMessage.error('获取用户信息失败')
+            next('/login')
+          }
         }
+      } else {
+        // 用户信息已存在或正在获取，直接放行
+        next()
       }
     } else {
       next('/login')
