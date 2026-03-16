@@ -35,11 +35,11 @@ import StatusTag from '@/components/common/StatusTag.vue'
 import StatusSwitch from '@/components/common/StatusSwitch.vue'
 // 导入用户类型常量和消息常量
 import { USER_TYPE_LABELS, MESSAGE } from '@/constants/user'
-import type { UserResponse } from '@/types/api/user'
+import type { UserListResponse } from '@/types/api/user'
 import BaseList from '@/components/common/BaseList.vue'
 
 // 使用统一的类型定义
-type UserRow = UserResponse
+type UserRow = UserListResponse
 
 // 定义操作组件引用--新增/编辑
 const operateRef = ref()
@@ -67,13 +67,13 @@ const searchFields = [
     prop: 'userType',
     label: '用户类型：',
     component: 'el-select',
-    props: { 
+    props: {
       placeholder: '请选择用户类型',
       options: [
         { label: '学生', value: 'student' },
         { label: '教师', value: 'teacher' },
         { label: '管理员', value: 'admin' },
-      ]
+      ],
     },
   },
   {
@@ -84,10 +84,10 @@ const searchFields = [
       placeholder: '请选择状态',
       options: [
         { label: '启用', value: 1 },
-        { label: '禁用', value: 0 }
-      ]
-    }
-  }
+        { label: '禁用', value: 0 },
+      ],
+    },
+  },
 ]
 
 // 表格列配置
@@ -168,27 +168,23 @@ function confirmDel(id?: any) {
 async function toggleStatus(row: UserRow): Promise<void> {
   const isEnabled = row.status === 1
   const action = isEnabled ? '禁用' : '启用'
-  
+
   try {
-    await ElMessageBox.confirm(
-      `确定要${action}该用户吗？`,
-      '提示',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: isEnabled ? 'warning' : 'success',
-      }
-    )
-    
+    await ElMessageBox.confirm(`确定要${action}该用户吗？`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: isEnabled ? 'warning' : 'success',
+    })
+
     // 调用 API
     if (isEnabled) {
       await userApi.disableUser(String(row.id))
     } else {
       await userApi.enableUser(String(row.id))
     }
-    
+
     ElMessage.success(`${action}成功`)
-    
+
     // 刷新列表
     getList()
   } catch (error: any) {

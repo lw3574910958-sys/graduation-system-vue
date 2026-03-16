@@ -1,6 +1,27 @@
+// 用户分页响应类型
+export interface UserPageResponse {
+  records: UserListResponse[]
+  total: number
+  current: number
+  size: number
+  pages: number
+}
+
 // 用户信息响应类型 (对应后端 UserListInfoVO)
-export interface UserResponse {
-  id: string  // 使用 string 类型避免 JavaScript Number 精度丢失
+export interface UserListResponse {
+  id: string // 使用 string 类型避免 JavaScript Number 精度丢失
+  username: string
+  realName: string
+  userType: string
+  avatar?: string
+  status: number
+  createdAt?: string
+  lastLoginAt?: string
+}
+
+// 用户信息响应类型 (对应后端 UserDetailsInfoVO)
+export interface UserDetailsResponse {
+  id: string // 使用 string 类型避免 JavaScript Number 精度丢失
   username: string
   realName: string
   userType: string
@@ -23,7 +44,7 @@ export interface UserResponse {
   title?: string
   // 管理员特有字段
   adminId?: string
-  roleLevel?: number  // 只读，由后端根据院系 ID 自动计算
+  roleLevel?: number // 只读，由后端根据院系 ID 自动计算
 }
 
 // 用户创建请求类型 (与后端 UserCreateDTO 完全对应)
@@ -53,7 +74,7 @@ export interface UserCreateRequest {
 export interface UserUpdateRequest {
   realName?: string
   userType?: string
-  password?: string  // 编辑时可选，不传则不修改密码
+  password?: string // 编辑时可选，不传则不修改密码
   email?: string
   phone?: string
   departmentId?: number
@@ -71,25 +92,14 @@ export interface UserUpdateRequest {
   adminId?: string
 }
 
-// 用户分页响应类型
-export interface UserPageResponse {
-  records: UserResponse[]
-  total: number
-  current: number
-  size: number
-  pages: number
-}
-
 // 登录用户信息类型
 export interface LoginUserInfoResponse {
-  id: string  // 使用 string 类型避免 JavaScript Number 精度丢失
+  id: string // 使用 string 类型避免 JavaScript Number 精度丢失
   username: string
   realName: string
   userType: string
   createdAt?: string
 }
-
-
 
 // 用户查询参数类型
 export interface UserQueryParams {

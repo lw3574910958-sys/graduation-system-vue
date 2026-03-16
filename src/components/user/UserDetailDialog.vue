@@ -65,7 +65,9 @@
       <!-- 管理员详细信息 -->
       <el-divider content-position="left">🔧 管理员信息</el-divider>
       <el-descriptions :column="2" border v-if="userData.userType === 'admin'">
-        <el-descriptions-item label="管理员编号">{{ userData.adminId || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="管理员编号">{{
+          userData.adminId || '-'
+        }}</el-descriptions-item>
         <el-descriptions-item label="角色级别">
           <el-tag :type="userData.roleLevel === 0 ? 'danger' : 'primary'">
             {{ userData.roleLevel === 0 ? '系统管理员' : '院系管理员' }}
@@ -82,7 +84,6 @@
         </el-descriptions-item>
       </el-descriptions>
 
-
       <template #footer>
         <el-button @click="dialogVisible = false">关闭</el-button>
       </template>
@@ -94,7 +95,7 @@
 import { ref, reactive, watch } from 'vue'
 import { userApi } from '@/api/user'
 import { departmentApi } from '@/api/department'
-import type { UserResponse } from '@/types/api/user'
+import type { UserDetailsResponse } from '@/types/api/user'
 import { USER_TYPE_LABELS } from '@/constants/user'
 import type { DepartmentResponse } from '@/types/api/department'
 
@@ -107,7 +108,7 @@ interface Emits {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: false
+  modelValue: false,
 })
 
 const emit = defineEmits<Emits>()
@@ -116,7 +117,7 @@ const emit = defineEmits<Emits>()
 const dialogVisible = ref(false)
 
 // 用户数据
-const userData = ref<UserResponse>({} as UserResponse)
+const userData = ref<UserDetailsResponse>({} as UserDetailsResponse)
 
 // 加载状态
 const loading = ref(false)
@@ -125,9 +126,12 @@ const loading = ref(false)
 const departments = ref<DepartmentResponse[]>([])
 
 // 监听对话框打开
-watch(() => props.modelValue, (val) => {
-  dialogVisible.value = val
-})
+watch(
+  () => props.modelValue,
+  (val) => {
+    dialogVisible.value = val
+  },
+)
 
 watch(dialogVisible, (val) => {
   emit('update:modelValue', val)
@@ -143,7 +147,7 @@ const getUserTypeTag = (userType: string) => {
   const tagMap: Record<string, any> = {
     student: 'primary',
     teacher: 'success',
-    admin: 'warning'
+    admin: 'warning',
   }
   return tagMap[userType] || 'info'
 }
@@ -156,14 +160,14 @@ const formatDate = (date?: string) => {
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 }
 
 // 获取院系名称
 const getDepartmentName = (departmentId?: number) => {
   if (!departmentId) return '-'
-  const dept = departments.value.find(d => d.id === departmentId)
+  const dept = departments.value.find((d) => d.id === departmentId)
   return dept ? dept.name : '-'
 }
 
@@ -175,7 +179,7 @@ const loadUserDetail = async (userId: string) => {
     const userRes = await userApi.getUserByUserId(userId)
     if (userRes.code === 200 && userRes.data) {
       userData.value = userRes.data
-      
+
       // 加载院系数据
       await loadDepartments()
     }
@@ -200,12 +204,12 @@ const loadDepartments = async () => {
 
 // 关闭对话框后的清理
 const handleClosed = () => {
-  userData.value = {} as UserResponse
+  userData.value = {} as UserDetailsResponse
 }
 
 // 暴露方法给父组件
 defineExpose({
-  loadUserDetail
+  loadUserDetail,
 })
 </script>
 

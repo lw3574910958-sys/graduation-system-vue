@@ -1,6 +1,6 @@
 import { get, post, put, del } from '@/utils/request'
 import type {
-  UserResponse,
+  UserDetailsResponse,
   UserPageResponse,
   UserCreateRequest,
   UserUpdateRequest,
@@ -19,21 +19,12 @@ export const userApi = {
   },
 
   /**
-   * 根据ID获取用户详情
-   * @param id 用户 ID
-   * @returns 用户详情
-   */
-  getUserById: (id: string) => {
-    return get<ApiResponse<UserResponse>>(`/api/users/${id}`, {})
-  },
-  
-  /**
    * 根据用户 ID获取用户详情（统一接口）
    * @param userId 用户 ID
    * @returns 用户详情
    */
   getUserByUserId: (userId: string) => {
-    return get<ApiResponse<UserResponse>>(`/api/users/${userId}`, {})
+    return get<ApiResponse<UserDetailsResponse>>(`/api/users/${userId}`, {})
   },
 
   /**
@@ -54,7 +45,7 @@ export const userApi = {
   updateUser: (id: string, param: UserUpdateRequest) => {
     return put<ApiResponse<void>>(`/api/users/${id}`, param)
   },
-  
+
   /**
    * 删除用户
    * @param id 用户 ID
