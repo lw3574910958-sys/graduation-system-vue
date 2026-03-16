@@ -46,7 +46,7 @@ export const menuConfig: MenuItem[] = [
     index: 'topic-management',
     title: '课题管理',
     icon: 'FolderOpened',
-    userType: [USER_TYPE_ENUM.STUDENT, USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN],
+    userType: [USER_TYPE_ENUM.STUDENT, USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.DEPARTMENT_ADMIN],
     children: [
       {
         index: 'topic-list',
