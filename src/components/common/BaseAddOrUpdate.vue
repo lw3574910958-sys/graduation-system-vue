@@ -206,8 +206,13 @@ function showModel(row?: Partial<T>) {
   formData.value = structuredClone(props.formDefault)
   
   if (row) {
-    // 覆盖行数据 - 使用 Object.assign 确保所有字段都被正确赋值
-    Object.assign(formData.value, row)
+    // 只覆盖非 undefined 的字段，避免覆盖默认值
+    Object.keys(row).forEach(key => {
+      const typedKey = key as keyof T
+      if (row[typedKey] !== undefined) {
+        formData.value[typedKey] = row[typedKey]!
+      }
+    })
   }
   
   // 确保在下一帧再显示对话框，让 Vue 有足够的时间响应式更新

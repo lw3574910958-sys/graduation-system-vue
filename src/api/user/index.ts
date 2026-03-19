@@ -73,4 +73,13 @@ export const userApi = {
   disableUser: (id: string) => {
     return post<ApiResponse<void>>(`/api/users/${id}/disable`)
   },
+
+  /**
+   * 修改自己的密码
+   * @param param 修改密码参数
+   * @returns 请求结果
+   */
+  changeOwnPassword: (param: { oldPassword: string; newPassword: string }) => {
+    return post<ApiResponse<void>>('/api/users/my/password', param)
+  },
 }

@@ -26,21 +26,26 @@ export const menuConfig: MenuItem[] = [
     title: '欢迎页',
     icon: 'House',
     path: '/welcome',
-    userType: [USER_TYPE_ENUM.STUDENT, USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN]
+    userType: [
+      USER_TYPE_ENUM.STUDENT,
+      USER_TYPE_ENUM.TEACHER,
+      USER_TYPE_ENUM.SYSTEM_ADMIN,
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
+    ],
   },
   {
     index: 'user-management',
     title: '用户管理',
     icon: 'User',
-    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN],
+    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN],
     children: [
       {
         index: 'user-list',
         title: '用户列表',
         icon: 'List',
-        path: '/user/list'
-      }
-    ]
+        path: '/user/list',
+      },
+    ],
   },
   {
     index: 'topic-management',
@@ -52,51 +57,65 @@ export const menuConfig: MenuItem[] = [
         index: 'topic-list',
         title: '课题列表',
         icon: 'List',
-        path: '/topic/list'
-      }
-    ]
+        path: '/topic/list',
+      },
+    ],
   },
   {
     index: 'selection-management',
     title: '选题管理',
     icon: 'Collection',
-    userType: [USER_TYPE_ENUM.STUDENT, USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN],
+    userType: [
+      USER_TYPE_ENUM.STUDENT,
+      USER_TYPE_ENUM.TEACHER,
+      USER_TYPE_ENUM.SYSTEM_ADMIN,
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
+    ],
     children: [
       {
         index: 'selection-list',
         title: '选题列表',
         icon: 'List',
-        path: '/selection/list'
-      }
-    ]
+        path: '/selection/list',
+      },
+    ],
   },
   {
     index: 'document-management',
     title: '文档管理',
     icon: 'Document',
-    userType: [USER_TYPE_ENUM.STUDENT, USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN],
+    userType: [
+      USER_TYPE_ENUM.STUDENT,
+      USER_TYPE_ENUM.TEACHER,
+      USER_TYPE_ENUM.SYSTEM_ADMIN,
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
+    ],
     children: [
       {
         index: 'document-list',
         title: '文档列表',
         icon: 'List',
-        path: '/document/list'
-      }
-    ]
+        path: '/document/list',
+      },
+    ],
   },
   {
     index: 'grade-management',
     title: '成绩管理',
     icon: 'Star',
-    userType: [USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN],
+    userType: [
+      USER_TYPE_ENUM.TEACHER,
+      USER_TYPE_ENUM.SYSTEM_ADMIN,
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
+    ],
     children: [
       {
         index: 'grade-list',
         title: '成绩列表',
         icon: 'List',
-        path: '/grade/list'
-      }
-    ]
+        path: '/grade/list',
+      },
+    ],
   },
   {
     index: 'department-management',
@@ -108,9 +127,9 @@ export const menuConfig: MenuItem[] = [
         index: 'department-list',
         title: '院系列表',
         icon: 'List',
-        path: '/department/list'
-      }
-    ]
+        path: '/department/list',
+      },
+    ],
   },
   {
     index: 'notice-management',
@@ -122,38 +141,38 @@ export const menuConfig: MenuItem[] = [
         index: 'notice-list',
         title: '公告列表',
         icon: 'Document',
-        path: '/notice/list'
-      }
-    ]
-  }
+        path: '/notice/list',
+      },
+    ],
+  },
 ]
 
 // 根据用户信息过滤菜单
 export function filterMenusByUser(menus: MenuItem[], userInfo: any): MenuItem[] {
   if (!userInfo) return []
-  
+
   const { userType, systemRoles = [] } = userInfo
-  
-  return menus.filter(menu => {
+
+  return menus.filter((menu) => {
     // 检查用户类型权限
     if (menu.userType && !menu.userType.includes(userType)) {
       return false
     }
-    
+
     // 检查系统角色权限
-    if (menu.systemRole && !menu.systemRole.some(role => systemRoles.includes(role))) {
+    if (menu.systemRole && !menu.systemRole.some((role) => systemRoles.includes(role))) {
       return false
     }
-    
+
     // 检查自定义权限标识
     if (menu.permission) {
       const permissions = Array.isArray(menu.permission) ? menu.permission : [menu.permission]
       const userPermissions = userInfo.permissions || []
-      if (!permissions.some(perm => userPermissions.includes(perm))) {
+      if (!permissions.some((perm) => userPermissions.includes(perm))) {
         return false
       }
     }
-    
+
     // 递归处理子菜单
     if (menu.children && menu.children.length > 0) {
       menu.children = filterMenusByUser(menu.children, userInfo)
@@ -162,7 +181,7 @@ export function filterMenusByUser(menus: MenuItem[], userInfo: any): MenuItem[] 
         return false
       }
     }
-    
+
     return true
   })
 }
@@ -170,9 +189,9 @@ export function filterMenusByUser(menus: MenuItem[], userInfo: any): MenuItem[] 
 // 获取扁平化的菜单路径（用于路由权限检查）
 export function getMenuPaths(menus: MenuItem[]): string[] {
   const paths: string[] = []
-  
+
   function traverse(menuItems: MenuItem[]) {
-    menuItems.forEach(item => {
+    menuItems.forEach((item) => {
       if (item.path) {
         paths.push(item.path)
       }
@@ -181,7 +200,7 @@ export function getMenuPaths(menus: MenuItem[]): string[] {
       }
     })
   }
-  
+
   traverse(menus)
   return paths
 }
@@ -205,9 +224,9 @@ export function findMenuItem(menus: MenuItem[], index: string): MenuItem | null 
 // 获取用户可访问的顶级菜单
 export function getTopLevelMenus(userInfo: any): MenuItem[] {
   const filteredMenus = filterMenusByUser([...menuConfig], userInfo)
-  return filteredMenus.map(menu => ({
+  return filteredMenus.map((menu) => ({
     ...menu,
-    children: undefined // 只返回顶层菜单，不包含子菜单
+    children: undefined, // 只返回顶层菜单，不包含子菜单
   }))
 }
 

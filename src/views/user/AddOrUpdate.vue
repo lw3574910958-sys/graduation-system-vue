@@ -134,6 +134,8 @@ const formFields = [
       style: { width: '100%' },
       clearable: true, // 允许清空
     },
+    // 系统管理员不显示所属院系字段
+    showWhen: (formData: any) => formData.userType !== 'system_admin',
     // 使用函数动态获取选项，确保每次渲染时都能获取最新数据
     options: () => [
       { label: '无', value: 0 }, // 添加"无"选项
@@ -412,10 +414,25 @@ defineExpose({
 let isEditMode = false
 
 // 包装 showModel 方法
-function showModel(row?: Record<string, any>) {
+async function showModel(row?: Record<string, any>) {
   // 判断是否为编辑模式
   isEditMode = !!row?.id
-  baseRef.value?.showModel(row)
+  
+  // 如果是编辑模式，先获取用户详情数据
+  if (isEditMode && row?.id) {
+    try {
+      // 调用 API 获取用户详情
+      const response = await userApi.getUserByUserId(row.id)
+      // 将详情数据传递给 BaseAddOrUpdate - 注意要取 response.data
+      baseRef.value?.showModel(response.data)
+    } catch (error) {
+      console.error('获取用户详情失败:', error)
+      ElMessage.error('获取用户详情失败')
+    }
+  } else {
+    // 新增模式，直接使用传入的数据
+    baseRef.value?.showModel(row)
+  }
 }
 
 // 包装 onCancel 方法

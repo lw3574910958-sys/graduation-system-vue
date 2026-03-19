@@ -98,6 +98,7 @@ export interface LoginUserInfoResponse {
   username: string
   realName: string
   userType: string
+  avatar?: string // 头像 URL
   createdAt?: string
 }
 

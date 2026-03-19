@@ -1,11 +1,11 @@
 <template>
   <div class="basic-layout">
     <el-container>
-      <el-header>
+      <el-header class="layout-header">
         <Header />
       </el-header>
 
-      <el-container>
+      <el-container class="main-container">
         <el-aside class="pdm-sidebar pdm-sidebar--dark">
           <LeftMenu />
         </el-aside>
@@ -39,5 +39,21 @@ import Footer from '@/components/layout/Footer.vue';
 .basic-layout {
   height: 100vh;
   width: 100%;
+}
+
+.layout-header {
+  height: 60px !important;
+  padding: 0 !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.main-container {
+  position: relative;
+  top: 60px;
+  height: calc(100vh - 60px);
 }
 </style>

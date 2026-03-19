@@ -37,6 +37,8 @@ export const USER_TYPE_LABELS = {
   [USER_TYPE.TEACHER]: '教师',
   [USER_TYPE.SYSTEM_ADMIN]: '系统管理员',
   [USER_TYPE.DEPARTMENT_ADMIN]: '院系管理员',
+  // 兼容旧数据：admin -> 系统管理员
+  'admin': '系统管理员',
 } as const
 
 // 导出后端同步的枚举常量

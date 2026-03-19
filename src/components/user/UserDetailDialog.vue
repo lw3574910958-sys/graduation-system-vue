@@ -24,65 +24,71 @@
       </el-descriptions>
 
       <!-- 学生详细信息 -->
-      <el-divider content-position="left">🎓 学生信息</el-divider>
-      <el-descriptions :column="2" border v-if="userData.userType === 'student'">
-        <el-descriptions-item label="学号">{{ userData.studentId }}</el-descriptions-item>
-        <el-descriptions-item label="性别">
-          {{ userData.gender === 1 ? '男' : '女' }}
-        </el-descriptions-item>
-        <el-descriptions-item label="专业">{{ userData.major }}</el-descriptions-item>
-        <el-descriptions-item label="班级">{{ userData.className }}</el-descriptions-item>
-        <el-descriptions-item label="所属院系">
-          {{ getDepartmentName(userData.departmentId) }}
-        </el-descriptions-item>
-        <el-descriptions-item label="邮箱">
-          {{ userData.email || '-' }}
-        </el-descriptions-item>
-        <el-descriptions-item label="手机号">
-          {{ userData.phone || '-' }}
-        </el-descriptions-item>
-      </el-descriptions>
+      <template v-if="userData.userType === 'student'">
+        <el-divider content-position="left">🎓 学生信息</el-divider>
+        <el-descriptions :column="2" border>
+          <el-descriptions-item label="学号">{{ userData.studentId }}</el-descriptions-item>
+          <el-descriptions-item label="性别">
+            {{ userData.gender === 1 ? '男' : '女' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="专业">{{ userData.major }}</el-descriptions-item>
+          <el-descriptions-item label="班级">{{ userData.className }}</el-descriptions-item>
+          <el-descriptions-item label="所属院系">
+            {{ getDepartmentName(userData.departmentId) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="邮箱">
+            {{ userData.email || '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="手机号">
+            {{ userData.phone || '-' }}
+          </el-descriptions-item>
+        </el-descriptions>
+      </template>
 
       <!-- 教师详细信息 -->
-      <el-divider content-position="left">👨‍🏫 教师信息</el-divider>
-      <el-descriptions :column="2" border v-if="userData.userType === 'teacher'">
-        <el-descriptions-item label="工号">{{ userData.teacherId }}</el-descriptions-item>
-        <el-descriptions-item label="性别">
-          {{ userData.gender === 1 ? '男' : '女' }}
-        </el-descriptions-item>
-        <el-descriptions-item label="职称">{{ userData.title }}</el-descriptions-item>
-        <el-descriptions-item label="所属院系">
-          {{ getDepartmentName(userData.departmentId) }}
-        </el-descriptions-item>
-        <el-descriptions-item label="邮箱">
-          {{ userData.email || '-' }}
-        </el-descriptions-item>
-        <el-descriptions-item label="手机号">
-          {{ userData.phone || '-' }}
-        </el-descriptions-item>
-      </el-descriptions>
+      <template v-if="userData.userType === 'teacher'">
+        <el-divider content-position="left">👨‍🏫 教师信息</el-divider>
+        <el-descriptions :column="2" border>
+          <el-descriptions-item label="工号">{{ userData.teacherId }}</el-descriptions-item>
+          <el-descriptions-item label="性别">
+            {{ userData.gender === 1 ? '男' : '女' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="职称">{{ userData.title }}</el-descriptions-item>
+          <el-descriptions-item label="所属院系">
+            {{ getDepartmentName(userData.departmentId) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="邮箱">
+            {{ userData.email || '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="手机号">
+            {{ userData.phone || '-' }}
+          </el-descriptions-item>
+        </el-descriptions>
+      </template>
 
       <!-- 管理员详细信息 -->
-      <el-divider content-position="left">🔧 管理员信息</el-divider>
-      <el-descriptions :column="2" border v-if="userData.userType === 'system_admin' || userData.userType === 'department_admin'">
-        <el-descriptions-item label="管理员编号">{{
-          userData.adminId || '-'
-        }}</el-descriptions-item>
-        <el-descriptions-item label="角色级别">
-          <el-tag :type="userData.roleLevel === 0 ? 'danger' : 'primary'">
-            {{ userData.roleLevel === 0 ? '系统管理员' : '院系管理员' }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="所属院系" :span="2">
-          {{ getDepartmentName(userData.departmentId) }}
-        </el-descriptions-item>
-        <el-descriptions-item label="手机号">
-          {{ userData.phone || '-' }}
-        </el-descriptions-item>
-        <el-descriptions-item label="邮箱">
-          {{ userData.email || '-' }}
-        </el-descriptions-item>
-      </el-descriptions>
+      <template v-if="userData.userType === 'system_admin' || userData.userType === 'department_admin'">
+        <el-divider content-position="left">🔧 管理员信息</el-divider>
+        <el-descriptions :column="2" border>
+          <el-descriptions-item label="管理员编号">{{
+            userData.adminId || '-'
+          }}</el-descriptions-item>
+          <el-descriptions-item label="角色级别">
+            <el-tag :type="userData.roleLevel === 0 ? 'danger' : 'primary'">
+              {{ userData.roleLevel === 0 ? '系统管理员' : '院系管理员' }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item v-if="userData.userType !== 'system_admin'" label="所属院系" :span="2">
+            {{ getDepartmentName(userData.departmentId) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="手机号">
+            {{ userData.phone || '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="邮箱">
+            {{ userData.email || '-' }}
+          </el-descriptions-item>
+        </el-descriptions>
+      </template>
 
       <template #footer>
         <el-button @click="dialogVisible = false">关闭</el-button>
