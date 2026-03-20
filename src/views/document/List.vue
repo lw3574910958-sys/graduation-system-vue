@@ -109,7 +109,7 @@ const searchFields = [
 // 表格列配置
 const tableColumns = [
   { prop: 'id', label: 'ID', headerAlign: 'center', align: 'center' },
-  { prop: 'originalFilename', label: '原始文件名', headerAlign: 'center', align: 'center' },
+  { prop: 'originalFilename', label: '原始文件名', headerAlign: 'center', align: 'center', ellipsis: true },
   {
     prop: 'fileType',
     label: '文件类型',
@@ -119,7 +119,7 @@ const tableColumns = [
   },
   { prop: 'fileSizeDisplay', label: '文件大小', headerAlign: 'center', align: 'center' },
   { prop: 'userName', label: '上传人', headerAlign: 'center', align: 'center' },
-  { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center' },
+  { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center', ellipsis: true },
   {
     prop: 'reviewStatus',
     label: '审核状态',

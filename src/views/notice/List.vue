@@ -271,7 +271,7 @@ const searchFields = [
 
 // 表格列配置
 const tableColumns = [
-  { prop: 'title', label: '标题', headerAlign: 'center', align: 'center', minWidth: 180 },
+  { prop: 'title', label: '标题', headerAlign: 'center', align: 'center', minWidth: 180, ellipsis: true },
   { 
     prop: 'isSticky', 
     label: '置顶', 

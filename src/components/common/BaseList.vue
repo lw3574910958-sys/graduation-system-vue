@@ -53,7 +53,7 @@
           :header-cell-style="{ background: '#f5f7fa' }"
           :max-height="tableMaxHeight"
           :fit="true"
-          :show-overflow-tooltip="true"
+          :show-overflow-tooltip="false"
         >
           <el-table-column type="selection" width="55" v-if="showSelection" fixed="left" />
           
@@ -81,7 +81,15 @@
                   :avatar="scope.row[column.prop]"
                 />
               </template>
-              <!-- 否则直接显示 prop 值 -->
+              <!-- 如果配置了使用 EllipsisText -->
+              <template v-else-if="column.ellipsis">
+                <EllipsisText
+                  :content="scope.row[column.prop]"
+                  :title="column.label"
+                  :maxLength="column.ellipsisMaxLength"
+                  :dblclickable="column.ellipsisDblclickable !== false"
+                />
+              </template>
               <template v-else>
                 {{ scope.row[column.prop] }}
               </template>
@@ -146,6 +154,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import constants from '@/utils/constants'
 import { MESSAGE } from '@/constants/user'
 import SafeText from '@/components/common/SafeText.vue'
+import EllipsisText from '@/components/common/EllipsisText.vue'
 
 // 定义搜索字段类型
 interface SearchField {
@@ -166,6 +175,9 @@ interface TableColumn {
   render?: (row: T, index: number, column: any) => string
   component?: any
   props?: Record<string, any> // 组件属性
+  ellipsis?: boolean // 是否启用省略号 + 双击查看
+  ellipsisMaxLength?: number // 省略号显示的最大长度，默认 50
+  ellipsisDblclickable?: boolean // 是否允许双击查看，默认 true
 }
 
 // 定义组件属性

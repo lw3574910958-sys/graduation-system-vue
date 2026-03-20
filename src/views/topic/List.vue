@@ -92,8 +92,8 @@ const searchFields = [
 // 表格列配置
 const tableColumns = [
   { prop: 'id', label: 'ID', headerAlign: 'center', align: 'center', width: 60 },
-  { prop: 'title', label: '课题标题', headerAlign: 'center', align: 'center', minWidth: 150 },
-  { prop: 'description', label: '课题描述', headerAlign: 'center', align: 'center', minWidth: 200, showOverflowTooltip: true },
+  { prop: 'title', label: '课题标题', headerAlign: 'center', align: 'center', minWidth: 150, ellipsis: true },
+  { prop: 'description', label: '课题描述', headerAlign: 'center', align: 'center', minWidth: 200, ellipsis: true, ellipsisMaxLength: 30 },
   { prop: 'teacherId', label: '发布教师 ID', headerAlign: 'center', align: 'center', width: 100 },
   { prop: 'departmentId', label: '所属院系 ID', headerAlign: 'center', align: 'center', width: 100 },
   { prop: 'source', label: '题目来源', headerAlign: 'center', align: 'center', width: 120 },

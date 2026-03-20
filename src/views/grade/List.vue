@@ -66,10 +66,10 @@ const searchFields = [
 // 表格列配置
 const tableColumns = [
   { prop: 'studentName', label: '学生姓名', headerAlign: 'center', align: 'center' },
-  { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center' },
-  { prop: 'graderId', label: '评分教师ID', headerAlign: 'center', align: 'center' },
+  { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center', ellipsis: true },
+  { prop: 'graderId', label: '评分教师 ID', headerAlign: 'center', align: 'center' },
   { prop: 'score', label: '成绩', headerAlign: 'center', align: 'center' },
-  { prop: 'comment', label: '评语', headerAlign: 'center', align: 'center' },
+  { prop: 'comment', label: '评语', headerAlign: 'center', align: 'center', ellipsis: true, ellipsisMaxLength: 30 },
   { prop: 'gradedAt', label: '评分时间', headerAlign: 'center', align: 'center' },
 ]
 
