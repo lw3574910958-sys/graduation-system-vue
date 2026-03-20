@@ -53,17 +53,19 @@
           :header-cell-style="{ background: '#f5f7fa' }"
           :max-height="tableMaxHeight"
           :fit="true"
+          :show-overflow-tooltip="true"
         >
-          <el-table-column type="selection" width="55" v-if="showSelection" />
+          <el-table-column type="selection" width="55" v-if="showSelection" fixed="left" />
           
           <el-table-column
-            v-for="column in tableColumns"
+            v-for="(column, index) in tableColumns"
             :key="column.prop"
             :prop="column.prop"
             :label="column.label"
             :header-align="column.headerAlign || 'center'"
             :align="column.align || 'center'"
             :min-width="column.width || getDefaultMinWidth(column)"
+            :fixed="getColumnFixedStatus(index)"
           >
             <template #default="scope">
               <!-- 如果有 render 函数且没有 component -->
@@ -92,6 +94,7 @@
             :min-width="operationColumnWidth"
             header-align="center"
             align="center"
+            fixed="right"
           >
             <template #default="scope">
               <slot name="operations" :scope="scope">
@@ -282,6 +285,15 @@ const getComponentProps = (props: Record<string, any> | undefined, row: T): Reco
   return result
 }
 
+// 获取列的固定状态：第一列固定，其他不固定
+const getColumnFixedStatus = (index: number): string | boolean => {
+  // 第一列固定到左侧
+  if (index === 0) {
+    return 'left'
+  }
+  return false
+}
+
 // 获取列表数据
 async function getList() {
   try {
@@ -449,6 +461,7 @@ defineExpose({
   height: calc(100vh - 90px - 60px); /* 100vh - header 高度 - 底部版权栏高度 */
   width: 100%;
   box-sizing: border-box;
+  overflow: hidden; /* ✅ 防止容器本身滚动 */
 }
 
 .search-form {
@@ -485,9 +498,35 @@ defineExpose({
 /* 表格包装器 - 用于处理滚动 */
 .table-wrapper {
   flex: 1;
-  overflow-x: auto;
-  overflow-y: auto;
+  overflow: hidden; /* ✅ 改为 hidden，让外层容器处理滚动 */
   min-height: 0;
+  position: relative;
+  width: 100%;
+}
+
+/* 表格容器 - 处理固定列和滚动 */
+.responsive-table {
+  width: 100%;
+}
+
+/* ✅ 修复固定列的阴影效果 - 使用 !important 提高优先级 */
+.responsive-table .el-table__fixed {
+  box-shadow: 3px 0 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.responsive-table .el-table__fixed-right {
+  box-shadow: -3px 0 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ✅ 修复固定列边缘的圆角和边框 */
+.responsive-table .el-table__fixed::before,
+.responsive-table .el-table__fixed-right::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .pagination-container {
@@ -500,6 +539,7 @@ defineExpose({
   flex-shrink: 0;
   width: 100%;
   box-sizing: border-box;
+  overflow: visible; /* ✅ 改为 visible，让分页完全显示 */
 }
 
 .pagination-left {
@@ -507,10 +547,12 @@ defineExpose({
   align-items: center;
   gap: 8px;
   margin-left: 0; /* ✅ 紧贴左边界 */
+  flex-shrink: 0; /* ✅ 防止被压缩 */
 }
 
 .pagination {
   white-space: nowrap;
+  flex-shrink: 0; /* ✅ 防止被压缩 */
 }
 </style>
 

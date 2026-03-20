@@ -215,7 +215,8 @@ a {
     flex-direction: column;
     box-sizing: border-box;
     padding-top: 15px; // 与 padding 保持一致
-    padding-bottom: 40px; // 预留底部区域高度空间
+    padding-bottom: 0; // ✅ 移除底部 padding，让 footer 固定定位
+    overflow: hidden; // ✅ 防止内容溢出产生滚动条
   }
   &-card {
     flex: 1;
@@ -225,6 +226,7 @@ a {
     :deep(.el-card__body) {
       height: 100%;
       overflow-y: auto;
+      overflow-x: hidden; // ✅ 防止横向滚动
       display: flex;
       flex-direction: column;
     }
@@ -235,12 +237,12 @@ a {
 .layout-footer {
   position: fixed;
   bottom: 0;
-  left: 0;
+  left: @pdm--sidebar-width; // ✅ 从侧边栏右侧开始，避免被遮挡
   right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
+  width: auto; // ✅ 改为 auto，让 left/right 控制宽度
   height: auto;
   min-height: 30px;
   padding: 10px 0px;
@@ -248,6 +250,7 @@ a {
   color: rgba(0, 0, 0, 0.88);
   background: #f5f5f5;
   z-index: 100;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05); // ✅ 添加阴影增强层次感
   
   .version {
     display: flex;
