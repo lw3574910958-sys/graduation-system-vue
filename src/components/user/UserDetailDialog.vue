@@ -11,16 +11,19 @@
       <el-descriptions title="基本信息" :column="2" border>
         <el-descriptions-item label="用户名">{{ userData.username }}</el-descriptions-item>
         <el-descriptions-item label="真实姓名">{{ userData.realName }}</el-descriptions-item>
-        <el-descriptions-item label="用户类型">
-          <el-tag :type="getUserTypeTag(userData.userType)">
-            {{ getUserTypeLabel(userData.userType) }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="状态">
-          <el-tag :type="userData.status === 1 ? 'success' : 'danger'">
-            {{ userData.status === 1 ? '启用' : '禁用' }}
-          </el-tag>
-        </el-descriptions-item>
+        <!-- 只有系统管理员才显示用户类型和状态 -->
+        <template v-if="isSystemAdmin">
+          <el-descriptions-item label="用户类型">
+            <el-tag :type="getUserTypeTag(userData.userType)">
+              {{ getUserTypeLabel(userData.userType) }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="状态">
+            <el-tag :type="userData.status === 1 ? 'success' : 'danger'">
+              {{ userData.status === 1 ? '启用' : '禁用' }}
+            </el-tag>
+          </el-descriptions-item>
+        </template>
       </el-descriptions>
 
       <!-- 学生详细信息 -->
@@ -98,12 +101,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { userApi } from '@/api/user'
 import { departmentApi } from '@/api/department'
 import type { UserDetailsResponse } from '@/types/api/user'
 import { USER_TYPE_LABELS } from '@/constants/user'
 import type { DepartmentResponse } from '@/types/api/department'
+import { useAuthStore } from '@/stores'
+import { USER_TYPE_ENUM } from '@/constants/enums'
+
+// 获取当前用户信息
+const authStore = useAuthStore()
+
+// 判断当前是否为系统管理员（只有系统管理员才能显示用户类型和状态）
+const isSystemAdmin = computed(() => {
+  return authStore.userInfo?.userType === USER_TYPE_ENUM.SYSTEM_ADMIN
+})
 
 interface Props {
   modelValue?: boolean

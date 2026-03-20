@@ -97,29 +97,31 @@
 
           <!-- 学生特有字段 -->
           <template v-if="userData.userType === 'student'">
-            <el-form-item label="学号" prop="studentId">
-              <el-input v-model="formData.studentId" placeholder="请输入学号" />
+            <!-- 只读字段在前 -->
+            <el-form-item label="学号">
+              <el-input v-model="formData.studentId" readonly disabled />
             </el-form-item>
-            <el-form-item label="性别" prop="gender">
-              <el-select v-model="formData.gender" placeholder="请选择性别">
-                <el-option label="男" :value="1" />
-                <el-option label="女" :value="0" />
-              </el-select>
+            <el-form-item label="专业">
+              <el-input v-model="formData.major" readonly disabled />
             </el-form-item>
-            <el-form-item label="专业" prop="major">
-              <el-input v-model="formData.major" placeholder="请输入专业名称" />
+            <el-form-item label="班级">
+              <el-input v-model="formData.className" readonly disabled />
             </el-form-item>
-            <el-form-item label="班级" prop="className">
-              <el-input v-model="formData.className" placeholder="请输入班级" />
-            </el-form-item>
-            <el-form-item v-if="departments.length > 0 && userData.departmentId" label="所属院系" prop="departmentId">
-              <el-select v-model="formData.departmentId" placeholder="请选择院系" clearable>
+            <el-form-item v-if="departments.length > 0 && userData.departmentId" label="所属院系">
+              <el-select v-model="formData.departmentId" readonly disabled placeholder="请选择院系" clearable>
                 <el-option
                   v-for="dept in departments"
                   :key="dept.id"
                   :label="dept.name"
                   :value="dept.id"
                 />
+              </el-select>
+            </el-form-item>
+            <!-- 可编辑字段在后 -->
+            <el-form-item label="性别" prop="gender">
+              <el-select v-model="formData.gender" placeholder="请选择性别">
+                <el-option label="男" :value="1" />
+                <el-option label="女" :value="0" />
               </el-select>
             </el-form-item>
             <el-form-item label="邮箱" prop="email">
@@ -132,26 +134,28 @@
 
           <!-- 教师特有字段 -->
           <template v-if="userData.userType === 'teacher'">
-            <el-form-item label="工号" prop="teacherId">
-              <el-input v-model="formData.teacherId" placeholder="请输入工号" />
+            <!-- 只读字段在前 -->
+            <el-form-item label="工号">
+              <el-input v-model="formData.teacherId" readonly disabled />
             </el-form-item>
-            <el-form-item label="性别" prop="gender">
-              <el-select v-model="formData.gender" placeholder="请选择性别">
-                <el-option label="男" :value="1" />
-                <el-option label="女" :value="0" />
-              </el-select>
+            <el-form-item label="职称">
+              <el-input v-model="formData.title" readonly disabled />
             </el-form-item>
-            <el-form-item label="职称" prop="title">
-              <el-input v-model="formData.title" placeholder="请输入职称" />
-            </el-form-item>
-            <el-form-item v-if="departments.length > 0 && userData.departmentId" label="所属院系" prop="departmentId">
-              <el-select v-model="formData.departmentId" placeholder="请选择院系" clearable>
+            <el-form-item v-if="departments.length > 0 && userData.departmentId" label="所属院系">
+              <el-select v-model="formData.departmentId" readonly disabled placeholder="请选择院系" clearable>
                 <el-option
                   v-for="dept in departments"
                   :key="dept.id"
                   :label="dept.name"
                   :value="dept.id"
                 />
+              </el-select>
+            </el-form-item>
+            <!-- 可编辑字段在后 -->
+            <el-form-item label="性别" prop="gender">
+              <el-select v-model="formData.gender" placeholder="请选择性别">
+                <el-option label="男" :value="1" />
+                <el-option label="女" :value="0" />
               </el-select>
             </el-form-item>
             <el-form-item label="邮箱" prop="email">

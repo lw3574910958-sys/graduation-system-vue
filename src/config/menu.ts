@@ -51,7 +51,12 @@ export const menuConfig: MenuItem[] = [
     index: 'topic-management',
     title: '课题管理',
     icon: 'FolderOpened',
-    userType: [USER_TYPE_ENUM.STUDENT, USER_TYPE_ENUM.TEACHER, USER_TYPE_ENUM.DEPARTMENT_ADMIN],
+    userType: [
+      USER_TYPE_ENUM.STUDENT,
+      USER_TYPE_ENUM.TEACHER,
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
+      USER_TYPE_ENUM.SYSTEM_ADMIN,
+    ],
     children: [
       {
         index: 'topic-list',
@@ -66,10 +71,10 @@ export const menuConfig: MenuItem[] = [
     title: '选题管理',
     icon: 'Collection',
     userType: [
-      USER_TYPE_ENUM.STUDENT,
+      /* USER_TYPE_ENUM.STUDENT,
       USER_TYPE_ENUM.TEACHER,
       USER_TYPE_ENUM.SYSTEM_ADMIN,
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN, */
     ],
     children: [
       {
@@ -85,10 +90,10 @@ export const menuConfig: MenuItem[] = [
     title: '文档管理',
     icon: 'Document',
     userType: [
-      USER_TYPE_ENUM.STUDENT,
+      /* USER_TYPE_ENUM.STUDENT,
       USER_TYPE_ENUM.TEACHER,
       USER_TYPE_ENUM.SYSTEM_ADMIN,
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN, */
     ],
     children: [
       {
@@ -104,9 +109,9 @@ export const menuConfig: MenuItem[] = [
     title: '成绩管理',
     icon: 'Star',
     userType: [
-      USER_TYPE_ENUM.TEACHER,
+      /* USER_TYPE_ENUM.TEACHER,
       USER_TYPE_ENUM.SYSTEM_ADMIN,
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN, */
     ],
     children: [
       {
@@ -135,7 +140,10 @@ export const menuConfig: MenuItem[] = [
     index: 'notice-management',
     title: '公告管理',
     icon: 'Bell',
-    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN],
+    userType: [
+      USER_TYPE_ENUM.SYSTEM_ADMIN,
+      // USER_TYPE_ENUM.DEPARTMENT_ADMIN
+    ],
     children: [
       {
         index: 'notice-list',
