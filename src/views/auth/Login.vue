@@ -132,7 +132,7 @@ const handleLogin = async () => {
     if (error.message) {
       message = error.message
     } else if (error.response?.data?.message) {
-      // 如果响应拦截器已处理，数据在data字段中
+      // 如果响应拦截器已处理，数据在 data 字段中
       message = error.response.data.message
     } else if (error.response?.message) {
       // 如果是原始错误响应

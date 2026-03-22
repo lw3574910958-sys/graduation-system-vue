@@ -13,6 +13,8 @@ export interface TopicResponse {
   workload?: number
   maxSelections?: number
   selectedCount: number
+  teacherNumber?: string  // 发布教师工号
+  departmentName?: string  // 院系名称
   createdAt?: string
   updatedAt?: string
 }

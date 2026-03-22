@@ -121,6 +121,66 @@ export const GRADE_LEVEL_LABELS = {
   [GRADE_LEVEL.FAIL]: '不及格'
 } as const
 
+// 题目来源枚举 (对应后端 TopicSource)
+export const TOPIC_SOURCE = {
+  TEACHING_PRACTICE: '教学实践',
+  SCIENTIFIC_RESEARCH: '科研项目',
+  ENTERPRISE_COOPERATION: '企业合作',
+  FRONTIER_TECHNOLOGY: '前沿技术',
+  SOCIAL_PRACTICE: '社会实践',
+  OTHER: '其他'
+} as const
+
+// 题目来源标签映射
+export const TOPIC_SOURCE_LABELS = {
+  [TOPIC_SOURCE.TEACHING_PRACTICE]: '教学实践',
+  [TOPIC_SOURCE.SCIENTIFIC_RESEARCH]: '科研项目',
+  [TOPIC_SOURCE.ENTERPRISE_COOPERATION]: '企业合作',
+  [TOPIC_SOURCE.FRONTIER_TECHNOLOGY]: '前沿技术',
+  [TOPIC_SOURCE.SOCIAL_PRACTICE]: '社会实践',
+  [TOPIC_SOURCE.OTHER]: '其他'
+} as const
+
+// 题目类型枚举 (对应后端 TopicType)
+export const TOPIC_TYPE = {
+  THEORETICAL_RESEARCH: '理论研究',
+  APPLIED_RESEARCH: '应用开发',
+  OTHER: '其他'
+} as const
+
+// 题目类型标签映射
+export const TOPIC_TYPE_LABELS = {
+  [TOPIC_TYPE.THEORETICAL_RESEARCH]: '理论研究',
+  [TOPIC_TYPE.APPLIED_RESEARCH]: '应用开发',
+  [TOPIC_TYPE.OTHER]: '其他'
+} as const
+
+// 题目性质枚举 (对应后端 TopicNature)
+export const TOPIC_NATURE = {
+  ENGINEERING_DESIGN: '工程设计',
+  SCIENTIFIC_RESEARCH: '科学研究',
+  OTHER: '其他'
+} as const
+
+// 题目性质标签映射
+export const TOPIC_NATURE_LABELS = {
+  [TOPIC_NATURE.ENGINEERING_DESIGN]: '工程设计',
+  [TOPIC_NATURE.SCIENTIFIC_RESEARCH]: '科学研究',
+  [TOPIC_NATURE.OTHER]: '其他'
+} as const
+
+// 题目审核结果枚举 (用于院系管理员审核题目)
+export const TOPIC_REVIEW_RESULT = {
+  APPROVED: 1,    // 审核通过
+  REJECTED: 2     // 审核驳回
+} as const
+
+// 题目审核结果标签映射
+export const TOPIC_REVIEW_RESULT_LABELS = {
+  [TOPIC_REVIEW_RESULT.APPROVED]: '审核通过',
+  [TOPIC_REVIEW_RESULT.REJECTED]: '审核驳回'
+} as const
+
 // 导出类型定义
 export type UserTypeEnum = typeof USER_TYPE_ENUM[keyof typeof USER_TYPE_ENUM]
 export type SystemRole = typeof SYSTEM_ROLE[keyof typeof SYSTEM_ROLE]
@@ -130,3 +190,7 @@ export type SelectionStatus = typeof SELECTION_STATUS[keyof typeof SELECTION_STA
 export type DocumentFileType = typeof DOCUMENT_FILE_TYPE[keyof typeof DOCUMENT_FILE_TYPE]
 export type ReviewStatus = typeof REVIEW_STATUS[keyof typeof REVIEW_STATUS]
 export type GradeLevel = typeof GRADE_LEVEL[keyof typeof GRADE_LEVEL]
+export type TopicReviewResult = typeof TOPIC_REVIEW_RESULT[keyof typeof TOPIC_REVIEW_RESULT]
+export type TopicSource = typeof TOPIC_SOURCE[keyof typeof TOPIC_SOURCE]
+export type TopicType = typeof TOPIC_TYPE[keyof typeof TOPIC_TYPE]
+export type TopicNature = typeof TOPIC_NATURE[keyof typeof TOPIC_NATURE]

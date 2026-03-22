@@ -1,31 +1,18 @@
 /**
  * 动态菜单配置
- * 根据用户类型(user_type)和系统角色动态生成菜单
+ * 根据用户类型 (user_type) 和系统角色动态生成菜单
  */
 
-import { SYSTEM_ROLE } from '@/constants'
 import { USER_TYPE_ENUM } from '@/constants/enums'
-
-// 菜单项接口定义
-export interface MenuItem {
-  index: string
-  title: string
-  icon: string
-  path?: string
-  children?: MenuItem[]
-  permission?: string | string[] // 权限标识
-  userType?: string[] // 允许的用户类型
-  systemRole?: string[] // 允许的系统角色
-  show?: boolean // 是否显示（可用于运行时控制）
-}
+import type { MenuItem } from '@/directives/permission'
 
 // 菜单配置
 export const menuConfig: MenuItem[] = [
   {
-    index: 'welcome',
-    title: '欢迎页',
-    icon: 'House',
-    path: '/welcome',
+    index: 'dashboard',
+    title: '仪表盘',
+    icon: 'DataBoard',
+    path: '/dashboard',
     userType: [
       USER_TYPE_ENUM.STUDENT,
       USER_TYPE_ENUM.TEACHER,
@@ -71,10 +58,10 @@ export const menuConfig: MenuItem[] = [
     title: '选题管理',
     icon: 'Collection',
     userType: [
-      /* USER_TYPE_ENUM.STUDENT,
+      USER_TYPE_ENUM.STUDENT,
       USER_TYPE_ENUM.TEACHER,
       USER_TYPE_ENUM.SYSTEM_ADMIN,
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN, */
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
     ],
     children: [
       {
@@ -90,10 +77,10 @@ export const menuConfig: MenuItem[] = [
     title: '文档管理',
     icon: 'Document',
     userType: [
-      /* USER_TYPE_ENUM.STUDENT,
+      USER_TYPE_ENUM.STUDENT,
       USER_TYPE_ENUM.TEACHER,
       USER_TYPE_ENUM.SYSTEM_ADMIN,
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN, */
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
     ],
     children: [
       {
@@ -109,9 +96,9 @@ export const menuConfig: MenuItem[] = [
     title: '成绩管理',
     icon: 'Star',
     userType: [
-      /* USER_TYPE_ENUM.TEACHER,
+      USER_TYPE_ENUM.TEACHER,
       USER_TYPE_ENUM.SYSTEM_ADMIN,
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN, */
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
     ],
     children: [
       {
@@ -142,7 +129,7 @@ export const menuConfig: MenuItem[] = [
     icon: 'Bell',
     userType: [
       USER_TYPE_ENUM.SYSTEM_ADMIN,
-      // USER_TYPE_ENUM.DEPARTMENT_ADMIN
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
     ],
     children: [
       {
@@ -155,30 +142,18 @@ export const menuConfig: MenuItem[] = [
   },
 ]
 
+// 复用 permission.ts 中的权限检查逻辑
+import { checkPermissionAdvanced, type PermissionConfig } from '@/directives/permission'
+
 // 根据用户信息过滤菜单
 export function filterMenusByUser(menus: MenuItem[], userInfo: any): MenuItem[] {
   if (!userInfo) return []
 
-  const { userType, systemRoles = [] } = userInfo
-
   return menus.filter((menu) => {
-    // 检查用户类型权限
-    if (menu.userType && !menu.userType.includes(userType)) {
+    // 复用已有的权限检查函数
+    const hasPermission = checkMenuPermission(menu, userInfo)
+    if (!hasPermission) {
       return false
-    }
-
-    // 检查系统角色权限
-    if (menu.systemRole && !menu.systemRole.some((role) => systemRoles.includes(role))) {
-      return false
-    }
-
-    // 检查自定义权限标识
-    if (menu.permission) {
-      const permissions = Array.isArray(menu.permission) ? menu.permission : [menu.permission]
-      const userPermissions = userInfo.permissions || []
-      if (!permissions.some((perm) => userPermissions.includes(perm))) {
-        return false
-      }
     }
 
     // 递归处理子菜单
@@ -192,6 +167,51 @@ export function filterMenusByUser(menus: MenuItem[], userInfo: any): MenuItem[] 
 
     return true
   })
+}
+
+/**
+ * 检查菜单权限（复用 permission.ts 中的逻辑）
+ */
+function checkMenuPermission(menu: MenuItem, userInfo: any): boolean {
+  const { userType, systemRoles = [], permissions = [] } = userInfo
+
+  // 检查用户类型权限
+  if (menu.userType && menu.userType.length > 0) {
+    const config: PermissionConfig = {
+      mode: 'userType',
+      permissions: menu.userType,
+      operator: 'OR'
+    }
+    if (!checkPermissionAdvanced(config, userInfo)) {
+      return false
+    }
+  }
+
+  // 检查系统角色权限
+  if (menu.systemRole && menu.systemRole.length > 0) {
+    const config: PermissionConfig = {
+      mode: 'systemRole',
+      permissions: menu.systemRole,
+      operator: 'OR'
+    }
+    if (!checkPermissionAdvanced(config, userInfo)) {
+      return false
+    }
+  }
+
+  // 检查自定义权限标识
+  if (menu.permission) {
+    const config: PermissionConfig = {
+      mode: 'permission',
+      permissions: menu.permission,
+      operator: 'OR'
+    }
+    if (!checkPermissionAdvanced(config, userInfo)) {
+      return false
+    }
+  }
+
+  return true
 }
 
 // 获取扁平化的菜单路径（用于路由权限检查）

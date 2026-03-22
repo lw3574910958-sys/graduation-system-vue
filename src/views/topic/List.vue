@@ -16,6 +16,14 @@
           详情
         </el-button>
         <el-button 
+          @click="reviewTopic(scope.row)" 
+          type="warning" 
+          size="small"
+          v-if="showReviewButton(scope.row)"
+        >
+          审核
+        </el-button>
+        <el-button 
           @click="update(scope.row)" 
           type="primary" 
           size="small"
@@ -34,6 +42,13 @@
       </template>
       <template #dialogs>
         <add-or-update @refresh-list="getList" ref="operateRef" />
+        <topic-detail ref="detailRef" />
+        <topic-review-form 
+          v-if="reviewDialogVisible" 
+          :topic-data="currentTopic"
+          @close="reviewDialogVisible = false"
+          @success="handleReviewSuccess"
+        />
       </template>
     </base-list>
   </div>
@@ -43,15 +58,18 @@
 import { ref, computed } from 'vue'
 import { topicApi } from '@/api/topic'
 import AddOrUpdate from '@/views/topic/AddOrUpdate.vue'
+import TopicDetail from '@/views/topic/Detail.vue'
+import TopicReviewForm from '@/views/topic/TopicReviewForm.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { MESSAGE } from '@/constants/user'
 import type { TopicResponse } from '@/types/api/topic'
 import BaseList from '@/components/common/BaseList.vue'
 import { useAuthStore } from '@/stores'
-import { USER_TYPE_ENUM } from '@/constants/enums'
+import { USER_TYPE_ENUM, TOPIC_STATUS } from '@/constants/enums'
 
 // 获取当前用户信息
 const authStore = useAuthStore()
+const currentUserType = computed(() => authStore.userInfo?.userType)
 
 // 判断当前是否为教师或管理员（可以编辑/删除）
 const canEditOrDelete = computed(() => {
@@ -61,11 +79,22 @@ const canEditOrDelete = computed(() => {
          userType === USER_TYPE_ENUM.DEPARTMENT_ADMIN
 })
 
+// 是否显示审核按钮（仅院系管理员可见，且题目状态为审核中）
+const showReviewButton = (row: TopicResponse) => {
+  return currentUserType.value === USER_TYPE_ENUM.DEPARTMENT_ADMIN && 
+         row.status === TOPIC_STATUS.REVIEWING
+}
+
+// 当前选中的题目和审核弹窗状态
+const currentTopic = ref<TopicResponse | null>(null)
+const reviewDialogVisible = ref(false)
+
 // 使用统一的类型定义
 type TopicRow = TopicResponse
 
 // 定义操作组件引用--新增/编辑
 const operateRef = ref()
+const detailRef = ref()
 const listRef = ref()
 
 // 搜索字段配置
@@ -131,7 +160,29 @@ const tableColumns = [
  * 查看课题详情
  */
 function viewDetail(row: TopicRow) {
-  operateRef.value.showModel(row)
+  detailRef.value?.showModel(row)
+}
+
+/**
+ * 审核题目（仅院系管理员）
+ */
+function reviewTopic(row: TopicRow) {
+  if (!showReviewButton(row)) {
+    ElMessage.warning('无权限审核该题目')
+    return
+  }
+  currentTopic.value = row
+  reviewDialogVisible.value = true
+}
+
+/**
+ * 处理审核成功后的操作
+ */
+function handleReviewSuccess() {
+  reviewDialogVisible.value = false
+  currentTopic.value = null
+  getList()
+  ElMessage.success('审核成功，列表已刷新')
 }
 
 /**
@@ -194,13 +245,14 @@ function getWorkloadLabel(workload?: number) {
 }
 
 /**
- * 获取状态标签 (对应后端状态：1-开放，2-已选，3-关闭)
+ * 获取状态标签 (对应后端状态：1-开放，2-审核中，3-已选，4-关闭)
  */
 function getStatusLabel(status: number) {
   switch(status) {
     case 1: return '开放'
-    case 2: return '已选'
-    case 3: return '关闭'
+    case 2: return '审核中'
+    case 3: return '已选'
+    case 4: return '关闭'
     default: return '未知'
   }
 }

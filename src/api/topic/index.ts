@@ -67,10 +67,19 @@ export const topicApi = {
 
   /**
    * 删除题目
-   * @param id 题目ID
+   * @param id 题目 ID
    * @returns 请求结果
    */
   deleteTopic: (id: number | string) => {
     return del<ApiResponse<void>>(`/api/topics/${id}`)
+  },
+
+  /**
+   * 审核题目（院系管理员）
+   * @param param 审核请求参数
+   * @returns 审核结果
+   */
+  reviewTopic: (param: { topicId: number | string; reviewResult: number; reviewComment?: string }) => {
+    return post<ApiResponse<void>>('/api/topics/review', param)
   },
 }

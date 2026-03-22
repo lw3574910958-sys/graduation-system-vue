@@ -20,10 +20,9 @@
           </el-button>
           <el-button 
             v-if="scope.row.status === SELECTION_STATUS.APPROVED" 
-            @click="handleConfirm(scope.row.id)" 
+            @click="showConfirmDialog(scope.row)" 
             type="success" 
             size="small"
-            :loading="confirmLoading"
           >
             确认选题
           </el-button>
@@ -69,6 +68,12 @@
           @success="handleReviewSuccess" 
           ref="reviewFormRef" 
         />
+        <confirm-selection-dialog
+          v-if="confirmDialogVisible"
+          :selection-data="currentSelection"
+          @close="confirmDialogVisible = false"
+          @success="handleConfirmSuccess"
+        />
       </template>
     </base-list>
   </div>
@@ -79,11 +84,13 @@ import { ref, computed } from 'vue'
 import { selectionApi } from '@/api/selection'
 import SelectionApplyForm from '@/views/selection/SelectionApplyForm.vue'
 import SelectionReviewForm from '@/views/selection/SelectionReviewForm.vue'
+import ConfirmSelectionDialog from '@/views/selection/ConfirmSelectionDialog.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { MESSAGE } from '@/constants/user'
 import BaseList from '@/components/common/BaseList.vue'
 import { useAuthStore } from '@/stores'
 import { SELECTION_STATUS, SELECTION_STATUS_LABELS } from '@/constants'
+import type { SelectionResponse } from '@/types/api/selection'
 
 // 获取认证信息
 const authStore = useAuthStore()
@@ -114,9 +121,12 @@ const reviewFormRef = ref()
 // 对话框可见性
 const applyVisible = ref(false)
 const reviewVisible = ref(false)
+const confirmDialogVisible = ref(false)
+
+// 当前选中的选题记录（使用 SelectionResponse 类型）
+const currentSelection = ref<SelectionResponse | null>(null)
 
 // 加载状态
-const confirmLoading = ref(false)
 const cancelLoading = ref(false)
 
 // 搜索字段配置
@@ -171,19 +181,36 @@ function handleApply(row: SelectionRow) {
 }
 
 /**
- * 处理确认选题
+ * 处理确认选题（使用对话框）
  */
-async function handleConfirm(id: number) {
-  try {
-    confirmLoading.value = true
-    await selectionApi.confirmSelection(id)
-    ElMessage.success('选题确认成功')
-    getList()
-  } catch (error: any) {
-    ElMessage.error(error.message || '确认失败')
-  } finally {
-    confirmLoading.value = false
+function showConfirmDialog(row: SelectionRow) {
+  // 将 SelectionRow 转换为 SelectionResponse 格式
+  currentSelection.value = {
+    id: typeof row.id === 'string' ? parseInt(row.id) : row.id,
+    studentId: row.studentId,
+    studentName: row.studentName,
+    studentNumber: row.studentNumber,
+    topicId: row.topicId,
+    topicTitle: row.topicTitle,
+    status: row.status,
+    statusDesc: row.statusDesc,
+    applyReason: row.applyReason,
+    studentAbility: row.studentAbility,
+    expectedGoal: row.expectedGoal,
+    createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : (row.createdAt || ''),
+    updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toISOString() : (row.updatedAt || '')
   }
+  confirmDialogVisible.value = true
+}
+
+/**
+ * 处理确认成功后的操作
+ */
+function handleConfirmSuccess() {
+  confirmDialogVisible.value = false
+  currentSelection.value = null
+  getList()
+  ElMessage.success('选题确认成功，列表已刷新')
 }
 
 /**

@@ -7,15 +7,28 @@
 import { useAuthStore } from '@/stores'
 import { SYSTEM_ROLE, USER_TYPE_ENUM } from '@/constants'
 
-interface PermissionDirectiveElement extends HTMLElement {
+export interface PermissionDirectiveElement extends HTMLElement {
   _originalDisplay?: string
 }
 
 // 权限检查模式
-type PermissionMode = 'userType' | 'systemRole' | 'permission'
+export type PermissionMode = 'userType' | 'systemRole' | 'permission'
+
+// 菜单项接口定义（导出供 menu.ts 使用）
+export interface MenuItem {
+  index: string
+  title: string
+  icon: string
+  path?: string
+  children?: MenuItem[]
+  permission?: string | string[] // 权限标识
+  userType?: string[] // 允许的用户类型
+  systemRole?: string[] // 允许的系统角色
+  show?: boolean // 是否显示（可用于运行时控制）
+}
 
 // 权限配置
-interface PermissionConfig {
+export interface PermissionConfig {
   mode?: PermissionMode
   permissions: string | string[]
   operator?: 'AND' | 'OR' // 多个权限的逻辑运算符
@@ -65,8 +78,8 @@ function parsePermissionConfig(value: string | PermissionConfig): PermissionConf
   }
 }
 
-// 高级权限检查
-function checkPermissionAdvanced(config: PermissionConfig, userInfo: any): boolean {
+// 高级权限检查（导出供 menu.ts 使用）
+export function checkPermissionAdvanced(config: PermissionConfig, userInfo: any): boolean {
   if (!userInfo) return false
   
   const permissions = Array.isArray(config.permissions) ? config.permissions : [config.permissions]
