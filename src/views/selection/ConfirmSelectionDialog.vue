@@ -16,8 +16,6 @@
 
       <el-descriptions :column="1" border>
         <el-descriptions-item label="课题名称">{{ selectionData?.topicTitle }}</el-descriptions-item>
-        <el-descriptions-item label="指导教师">{{ selectionData?.teacherName }}</el-descriptions-item>
-        <el-descriptions-item label="所属院系">{{ selectionData?.departmentName }}</el-descriptions-item>
         <el-descriptions-item label="审核状态">
           <el-tag type="success">
             {{ SELECTION_STATUS_LABELS[SELECTION_STATUS.APPROVED] }}

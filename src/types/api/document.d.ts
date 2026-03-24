@@ -1,9 +1,9 @@
 // 文档信息响应类型 (对应后端 DocumentVO)
 export interface DocumentResponse {
-  id: number
-  userId: number
+  id: string
+  userId: string
   userName: string
-  topicId: number
+  topicId: string
   topicTitle: string
   fileType: number
   fileTypeDesc: string
@@ -14,7 +14,7 @@ export interface DocumentResponse {
   reviewStatus: number
   reviewStatusDesc: string
   reviewedAt?: string
-  reviewerId?: number
+  reviewerId?: string
   reviewerName?: string
   feedback?: string
   uploadedAt?: string
@@ -24,7 +24,7 @@ export interface DocumentResponse {
 
 // 文档上传请求类型 (对应后端 DocumentUploadDTO)
 export interface DocumentUploadRequest {
-  topicId: number
+  topicId: string
   fileType: number
   file: File
   description?: string
@@ -40,20 +40,20 @@ export interface DocumentUpdateRequest {
 
 // 文档审核请求类型 (对应后端 DocumentReviewDTO)
 export interface DocumentReviewRequest {
-  documentId: number
-  reviewStatus: number  // 1-通过, 2-驳回
+  documentId: string
+  reviewStatus: number  // 1-通过，2-驳回
   feedback?: string
   suggestion?: string
 }
 
 // 文档查询参数类型 (对应后端 DocumentPageQueryDTO)
 export interface DocumentQueryParams {
-  userId?: number
-  topicId?: number
+  userId?: string
+  topicId?: string
   fileType?: number
   reviewStatus?: number
   keyword?: string
-  departmentId?: number
+  departmentId?: string
   current?: number
   size?: number
 }

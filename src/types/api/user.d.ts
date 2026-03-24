@@ -27,7 +27,7 @@ export interface UserDetailsResponse {
   userType: string
   email?: string
   phone?: string
-  departmentId?: number
+  departmentId?: string
   departmentName?: string
   status: number
   createdAt?: string
@@ -55,7 +55,7 @@ export interface UserCreateRequest {
   password: string
   email?: string
   phone?: string
-  departmentId?: number
+  departmentId?: string
   status?: number
   avatar?: string
   // 学生特有字段
@@ -77,7 +77,7 @@ export interface UserUpdateRequest {
   password?: string // 编辑时可选，不传则不修改密码
   email?: string
   phone?: string
-  departmentId?: number
+  departmentId?: string
   status?: number
   avatar?: string
   // 学生特有字段

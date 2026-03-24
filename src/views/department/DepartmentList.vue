@@ -32,7 +32,7 @@ import BaseList from '@/components/common/BaseList.vue'
 
 // 院系数据结构
 type DepartmentRow = {
-  id: number | string
+  id: string
   name: string
   code: string
   createdAt?: string | Date

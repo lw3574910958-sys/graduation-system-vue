@@ -8,7 +8,6 @@ export type { ApiResponse, PageQuery, PageResponse } from './global'
 
 // 用户相关类型
 export type {
-  UserResponse,
   UserCreateRequest,
   UserUpdateRequest,
   UserPageResponse,

@@ -31,12 +31,12 @@ import BaseList from '@/components/common/BaseList.vue'
 
 // 成绩数据结构
 type GradeRow = {
-  id: number | string
-  studentId: number
+  id: string
+  studentId: string
   studentName: string
-  topicId: number
+  topicId: string
   topicTitle: string
-  graderId: number
+  graderId: string
   score: number
   comment: string
   gradedAt?: string | Date
@@ -65,11 +65,11 @@ const searchFields = [
 
 // 表格列配置
 const tableColumns = [
-  { prop: 'studentName', label: '学生姓名', headerAlign: 'center', align: 'center' },
-  { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center', ellipsis: true },
+  { prop: 'studentName', label: '学生姓名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 10 },
+  { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
   { prop: 'graderId', label: '评分教师 ID', headerAlign: 'center', align: 'center' },
   { prop: 'score', label: '成绩', headerAlign: 'center', align: 'center' },
-  { prop: 'comment', label: '评语', headerAlign: 'center', align: 'center', ellipsis: true, ellipsisMaxLength: 30 },
+  { prop: 'comment', label: '评语', headerAlign: 'center', align: 'center', ellipsisMaxLength: 50 },
   { prop: 'gradedAt', label: '评分时间', headerAlign: 'center', align: 'center' },
 ]
 

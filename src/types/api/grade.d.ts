@@ -1,12 +1,12 @@
 // 成绩信息响应类型 (对应后端 GradeVO)
 export interface GradeResponse {
-  id: number
-  studentId: number
+  id: string
+  studentId: string
   studentName: string
   studentNumber: string
-  topicId: number
+  topicId: string
   topicTitle: string
-  graderId: number
+  graderId: string
   graderName: string
   score: number
   gradeLevel?: string
@@ -21,9 +21,9 @@ export interface GradeResponse {
 
 // 成绩录入请求类型 (对应后端 GradeInputDTO)
 export interface GradeInputRequest {
-  studentId: number
-  topicId: number
-  graderId: number
+  studentId: string
+  topicId: string
+  graderId: string
   score: number
   comment?: string
   gradeLevel?: string
@@ -32,9 +32,9 @@ export interface GradeInputRequest {
 
 // 成绩创建/更新请求类型 (通用接口)
 export interface GradeRequest {
-  studentId: number
-  topicId: number
-  graderId: number
+  studentId: string
+  topicId: string
+  graderId: string
   score: number
   comment?: string
   status: number
@@ -42,9 +42,9 @@ export interface GradeRequest {
 
 // 成绩查询参数类型
 export interface GradeQueryParams {
-  studentId?: number
-  topicId?: number
-  teacherId?: number
+  studentId?: string
+  topicId?: string
+  teacherId?: string
   status?: number
   current?: number
   size?: number

@@ -4,9 +4,14 @@
     <div 
       class="ellipsis-text"
       :title="displayText"
+      @click="handleClick"
       @dblclick="handleDblClick"
     >
       {{ displayText }}
+      <!-- 复制成功提示 -->
+      <el-tooltip :visible="copyTooltipVisible" content="复制成功" placement="top">
+        <span></span>
+      </el-tooltip>
     </div>
 
     <!-- 查看详情对话框 -->
@@ -45,7 +50,7 @@
 </template>
 
 <script setup lang="ts" name="EllipsisText">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { CopyDocument } from '@element-plus/icons-vue'
 
@@ -55,19 +60,22 @@ interface Props {
   title?: string
   maxLength?: number
   dblclickable?: boolean
+  copyOnClick?: boolean // 是否单击时复制，默认 false（单击选中，双击复制）
 }
 
 const props = withDefaults(defineProps<Props>(), {
   content: '',
   title: '详情',
   maxLength: 50,
-  dblclickable: true
+  dblclickable: true,
+  copyOnClick: false
 })
 
 // 内部状态
 const dialogVisible = ref(false)
 const fullContent = ref('')
 const contentInputRef = ref()
+const copyTooltipVisible = ref(false)
 
 // 计算显示文本
 const displayText = computed(() => {
@@ -93,32 +101,46 @@ function handleDblClick(event: MouseEvent) {
   event.stopPropagation()
   event.preventDefault()
   
-  fullContent.value = String(props.content || '')
-  dialogVisible.value = true
+  // 双击时直接复制内容
+  copyToClipboard(String(props.content || ''))
 }
 
-// 复制内容
-async function handleCopy() {
+// 处理单击事件（可选：单击时复制）
+async function handleClick() {
+  if (props.copyOnClick) {
+    await copyToClipboard(String(props.content || ''))
+  }
+}
+
+// 复制到剪贴板
+async function copyToClipboard(text: string) {
   try {
     // 使用现代 Clipboard API
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(fullContent.value)
+      await navigator.clipboard.writeText(text)
       ElMessage.success('复制成功')
     } else {
       // 降级方案：使用传统的 execCommand 方式
-      const textarea = contentInputRef.value?.$el?.querySelector('textarea')
-      if (textarea) {
-        textarea.select()
-        document.execCommand('copy')
-        ElMessage.success('复制成功')
-      } else {
-        throw new Error('无法访问 textarea 元素')
-      }
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+      ElMessage.success('复制成功')
     }
   } catch (error) {
     console.error('复制失败:', error)
     ElMessage.error('复制失败，请手动复制')
   }
+}
+
+// 复制内容（用于对话框中的复制按钮）
+async function handleCopy() {
+  await copyToClipboard(fullContent.value)
+  dialogVisible.value = false
 }
 </script>
 
@@ -138,7 +160,7 @@ async function handleCopy() {
   white-space: nowrap;
   cursor: pointer;
   padding: 4px 0;
-  user-select: none;
+  user-select: text; /* 允许用户选中文本 */
   position: relative;
   z-index: 1;
 }

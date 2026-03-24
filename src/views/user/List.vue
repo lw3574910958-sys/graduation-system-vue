@@ -143,8 +143,8 @@ const tableColumns = computed(() => {
   
   // 院系管理员不显示状态、最后登录时间、创建时间列
   const columns: any[] = [
-    { prop: 'username', label: '用户名', headerAlign: 'center', align: 'center' },
-    { prop: 'realName', label: '真实姓名', headerAlign: 'center', align: 'center' },
+    { prop: 'username', label: '用户名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 20 },
+    { prop: 'realName', label: '真实姓名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 10 },
     {
       prop: 'userType',
       label: '用户类型',

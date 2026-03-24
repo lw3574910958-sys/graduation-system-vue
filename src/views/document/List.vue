@@ -52,7 +52,8 @@ import AddOrUpdate from '@/views/document/AddOrUpdate.vue'
 import DocumentReviewForm from '@/views/document/DocumentReviewForm.vue'
 import FilePreview from '@/components/common/FilePreview.vue'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
-// 导入用户类型常量和消息常量
+import storageUtil from '@/utils/storage'
+import { SYSTEM_CONSTANTS } from '@/constants'
 import { REVIEW_STATUS_LABELS, FILE_TYPE_LABELS, MESSAGE } from '@/constants/user'
 import type { DocumentResponse, DocumentReviewRequest } from '@/types/api/document'
 import BaseList from '@/components/common/BaseList.vue'
@@ -109,7 +110,7 @@ const searchFields = [
 // 表格列配置
 const tableColumns = [
   { prop: 'id', label: 'ID', headerAlign: 'center', align: 'center' },
-  { prop: 'originalFilename', label: '原始文件名', headerAlign: 'center', align: 'center', ellipsis: true },
+  { prop: 'originalFilename', label: '原始文件名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
   {
     prop: 'fileType',
     label: '文件类型',
@@ -118,8 +119,8 @@ const tableColumns = [
     render: (row: DocumentRow) => getFileTypeLabel(row.fileType),
   },
   { prop: 'fileSizeDisplay', label: '文件大小', headerAlign: 'center', align: 'center' },
-  { prop: 'userName', label: '上传人', headerAlign: 'center', align: 'center' },
-  { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center', ellipsis: true },
+  { prop: 'userName', label: '上传人', headerAlign: 'center', align: 'center', ellipsisMaxLength: 15 },
+  { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
   {
     prop: 'reviewStatus',
     label: '审核状态',
@@ -196,11 +197,11 @@ async function downloadDocument(id: number) {
     })
     
     // 调用后端下载接口
-    const token = localStorage.getItem('user_token')
+    const token = storageUtil.get(SYSTEM_CONSTANTS.TOKEN_NAME)
     const response = await fetch(`/api/documents/${id}/download`, {
       method: 'GET',
       headers: {
-        'Authorization': token ? `Bearer ${token.replace(/^Bearer\s*/i, '').trim()}` : ''
+        'Authorization': token ? `${SYSTEM_CONSTANTS.TOKEN_PREFIX}${token.replace(/^Bearer\s*/i, '').trim()}` : ''
       }
     })
     

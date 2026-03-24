@@ -124,12 +124,12 @@ watch(() => props.topicData, (newVal) => {
 const getStatusType = (status?: number) => {
   if (!status) return 'info'
   switch (status) {
-    case TOPIC_STATUS.OPEN:
-      return 'success'
+    case TOPIC_STATUS.DRAFT:
+      return 'info'
     case TOPIC_STATUS.REVIEWING:
       return 'warning'
-    case TOPIC_STATUS.SELECTED:
-      return 'primary'
+    case TOPIC_STATUS.OPEN:
+      return 'success'
     case TOPIC_STATUS.CLOSED:
       return 'danger'
     default:

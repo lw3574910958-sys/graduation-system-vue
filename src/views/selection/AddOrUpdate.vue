@@ -70,11 +70,11 @@ const formRef = ref()
 // 表单初始值
 const formDefault = {
   id: undefined,
-  studentId: 0,
+  studentId: '',
   studentName: '',
-  topicId: 0,
+  topicId: '',
   topicTitle: '',
-  teacherId: 0,
+  teacherId: '',
   status: 0,
 }
 

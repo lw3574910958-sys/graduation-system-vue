@@ -297,7 +297,7 @@ const formatDate = (date?: string) => {
 }
 
 // 获取院系名称
-const getDepartmentName = (departmentId?: number) => {
+const getDepartmentName = (departmentId?: string) => {
   if (!departmentId) return '-'
   const dept = departments.value.find((d) => d.id === departmentId)
   return dept ? dept.name : '-'

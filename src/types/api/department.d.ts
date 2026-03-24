@@ -1,9 +1,9 @@
 // 部门信息响应类型
 export interface DepartmentResponse {
-  id: number
+  id: string
   name: string
   code: string
-  parentId?: number
+  parentId?: string
   level: number
   sort: number
   status: number
@@ -13,7 +13,7 @@ export interface DepartmentResponse {
 
 // 部门树形结构响应类型
 export interface DepartmentTreeResponse {
-  id: number
+  id: string
   name: string
   code: string
   children?: DepartmentTreeResponse[]
@@ -23,7 +23,7 @@ export interface DepartmentTreeResponse {
 export interface DepartmentCreateRequest {
   name: string
   code: string
-  parentId?: number
+  parentId?: string
   level?: number
   sort?: number
   status: number
@@ -33,7 +33,7 @@ export interface DepartmentCreateRequest {
 export interface DepartmentUpdateRequest {
   name?: string
   code?: string
-  parentId?: number
+  parentId?: string
   level?: number
   sort?: number
   status?: number

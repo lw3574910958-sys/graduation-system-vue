@@ -2,14 +2,14 @@
 
 // 通知响应类型 (对应后端 NoticeVO)
 export interface NoticeResponse {
-  id: number
+  id: string
   title: string
   content: string
   type: number
   typeDesc: string
   priority: number
   priorityDesc: string
-  publisherId: number
+  publisherId: string
   publisherName: string
   publishedAt: string
   startTime: string
@@ -62,7 +62,7 @@ export interface NoticeQueryParams {
   status?: number
   isSticky?: number
   targetScope?: number
-  publisherId?: number
+  publisherId?: string
 }
 
 // 通知分页响应类型

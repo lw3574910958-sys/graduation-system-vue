@@ -98,10 +98,10 @@ const userType = computed(() => authStore.userInfo?.userType || '')
 
 // 选题数据结构
 type SelectionRow = {
-  id: number | string
-  topicId: number
+  id: string
+  topicId: string
   topicTitle: string
-  studentId: number
+  studentId: string
   studentName: string
   studentNumber?: string
   status: number
@@ -159,9 +159,9 @@ const searchFields = [
 
 // 表格列配置
 const tableColumns = [
-  { prop: 'studentName', label: '学生姓名', headerAlign: 'center', align: 'center' },
+  { prop: 'studentName', label: '学生姓名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 10 },
   { prop: 'studentNumber', label: '学号', headerAlign: 'center', align: 'center' },
-  { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center' },
+  { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
   { 
     prop: 'statusDesc', 
     label: '状态', 
@@ -169,6 +169,7 @@ const tableColumns = [
     align: 'center',
     render: (row: SelectionRow) => row.statusDesc || getStatusLabel(row.status)
   },
+  { prop: 'applyReason', label: '申请理由', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
   { prop: 'createdAt', label: '申请时间', headerAlign: 'center', align: 'center' },
   { prop: 'reviewedAt', label: '审核时间', headerAlign: 'center', align: 'center' }
 ]
@@ -186,7 +187,7 @@ function handleApply(row: SelectionRow) {
 function showConfirmDialog(row: SelectionRow) {
   // 将 SelectionRow 转换为 SelectionResponse 格式
   currentSelection.value = {
-    id: typeof row.id === 'string' ? parseInt(row.id) : row.id,
+    id: row.id,
     studentId: row.studentId,
     studentName: row.studentName,
     studentNumber: row.studentNumber,

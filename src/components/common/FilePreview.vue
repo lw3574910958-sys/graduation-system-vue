@@ -84,6 +84,8 @@
 import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Picture } from '@element-plus/icons-vue'
+import storageUtil from '@/utils/storage'
+import { SYSTEM_CONSTANTS } from '@/constants'
 
 // 定义props
 const props = defineProps({
@@ -164,9 +166,10 @@ async function loadFile() {
 async function loadTextFile() {
   loadingText.value = true
   try {
+    const token = storageUtil.get(SYSTEM_CONSTANTS.TOKEN_NAME)
     const response = await fetch(fileUrl.value, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('user_token')}`
+        'Authorization': token ? `${SYSTEM_CONSTANTS.TOKEN_PREFIX}${token.replace(/^Bearer\s*/i, '').trim()}` : ''
       }
     })
     

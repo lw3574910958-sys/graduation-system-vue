@@ -103,7 +103,7 @@ const documentData = ref<DocumentResponse | null>(null)
 
 // 表单数据
 const formData = reactive({
-  documentId: 0,
+  documentId: '',
   reviewStatus: 1, // 默认通过
   feedback: '',
   suggestion: ''

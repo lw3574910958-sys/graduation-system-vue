@@ -27,7 +27,7 @@ export interface DashboardApi {
   /**
    * 获取选题进度统计
    */
-  getTopicProgress: (departmentId?: number | null) => Promise<any>
+  getTopicProgress: (departmentId?: number | string | null) => Promise<any>
 }
 
 /**
@@ -111,7 +111,17 @@ export const dashboardApi: DashboardApi = {
     return get(`/api/dashboard/statistics/grade/distribution${year ? `?year=${year}` : ''}`)
   },
 
-  getTopicProgress: (departmentId?: number | null) => {
-    return get(`/api/dashboard/statistics/topic/progress${departmentId !== undefined && departmentId !== null ? `?departmentId=${departmentId}` : ''}`)
+  getTopicProgress: (departmentId?: number | string | null) => {
+    // 空字符串、null 或 undefined 都不传参数
+    // 注意：Number("") === 0，所以要单独判断空字符串
+    let deptId: number | undefined
+    if (departmentId === '' || departmentId === null || departmentId === undefined) {
+      deptId = undefined
+    } else {
+      const numValue = Number(departmentId)
+      // 如果是有效数字则使用，否则不传参数
+      deptId = isNaN(numValue) ? undefined : numValue
+    }
+    return get(`/api/dashboard/statistics/topic/progress${deptId !== undefined ? `?departmentId=${deptId}` : ''}`)
   }
 }

@@ -140,6 +140,8 @@ import type { AdminDashboardResponse } from '@/api/dashboard'
 import { dashboardApi } from '@/api/dashboard'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
+import GradeDistributionChart from '@/components/dashboard/GradeDistributionChart.vue'
+import SelectionProgressChart from '@/components/dashboard/SelectionProgressChart.vue'
 
 const router = useRouter()
 

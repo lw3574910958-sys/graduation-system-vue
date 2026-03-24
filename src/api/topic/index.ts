@@ -13,15 +13,15 @@ export const topicApi = {
   create: (param: TopicCreateRequest) => {
     return topicApi.createTopic(param)
   },
-  update: (id: number | string, param: Omit<TopicUpdateRequest, 'id'>) => {
+  update: (id: string, param: Omit<TopicUpdateRequest, 'id'>) => {
     // 注意：后端的 update 方法需要完整的 TopicUpdateRequest，包括 id
     const updateParam: TopicUpdateRequest = {
-      id: String(id),
+      id: id,
       ...param
     } as TopicUpdateRequest
-    return topicApi.updateTopic(String(id), updateParam)
+    return topicApi.updateTopic(id, updateParam)
   },
-  delete: (id: number | string) => {
+  delete: (id: string) => {
     return topicApi.deleteTopic(id)
   },
   getList: (params: TopicQueryParams) => {
@@ -39,10 +39,10 @@ export const topicApi = {
 
   /**
    * 根据ID获取题目详情
-   * @param id 题目ID
+   * @param id 题目 ID
    * @returns 题目详情
    */
-  getTopicById: (id: number | string) => {
+  getTopicById: (id: string) => {
     return get<ApiResponse<TopicResponse>>(`/api/topics/${id}`, {})
   },
 
@@ -61,7 +61,7 @@ export const topicApi = {
    * @param param 题目信息
    * @returns 请求结果
    */
-  updateTopic: (id: number | string, param: TopicUpdateRequest) => {
+  updateTopic: (id: string, param: TopicUpdateRequest) => {
     return put<ApiResponse<void>>(`/api/topics/${id}`, param)
   },
 
@@ -70,8 +70,17 @@ export const topicApi = {
    * @param id 题目 ID
    * @returns 请求结果
    */
-  deleteTopic: (id: number | string) => {
+  deleteTopic: (id: string) => {
     return del<ApiResponse<void>>(`/api/topics/${id}`)
+  },
+
+  /**
+   * 教师提交题目审核
+   * @param id 题目 ID
+   * @returns 操作结果
+   */
+  submitForReview: (id: string) => {
+    return post<ApiResponse<void>>(`/api/topics/${id}/submit`, {})
   },
 
   /**
@@ -79,7 +88,25 @@ export const topicApi = {
    * @param param 审核请求参数
    * @returns 审核结果
    */
-  reviewTopic: (param: { topicId: number | string; reviewResult: number; reviewComment?: string }) => {
+  reviewTopic: (param: { topicId: string; reviewResult: number; reviewComment?: string }) => {
     return post<ApiResponse<void>>('/api/topics/review', param)
+  },
+  
+  /**
+   * 开放课题（教师用户）
+   * @param id 课题 ID
+   * @returns 操作结果
+   */
+  openTopic: (id: string) => {
+    return post<ApiResponse<void>>(`/api/topics/${id}/open`, {})
+  },
+  
+  /**
+   * 关闭课题（教师用户）
+   * @param id 课题 ID
+   * @returns 操作结果
+   */
+  closeTopic: (id: string) => {
+    return post<ApiResponse<void>>(`/api/topics/${id}/close`, {})
   },
 }

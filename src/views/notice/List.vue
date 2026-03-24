@@ -271,7 +271,15 @@ const searchFields = [
 
 // 表格列配置
 const tableColumns = [
-  { prop: 'title', label: '标题', headerAlign: 'center', align: 'center', minWidth: 180, ellipsis: true },
+  { prop: 'title', label: '标题', headerAlign: 'center', align: 'center', minWidth: 180, ellipsisMaxLength: 30 },
+  { 
+    prop: 'content', 
+    label: '内容', 
+    headerAlign: 'center', 
+    align: 'center',
+    minWidth: 200,
+    ellipsisMaxLength: 30
+  },
   { 
     prop: 'isSticky', 
     label: '置顶', 
@@ -346,7 +354,7 @@ const tableColumns = [
       return String(status)
     }
   },
-  { prop: 'publisherName', label: '发布人', headerAlign: 'center', align: 'center', minWidth: 90 },
+  { prop: 'publisherName', label: '发布人', headerAlign: 'center', align: 'center', minWidth: 90, ellipsisMaxLength: 15 },
   { prop: 'publishedAt', label: '发布时间', headerAlign: 'center', align: 'center', minWidth: 160 },
   { prop: 'createdAt', label: '创建时间', headerAlign: 'center', align: 'center', minWidth: 160 }
 ]

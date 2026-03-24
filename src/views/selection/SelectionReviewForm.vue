@@ -115,7 +115,7 @@ const selectionData = ref<SelectionResponse | null>(null)
 
 // 表单数据
 const formData = reactive({
-  selectionId: 0,
+  selectionId: '',
   reviewResult: 1, // 默认通过
   reviewComment: '',
   suggestedChanges: '',

@@ -73,7 +73,7 @@ import type { SelectionApplyRequest } from '@/types/api/selection'
 import { MESSAGE } from '@/constants/user'
 
 interface Props {
-  topicId?: number
+  topicId?: string
   topicTitle?: string
 }
 
@@ -90,7 +90,7 @@ const loading = ref(false)
 
 // 表单数据
 const formData = reactive({
-  topicId: props.topicId || 0,
+  topicId: props.topicId || '',
   topicTitle: props.topicTitle || '',
   applyReason: '',
   studentAbility: '',
@@ -119,7 +119,7 @@ const dialogTitle = computed(() => {
 })
 
 // 显示对话框
-const show = (topicId: number, topicTitle: string) => {
+const show = (topicId: string, topicTitle: string) => {
   formData.topicId = topicId
   formData.topicTitle = topicTitle
   formData.applyReason = ''

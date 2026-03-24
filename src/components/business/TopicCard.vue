@@ -43,6 +43,7 @@
 
 <script setup lang="ts">
 import type { PropType } from 'vue'
+import { TOPIC_STATUS_LABELS } from '@/constants/enums'
 
 // 课题类型定义 (对应后端 TopicVO)
 // 注意：为了保持组件兼容性，保留一些可能需要的扩展字段
@@ -82,32 +83,27 @@ const props = defineProps({
 // 定义事件
 const emit = defineEmits(['view', 'select'])
 
-// 获取状态类型 (对应后端状态: 1-开放, 2-已选, 3-关闭)
+// 获取状态类型 (对应后端状态：0-草稿，1-审核中，2-开放，3-关闭)
 const getStatusType = (status: number) => {
+  if (!status && status !== 0) return 'info'
   switch (status) {
-    case 1: // 开放
-      return 'success'
-    case 2: // 已选
-      return 'warning'
-    case 3: // 关闭
+    case 0: // 草稿
       return 'info'
+    case 1: // 审核中
+      return 'warning'
+    case 2: // 开放
+      return 'success'
+    case 3: // 关闭
+      return 'danger'
     default:
       return 'info'
   }
 }
 
-// 获取状态文本 (对应后端状态: 1-开放, 2-已选, 3-关闭)
+// 获取状态文本 (对应后端状态：0-草稿，1-审核中，2-开放，3-关闭)
 const getStatusText = (status: number) => {
-  switch (status) {
-    case 1:
-      return '开放'
-    case 2:
-      return '已选'
-    case 3:
-      return '关闭'
-    default:
-      return '未知'
-  }
+  if (!status && status !== 0) return '未知'
+  return TOPIC_STATUS_LABELS[status as keyof typeof TOPIC_STATUS_LABELS] || '未知'
 }
 
 // 格式化日期

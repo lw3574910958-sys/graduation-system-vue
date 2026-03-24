@@ -88,7 +88,9 @@ import type { TopicResponse } from '@/types/api/topic'
 import {
   TOPIC_SOURCE_LABELS,
   TOPIC_TYPE_LABELS,
-  TOPIC_NATURE_LABELS
+  TOPIC_NATURE_LABELS,
+  TOPIC_DIFFICULTY_LABELS,
+  TOPIC_WORKLOAD_LABELS
 } from '@/constants'
 
 // 控制对话框显示与否
@@ -96,12 +98,12 @@ const visible = ref(false)
 
 // 表单数据
 const formData = reactive<TopicResponse>({
-  id: 0,
+  id: '',
   title: '',
   description: '',
-  teacherId: 0,
+  teacherId: '',
   status: 0,
-  departmentId: 0,
+  departmentId: '',
   source: '',
   type: '',
   nature: '',
@@ -139,27 +141,13 @@ const natureLabel = computed(() => {
 // 计算属性：难度标签
 const difficultyLabel = computed(() => {
   if (!formData.difficulty) return '-'
-  const labels: Record<number, string> = {
-    1: '简单',
-    2: '适中',
-    3: '困难',
-    4: '很难',
-    5: '极难'
-  }
-  return labels[formData.difficulty] || '-'
+  return TOPIC_DIFFICULTY_LABELS[formData.difficulty as keyof typeof TOPIC_DIFFICULTY_LABELS] || '-'
 })
 
 // 计算属性：工作量标签
 const workloadLabel = computed(() => {
   if (!formData.workload) return '-'
-  const labels: Record<number, string> = {
-    1: '很少',
-    2: '较少',
-    3: '适中',
-    4: '较多',
-    5: '很多'
-  }
-  return labels[formData.workload] || '-'
+  return TOPIC_WORKLOAD_LABELS[formData.workload as keyof typeof TOPIC_WORKLOAD_LABELS] || '-'
 })
 
 // 显示详情

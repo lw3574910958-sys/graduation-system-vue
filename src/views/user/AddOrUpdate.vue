@@ -209,7 +209,7 @@ interface FormDataType {
   userType?: string
   email?: string
   phone?: string
-  departmentId?: number
+  departmentId?: string
   status?: number
   avatar?: string
   studentId?: string   // 学号 (学生特有)

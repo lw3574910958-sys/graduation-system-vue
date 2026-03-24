@@ -34,7 +34,7 @@
 
       <el-form-item>
         <el-button @click="onSearch()" type="primary" plain>查询</el-button>
-        <el-button @click="add()" type="primary" plain v-if="showAddButton">新增</el-button>
+        <el-button @click="add()" type="primary" plain v-if="showAddButton">{{ addButtonText }}</el-button>
         <el-button @click="confirmDel()" type="danger" plain v-if="showDeleteButton">批量删除</el-button>
         <el-button @click="resetQuery()">重置</el-button>
       </el-form-item>
@@ -81,15 +81,16 @@
                   :avatar="scope.row[column.prop]"
                 />
               </template>
-              <!-- 如果配置了使用 EllipsisText -->
-              <template v-else-if="column.ellipsis">
+              <!-- 如果没有明确禁用省略号且不是特殊字段 -->
+              <template v-else-if="shouldUseEllipsis(column, scope.row)">
                 <EllipsisText
-                  :content="scope.row[column.prop]"
+                  :content="getColumnValue(scope.row, column.prop)"
                   :title="column.label"
-                  :maxLength="column.ellipsisMaxLength"
+                  :maxLength="column.ellipsisMaxLength || defaultEllipsisMaxLength"
                   :dblclickable="column.ellipsisDblclickable !== false"
                 />
               </template>
+              <!-- 默认显示 -->
               <template v-else>
                 {{ scope.row[column.prop] }}
               </template>
@@ -175,9 +176,10 @@ interface TableColumn {
   render?: (row: T, index: number, column: any) => string
   component?: any
   props?: Record<string, any> // 组件属性
-  ellipsis?: boolean // 是否启用省略号 + 双击查看
-  ellipsisMaxLength?: number // 省略号显示的最大长度，默认 50
+  ellipsis?: boolean // 是否启用省略号 + 双击查看（已废弃，现在默认启用）
+  ellipsisMaxLength?: number // 省略号显示的最大长度
   ellipsisDblclickable?: boolean // 是否允许双击查看，默认 true
+  disableEllipsis?: boolean // 是否禁用省略号（用于不需要截断的字段）
 }
 
 // 定义组件属性
@@ -202,12 +204,17 @@ interface Props {
   showOperations?: boolean
   operationColumnLabel?: string
   operationColumnWidth?: string | number
+  addButtonText?: string // 自定义新增按钮文字
   
   // 分页配置
   showPagination?: boolean
   
   // 初始查询参数
   initialQueryParams?: Record<string, any>
+  
+  // 省略号配置
+  defaultEllipsisMaxLength?: number // 默认省略号最大长度，默认 50
+  disableGlobalEllipsis?: boolean // 是否禁用全局省略号，默认 false
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -221,11 +228,14 @@ const props = withDefaults(defineProps<Props>(), {
   showOperations: true,
   operationColumnLabel: '操作',
   operationColumnWidth: 200,
+  addButtonText: '新增', // 默认显示“新增”
   showPagination: true,
   initialQueryParams: () => ({
     current: 1,
     size: constants.PAGE_SIZE
-  })
+  }),
+  defaultEllipsisMaxLength: 50,
+  disableGlobalEllipsis: false
 })
 
 // 定义事件
@@ -278,6 +288,47 @@ const getDefaultMinWidth = (column: TableColumn): number => {
     default:
       return 120
   }
+}
+
+// 判断是否应该使用 EllipsisText 组件
+const shouldUseEllipsis = (column: TableColumn, row: T): boolean => {
+  // 如果全局禁用了省略号，则不使用
+  if (props.disableGlobalEllipsis) {
+    return false
+  }
+  
+  // 如果列明确禁用了省略号，则不使用
+  if (column.disableEllipsis === true) {
+    return false
+  }
+  
+  // 如果有 render 函数或 component，不使用（由它们自己处理）
+  if (column.render || column.component) {
+    return false
+  }
+  
+  // 检查字段值是否为字符串或数字
+  const value = getColumnValue(row, column.prop)
+  const isTextValue = typeof value === 'string' || typeof value === 'number'
+  
+  // 排除不需要省略号的字段类型
+  const excludedProps = [
+    'status',      // 状态
+    'type',        // 类型（通常用标签显示）
+    'role',        // 角色
+    'priority',    // 优先级
+  ]
+  
+  if (excludedProps.includes(column.prop)) {
+    return false
+  }
+  
+  return isTextValue
+}
+
+// 获取列的值
+const getColumnValue = (row: T, prop: string): any => {
+  return (row as any)[prop]
 }
 
 // 处理组件 props，如果 prop 是函数则调用它
@@ -428,7 +479,7 @@ async function del(id?: number | string) {
 // 删除确认
 function confirmDel(id?: number | string) {
   if (!props.deleteApi) {
-    ElMessage.warning('未提供删除API')
+    ElMessage.warning('未提供删除 API')
     return
   }
 

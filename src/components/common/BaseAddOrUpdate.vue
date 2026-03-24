@@ -13,7 +13,10 @@
           :prop="field.prop"
           v-show="shouldShowField(field)"
           :required="isFieldRequired(field)"
-          :class="{ 'full-width': field.component === 'FileUpload' }"
+          :class="{ 
+            'full-width': field.component === 'FileUpload',
+            'field-full-width': field.fullWidth 
+          }"
           :style="field.style || {}"
         >
           <!-- 特殊处理 FileUpload 组件 -->
@@ -52,6 +55,23 @@
                 />
               </el-select>
             </template>
+            <!-- 特殊处理 el-radio-group 组件 -->
+            <template v-else-if="field.component === 'el-radio-group'">
+              <el-radio-group
+                v-model="formData[field.prop]"
+                v-bind="field.props || {}"
+                :readonly="field.readonly || (formData.id && field.readonlyWhenUpdate)"
+                :disabled="field.disabled || (formData.id && field.disabledWhenUpdate)"
+              >
+                <el-radio
+                  v-for="option in (typeof field.options === 'function' ? field.options() : field.options)"
+                  :key="option.value"
+                  :label="option.value"
+                >
+                  {{ option.label }}
+                </el-radio>
+              </el-radio-group>
+            </template>
             <!-- 其他组件 -->
             <template v-else>
               <component
@@ -80,15 +100,22 @@
 
     <template #footer>
       <div class="d-flex justify-end">
-        <el-button @click="onCancel()">取消</el-button>
-        <el-button
-          type="primary"
-          @click="onSubmit()"
-          :loading="btnLoading || isUploading"
-          :disabled="isUploading"
-        >
-          确定
-        </el-button>
+        <!-- 自定义按钮插槽 -->
+        <template v-if="slots.buttons">
+          <slot name="buttons" :loading="btnLoading || isUploading"></slot>
+        </template>
+        <!-- 默认按钮（没有自定义按钮时显示） -->
+        <template v-else>
+          <el-button @click="onCancel()">取消</el-button>
+          <el-button
+            type="primary"
+            @click="onSubmit()"
+            :loading="btnLoading || isUploading"
+            :disabled="isUploading"
+          >
+            确定
+          </el-button>
+        </template>
       </div>
     </template>
   </el-dialog>
@@ -117,6 +144,7 @@ interface FormField {
   showWhen?: (formData: T) => boolean // 条件显示字段
   required?: boolean | ((formData: T) => boolean) // 是否必填，支持函数
   style?: Record<string, any> // 自定义样式
+  fullWidth?: boolean // 是否独占一行
 }
 
 // 对话框标题配置
@@ -129,7 +157,7 @@ interface DialogTitle {
 interface Props {
   // API 相关
   saveApi: (data: T) => Promise<any>
-  updateApi?: (id: number | string, data: T) => Promise<any>
+  updateApi?: (id: string, data: T) => Promise<any>
 
   // 表单配置
   formFields: FormField[]
@@ -152,6 +180,14 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   refreshList: []
 }>()
+
+// 定义插槽类型
+interface Slots {
+  buttons: (props: { loading: boolean }) => any
+}
+
+// ✅ 使用 defineSlots 定义插槽（Vue 3.3+）
+const slots = defineSlots<Slots>()
 
 // 响应式数据
 const visible = ref(false)
@@ -316,6 +352,11 @@ defineExpose({
 .form-grid .full-width {
   grid-column: 1 / -1; /* 跨越所有列 */
   margin-top: 8px; /* 上方间距减小 */
+}
+
+/* 自定义独占一行标记 */
+.form-grid .field-full-width {
+  grid-column: 1 / -1; /* 跨越所有列 */
 }
 
 /* 优化表单项底部间距 */

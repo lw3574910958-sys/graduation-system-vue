@@ -5,7 +5,7 @@
         <div class="card-header">
           <span>选题进度统计</span>
           <el-select v-model="departmentId" size="small" @change="loadData" placeholder="选择院系">
-            <el-option label="全部院系" :value="null" />
+            <el-option label="全部院系" value="" />
             <el-option label="计算机学院" :value="1" />
             <el-option label="软件学院" :value="2" />
             <el-option label="信息学院" :value="3" />
@@ -25,7 +25,7 @@ import type { TopicProgressResponse } from '@/api/dashboard'
 import { dashboardApi } from '@/api/dashboard'
 
 // 院系选择
-const departmentId = ref<number | null>(null)
+const departmentId = ref<number | string>('')
 
 // 图表实例
 const chartRef = ref<HTMLElement>()
@@ -42,7 +42,11 @@ const selectionData = ref({
 // 加载数据
 const loadData = async () => {
   try {
-    const res = await dashboardApi.getTopicProgress(departmentId.value)
+    // 空字符串转换为 undefined 传递给后端（表示不传参数）
+    const deptId = departmentId.value === '' ? undefined : Number(departmentId.value)
+    // 确保不会传递 NaN
+    const validDeptId = (deptId !== undefined && !isNaN(deptId)) ? deptId : undefined
+    const res = await dashboardApi.getTopicProgress(validDeptId)
     const data: TopicProgressResponse = res.data
     
     selectionData.value = {

@@ -39,21 +39,36 @@ export const ACCOUNT_STATUS_LABELS = {
   [ACCOUNT_STATUS.ENABLED]: '启用'
 } as const
 
-// 课题状态枚举 (对应后端 BizTopic.status: 1-开放, 2-审核中, 3-已选, 4-关闭)
+// 课题状态枚举 (对应后端 BizTopic.status: 0-草稿，1-审核中，2-开放，3-关闭)
 export const TOPIC_STATUS = {
-  OPEN: 1,        // 开放
-  REVIEWING: 2,   // 审核中
-  SELECTED: 3,    // 已选
-  CLOSED: 4       // 关闭
+  DRAFT: 0,       // 草稿
+  REVIEWING: 1,   // 审核中
+  OPEN: 2,        // 开放（审核通过）
+  CLOSED: 3       // 关闭
 } as const
 
 // 课题状态标签映射
 export const TOPIC_STATUS_LABELS = {
-  [TOPIC_STATUS.OPEN]: '开放',
+  [TOPIC_STATUS.DRAFT]: '草稿',
   [TOPIC_STATUS.REVIEWING]: '审核中',
-  [TOPIC_STATUS.SELECTED]: '已选',
+  [TOPIC_STATUS.OPEN]: '开放',
   [TOPIC_STATUS.CLOSED]: '关闭'
 } as const
+
+// 题目审核结果枚举 (对应后端 BizTopic.last_review_outcome: NULL-未审，1-通过，2-驳回)
+export const TOPIC_REVIEW_OUTCOME = {
+  NULL: null,       // 未审核
+  APPROVED: 1,      // 审核通过
+  REJECTED: 2       // 审核驳回
+} as const
+
+// 题目审核结果标签映射（使用函数方式处理 null 键）
+export const getTopicReviewOutcomeLabel = (outcome: number | null | undefined): string => {
+  if (outcome === null || outcome === undefined) return '未审核'
+  if (outcome === 1) return '审核通过'
+  if (outcome === 2) return '审核驳回'
+  return '未知'
+}
 
 // 选题状态枚举 (对应后端 SelectionStatus: 0-待审核, 1-审核通过, 2-审核驳回, 3-已确认)
 export const SELECTION_STATUS = {
@@ -169,6 +184,42 @@ export const TOPIC_NATURE_LABELS = {
   [TOPIC_NATURE.OTHER]: '其他'
 } as const
 
+// 题目难度枚举 (对应后端 TopicDifficulty: 1-简单，2-适中，3-困难，4-很难，5-极难)
+export const TOPIC_DIFFICULTY = {
+  EASY: 1,
+  MEDIUM: 2,
+  HARD: 3,
+  VERY_HARD: 4,
+  EXTREME: 5
+} as const
+
+// 题目难度标签映射
+export const TOPIC_DIFFICULTY_LABELS = {
+  [TOPIC_DIFFICULTY.EASY]: '简单',
+  [TOPIC_DIFFICULTY.MEDIUM]: '适中',
+  [TOPIC_DIFFICULTY.HARD]: '困难',
+  [TOPIC_DIFFICULTY.VERY_HARD]: '很难',
+  [TOPIC_DIFFICULTY.EXTREME]: '极难'
+} as const
+
+// 题目工作量枚举 (对应后端 TopicWorkload: 1-少于 10 学时，2-10-20 学时，3-20-30 学时，4-30-40 学时，5-40 学时以上)
+export const TOPIC_WORKLOAD = {
+  LESS_THAN_10_HOURS: 1,
+  TEN_TO_TWENTY_HOURS: 2,
+  TWENTY_TO_THIRTY_HOURS: 3,
+  THIRTY_TO_FORTY_HOURS: 4,
+  MORE_THAN_FORTY_HOURS: 5
+} as const
+
+// 题目工作量标签映射
+export const TOPIC_WORKLOAD_LABELS = {
+  [TOPIC_WORKLOAD.LESS_THAN_10_HOURS]: '少于 10 学时',
+  [TOPIC_WORKLOAD.TEN_TO_TWENTY_HOURS]: '10-20 学时',
+  [TOPIC_WORKLOAD.TWENTY_TO_THIRTY_HOURS]: '20-30 学时',
+  [TOPIC_WORKLOAD.THIRTY_TO_FORTY_HOURS]: '30-40 学时',
+  [TOPIC_WORKLOAD.MORE_THAN_FORTY_HOURS]: '40 学时以上'
+} as const
+
 // 题目审核结果枚举 (用于院系管理员审核题目)
 export const TOPIC_REVIEW_RESULT = {
   APPROVED: 1,    // 审核通过
@@ -194,3 +245,5 @@ export type TopicReviewResult = typeof TOPIC_REVIEW_RESULT[keyof typeof TOPIC_RE
 export type TopicSource = typeof TOPIC_SOURCE[keyof typeof TOPIC_SOURCE]
 export type TopicType = typeof TOPIC_TYPE[keyof typeof TOPIC_TYPE]
 export type TopicNature = typeof TOPIC_NATURE[keyof typeof TOPIC_NATURE]
+export type TopicDifficulty = typeof TOPIC_DIFFICULTY[keyof typeof TOPIC_DIFFICULTY]
+export type TopicWorkload = typeof TOPIC_WORKLOAD[keyof typeof TOPIC_WORKLOAD]

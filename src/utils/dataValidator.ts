@@ -4,7 +4,6 @@
  */
 
 import type { 
-  UserResponse, 
   UserCreateRequest, 
   UserUpdateRequest,
   UserQueryParams 

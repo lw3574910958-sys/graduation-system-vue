@@ -27,7 +27,7 @@ const router = createRouter({
       path: '/index',
       component: () => import('@/components/layout/BasicLayout.vue'),
       meta: { requiresAuth: true },
-
+      redirect: '/dashboard', // 默认跳转到 Dashboard 父路由，由子路由决定显示哪个
       children: [
         // 默认重定向到欢迎页
         { path: '', redirect: '/dashboard' },
@@ -36,43 +36,9 @@ const router = createRouter({
         {
           path: '/dashboard',
           name: 'Dashboard',
-          redirect: (to) => {
-            // 根据用户类型重定向到对应的仪表盘
-            const authStore = useAuthStore()
-            const userType = authStore.userInfo?.userType
-            
-            if (userType === USER_TYPE.STUDENT) {
-              return '/dashboard/student'
-            } else if (userType === USER_TYPE.TEACHER) {
-              return '/dashboard/teacher'
-            } else if (userType === USER_TYPE.SYSTEM_ADMIN || userType === USER_TYPE.DEPARTMENT_ADMIN) {
-              return '/dashboard/admin'
-            }
-            
-            // 默认重定向到学生仪表盘（兜底方案）
-            return '/dashboard/student'
-          },
+          // 根据用户类型动态显示不同仪表盘
+          component: () => import('@/views/dashboard/Index.vue'),
           meta: { requiresAuth: true },
-          children: [
-            {
-              path: 'student',
-              name: 'StudentDashboard',
-              component: () => import('@/views/dashboard/StudentDashboard.vue'),
-              meta: { requiresAuth: true, title: '学生仪表盘', userType: [USER_TYPE.STUDENT] },
-            },
-            {
-              path: 'teacher',
-              name: 'TeacherDashboard',
-              component: () => import('@/views/dashboard/TeacherDashboard.vue'),
-              meta: { requiresAuth: true, title: '教师仪表盘', userType: [USER_TYPE.TEACHER] },
-            },
-            {
-              path: 'admin',
-              name: 'AdminDashboard',
-              component: () => import('@/views/dashboard/AdminDashboard.vue'),
-              meta: { requiresAuth: true, title: '管理员仪表盘', userType: [USER_TYPE.SYSTEM_ADMIN, USER_TYPE.DEPARTMENT_ADMIN] },
-            }
-          ]
         },
 
         // 用户管理模块
@@ -92,8 +58,29 @@ const router = createRouter({
       ],
     },
 
-    // 404 页面
-    { path: '/:pathMatch(.*)*', component: () => import('@/views/NotFound.vue') },
+    // 404 页面（必须放在最后）
+    {
+      path: '/404',
+      name: 'NotFound',
+      component: () => import('@/views/NotFound.vue'),
+      meta: { 
+        title: '页面未找到',
+        requiresAuth: true // 需要登录才能访问 404 页面
+      },
+    },
+    // 通配符路由，捕获所有未匹配的路径
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: (to) => {
+        // 未登录时重定向到登录页
+        const authStore = useAuthStore()
+        if (!authStore.checkAuth()) {
+          return '/login'
+        }
+        // 已登录时重定向到 404 页面
+        return '/404'
+      },
+    },
   ],
 })
 
@@ -122,14 +109,7 @@ router.beforeEach(async (to, from, next) => {
       if (!authStore.userInfo && !authStore.isFetchingUserInfo) {
         try {
           await authStore.fetchUserInfo()
-          // 获取用户信息后检查路由权限
-          const redirectPath = checkRoutePermission(to, authStore)
-          if (redirectPath && redirectPath !== to.path) {
-            ElMessage.warning('您无权访问该页面，已为您跳转到对应仪表盘')
-            next(redirectPath)
-          } else {
-            next()
-          }
+          next()
         } catch (error: any) {
           if (error.message === 'UNAUTHORIZED') {
             next('/login')
@@ -139,14 +119,7 @@ router.beforeEach(async (to, from, next) => {
           }
         }
       } else {
-        // 用户信息已存在或正在获取，检查权限
-        const redirectPath = checkRoutePermission(to, authStore)
-        if (redirectPath && redirectPath !== to.path) {
-          ElMessage.warning('您无权访问该页面，已为您跳转到对应仪表盘')
-          next(redirectPath)
-        } else {
-          next()
-        }
+        next()
       }
     } else {
       next('/login')
@@ -155,37 +128,5 @@ router.beforeEach(async (to, from, next) => {
     next()
   }
 })
-
-/**
- * 检查路由权限（复用已有的权限验证逻辑）
- */
-function checkRoutePermission(to: any, authStore: any): string | null {
-  const userType = authStore.userInfo?.userType
-  const allowedUserTypes = to.meta.userType
-  
-  // 如果路由配置了允许的用户类型
-  if (allowedUserTypes && Array.isArray(allowedUserTypes)) {
-    if (!userType || !allowedUserTypes.includes(userType)) {
-      // 无权访问，返回应该跳转的路径
-      return getDefaultDashboardPath(userType)
-    }
-  }
-  return null
-}
-
-/**
- * 获取默认仪表盘路径
- */
-function getDefaultDashboardPath(userType: string): string {
-  if (userType === USER_TYPE.STUDENT) {
-    return '/dashboard/student'
-  } else if (userType === USER_TYPE.TEACHER) {
-    return '/dashboard/teacher'
-  } else if (userType === USER_TYPE.SYSTEM_ADMIN || userType === USER_TYPE.DEPARTMENT_ADMIN) {
-    return '/dashboard/admin'
-  }
-  // 兜底方案
-  return '/dashboard/student'
-}
 
 export default router

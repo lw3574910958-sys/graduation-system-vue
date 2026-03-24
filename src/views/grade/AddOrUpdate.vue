@@ -92,12 +92,12 @@ const formRef = ref()
 // 表单初始值
 const formDefault = {
   id: undefined,
-  studentId: 0,
+  studentId: '',
   studentName: '',
-  topicId: 0,
+  topicId: '',
   topicTitle: '',
-  teacherId: 0,
-  graderId: 0,
+  teacherId: '',
+  graderId: '',
   score: 0,
   comment: '',
   status: 0,

@@ -1,14 +1,14 @@
 // 选题信息响应类型 (对应后端 SelectionVO)
 export interface SelectionResponse {
-  id: number
-  studentId: number
+  id: string
+  studentId: string
   studentName: string
   studentNumber?: string  // 学号
-  topicId: number
+  topicId: string
   topicTitle: string
   status: number
   statusDesc: string
-  reviewerId?: number
+  reviewerId?: string
   reviewerName?: string
   reviewComment?: string
   applyReason?: string    // 申请理由
@@ -22,7 +22,7 @@ export interface SelectionResponse {
 
 // 选题申请请求类型 (对应后端 SelectionApplyDTO)
 export interface SelectionApplyRequest {
-  topicId: number
+  topicId: string
   applyReason?: string
   studentAbility?: string
   expectedGoal?: string
@@ -30,8 +30,8 @@ export interface SelectionApplyRequest {
 
 // 选题审核请求类型 (对应后端 SelectionReviewDTO)
 export interface SelectionReviewRequest {
-  selectionId: number
-  reviewResult: number  // 1-通过, 2-驳回
+  selectionId: string
+  reviewResult: number  // 1-通过，2-驳回
   reviewComment?: string
   suggestedChanges?: string
   remark?: string
@@ -39,8 +39,8 @@ export interface SelectionReviewRequest {
 
 // 选题创建请求类型 (通用创建接口)
 export interface SelectionCreateRequest {
-  studentId: number
-  topicId: number
+  studentId: string
+  topicId: string
   status: number
 }
 
@@ -52,9 +52,9 @@ export interface SelectionUpdateRequest {
 
 // 选题查询参数类型
 export interface SelectionQueryParams {
-  studentId?: number
-  topicId?: number
-  teacherId?: number
+  studentId?: string
+  topicId?: string
+  teacherId?: string
   status?: number
   current?: number
   size?: number

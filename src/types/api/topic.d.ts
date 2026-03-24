@@ -1,11 +1,11 @@
 // 题目信息响应类型 (对应后端 TopicVO)
 export interface TopicResponse {
-  id: number
+  id: string
   title: string
   description: string
-  teacherId: number
+  teacherId: string
   status: number
-  departmentId: number
+  departmentId: string
   source?: string
   type?: string
   nature?: string
@@ -15,15 +15,19 @@ export interface TopicResponse {
   selectedCount: number
   teacherNumber?: string  // 发布教师工号
   departmentName?: string  // 院系名称
+  lastReviewOutcome?: number  // 最近一次审核结果：NULL-未审，1-通过，2-驳回
+  lastReviewFeedback?: string  // 最近一次审核意见
+  reviewerId?: string  // 审核人 ID
+  reviewedAt?: string  // 审核时间
   createdAt?: string
   updatedAt?: string
 }
 
 // 题目创建请求类型 (对应后端 TopicCreateDTO)
+// 注意：departmentId 和 teacherId 由后端根据登录用户信息自动填充，前端不需要传递
 export interface TopicCreateRequest {
   title: string
   description: string
-  departmentId: number
   source?: string
   type?: string
   nature?: string
@@ -34,7 +38,7 @@ export interface TopicCreateRequest {
 
 // 题目更新请求类型 (对应后端 TopicUpdateDTO)
 export interface TopicUpdateRequest {
-  id: number | string
+  id: string
   title: string
   description: string
   source?: string
@@ -49,7 +53,7 @@ export interface TopicUpdateRequest {
 // 题目查询参数类型 (对应后端 TopicPageQueryDTO)
 export interface TopicQueryParams {
   title?: string
-  teacherId?: number
+  teacherId?: string
   status?: number
   current?: number
   size?: number

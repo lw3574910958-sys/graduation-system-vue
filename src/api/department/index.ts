@@ -14,10 +14,10 @@ export const departmentApi = {
   create: (param: DepartmentCreateRequest) => {
     return departmentApi.createDepartment(param)
   },
-  update: (id: number | string, param: DepartmentUpdateRequest) => {
-    return departmentApi.updateDepartment(String(id), param)
+  update: (id: string, param: DepartmentUpdateRequest) => {
+    return departmentApi.updateDepartment(id, param)
   },
-  delete: (id: number | string) => {
+  delete: (id: string) => {
     return departmentApi.deleteDepartment(id)
   },
   getList: (params: DepartmentQueryParams) => {
@@ -51,10 +51,10 @@ export const departmentApi = {
 
   /**
    * 根据ID获取部门详情
-   * @param id 部门ID
+   * @param id 部门 ID
    * @returns 部门详情
    */
-  getDepartmentById: (id: number | string) => {
+  getDepartmentById: (id: string) => {
     return get<ApiResponse<DepartmentResponse>>(`/api/departments/${id}`, {})
   },
 
@@ -73,16 +73,16 @@ export const departmentApi = {
    * @param param 部门信息
    * @returns 请求结果
    */
-  updateDepartment: (id: number | string, param: DepartmentUpdateRequest) => {
+  updateDepartment: (id: string, param: DepartmentUpdateRequest) => {
     return put<ApiResponse<void>>(`/api/departments/${id}`, param)
   },
-
+  
   /**
    * 删除部门
-   * @param id 部门ID
+   * @param id 部门 ID
    * @returns 请求结果
    */
-  deleteDepartment: (id: number | string) => {
+  deleteDepartment: (id: string) => {
     return del<ApiResponse<void>>(`/api/departments/${id}`)
   },
 }
