@@ -7,26 +7,19 @@
   >
     <div class="review-info">
       <el-descriptions :column="2" border>
-        <el-descriptions-item label="题目标题">{{ topicData?.title }}</el-descriptions-item>
+        <el-descriptions-item label="题目标题" :span="2">{{ topicData?.title }}</el-descriptions-item>
         <el-descriptions-item label="发布教师">{{ topicData?.teacherNumber }}</el-descriptions-item>
         <el-descriptions-item label="所属院系">{{ topicData?.departmentName }}</el-descriptions-item>
-        <el-descriptions-item label="题目状态">
-          <el-tag :type="getStatusType(topicData?.status)">
-            {{ getStatusLabel(topicData?.status) }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="题目来源" :span="2">{{ topicData?.source }}</el-descriptions-item>
-        <el-descriptions-item label="题目类型" :span="2">{{ topicData?.type }}</el-descriptions-item>
-        <el-descriptions-item label="题目性质" :span="2">{{ topicData?.nature }}</el-descriptions-item>
-        <el-descriptions-item label="预计难度" :span="2">
+        <el-descriptions-item label="题目来源">{{ topicData?.source }}</el-descriptions-item>
+        <el-descriptions-item label="题目类型">{{ topicData?.type }}</el-descriptions-item>
+        <el-descriptions-item label="题目性质">{{ topicData?.nature }}</el-descriptions-item>
+        <el-descriptions-item label="预计难度">
           <el-rate v-model="difficulty" disabled show-score text-color="#ff9900" />
         </el-descriptions-item>
-        <el-descriptions-item label="预计工作量" :span="2">
+        <el-descriptions-item label="预计工作量">
           <el-rate v-model="workload" disabled show-score text-color="#ff9900" />
         </el-descriptions-item>
-        <el-descriptions-item label="选题人数限制" :span="2">
-          {{ topicData?.selectedCount }} / {{ topicData?.maxSelections }}
-        </el-descriptions-item>
+        <el-descriptions-item label="选题人数限制">{{ topicData?.maxSelections }}人</el-descriptions-item>
         <el-descriptions-item label="题目描述" :span="2">
           <div class="description-text">{{ topicData?.description }}</div>
         </el-descriptions-item>
@@ -189,5 +182,31 @@ const handleSubmit = async () => {
     max-height: 200px;
     overflow-y: auto;
   }
+}
+
+// 优化 descriptions 组件样式
+:deep(.el-descriptions__label) {
+  width: 100px;
+  text-align: center;
+  font-weight: 500;
+}
+
+:deep(.el-descriptions__content) {
+  flex: 1;
+}
+
+// 确保标签文字不会换行
+:deep(.el-descriptions-item__label) {
+  white-space: nowrap;
+}
+
+// 优化表单布局
+:deep(.el-form-item) {
+  margin-bottom: 18px;
+}
+
+:deep(.el-radio-group) {
+  display: flex;
+  gap: 20px;
 }
 </style>

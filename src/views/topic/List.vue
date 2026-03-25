@@ -2,11 +2,12 @@
   <div class="list-container">
     <base-list
       :get-list-api="topicApi.getList"
-      :delete-api="topicApi.deleteTopic"
+      :delete-api="getDeleteApi()"
       :search-fields="searchFields"
       :table-columns="tableColumns"
       :show-add-button="showAddButton"
-      :show-delete-button="canEditOrDelete"
+      :show-delete-button="canBatchDelete"
+      :delete-button-text="getBatchDeleteButtonText()"
       add-button-text="申请课题"
       @add="add"
       @refresh="getList"
@@ -21,20 +22,20 @@
           详情
         </el-button>
         <el-button 
+          @click="viewReviewInfo(scope.row)" 
+          type="info" 
+          size="small"
+          v-if="showReviewInfoButton(scope.row)"
+        >
+          审核信息
+        </el-button>
+        <el-button 
           @click="submitForReview(scope.row)" 
           type="success" 
           size="small"
           v-if="showSubmitButton(scope.row)"
         >
           申请题目
-        </el-button>
-        <el-button 
-          @click="revokeTopic(scope.row)" 
-          type="warning" 
-          size="small"
-          v-if="showRevokeButton(scope.row)"
-        >
-          撤销
         </el-button>
         <el-button 
           @click="reviewTopic(scope.row)" 
@@ -51,6 +52,14 @@
           v-if="showEditButton(scope.row)"
         >
           编辑
+        </el-button>
+        <el-button 
+          @click="confirmRevoke(scope.row.id)" 
+          type="warning" 
+          size="small"
+          v-if="showRevokeButton(scope.row)"
+        >
+          撤销
         </el-button>
         <el-button 
           @click="confirmDel(scope.row.id)" 
@@ -70,17 +79,19 @@
           @close="reviewDialogVisible = false"
           @success="handleReviewSuccess"
         />
+        <topic-review-info ref="reviewInfoRef" />
       </template>
     </base-list>
   </div>
 </template>
 
 <script setup lang="ts" name="TopicList">
-import { ref, computed } from 'vue'
+import { ref, computed, h } from 'vue'
 import { topicApi } from '@/api/topic'
 import AddOrUpdate from '@/views/topic/AddOrUpdate.vue'
 import TopicDetail from '@/views/topic/Detail.vue'
 import TopicReviewForm from '@/views/topic/TopicReviewForm.vue'
+import TopicReviewInfo from '@/views/topic/TopicReviewInfo.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { MESSAGE } from '@/constants/user'
 import type { TopicResponse } from '@/types/api/topic'
@@ -98,6 +109,12 @@ const showAddButton = computed(() => {
   return currentUserType.value === USER_TYPE_ENUM.TEACHER
 })
 
+// 是否显示批量操作按钮（教师可批量撤销，院系管理员可批量删除）
+const canBatchDelete = computed(() => {
+  const userType = authStore.userInfo?.userType
+  return userType === USER_TYPE_ENUM.TEACHER || userType === USER_TYPE_ENUM.DEPARTMENT_ADMIN
+})
+
 // 判断当前是否为教师或管理员（可以编辑/删除）
 const canEditOrDelete = computed(() => {
   const userType = authStore.userInfo?.userType
@@ -106,10 +123,113 @@ const canEditOrDelete = computed(() => {
          userType === USER_TYPE_ENUM.DEPARTMENT_ADMIN
 })
 
+// 获取删除 API（根据用户类型返回不同的 API）
+const getDeleteApi = () => {
+  // 院系管理员使用批量删除（删除审核通过的题目）
+  if (currentUserType.value === USER_TYPE_ENUM.DEPARTMENT_ADMIN) {
+    return topicApi.deleteTopic
+  }
+  // 教师使用批量撤销（撤销草稿状态的题目）
+  if (currentUserType.value === USER_TYPE_ENUM.TEACHER) {
+    return topicApi.revokeTopic
+  }
+  return undefined
+}
+
+// 获取批量删除按钮文字（根据用户类型显示不同的文字）
+const getBatchDeleteButtonText = () => {
+  // 教师显示“批量撤销”
+  if (currentUserType.value === USER_TYPE_ENUM.TEACHER) {
+    return '批量撤销'
+  }
+  // 院系管理员显示“批量删除”
+  if (currentUserType.value === USER_TYPE_ENUM.DEPARTMENT_ADMIN) {
+    return '批量删除'
+  }
+  return '批量删除'
+}
+
+// 验证选中的题目是否符合批量操作条件
+const validateBatchOperation = (selections: TopicRow[]) => {
+  if (selections.length === 0) {
+    return { valid: false, message: '请选择要操作的题目' }
+  }
+  
+  const userType = authStore.userInfo?.userType
+  
+  if (userType === USER_TYPE_ENUM.DEPARTMENT_ADMIN) {
+    // 院系管理员批量删除：只能删除开放或关闭状态的题目（审核通过）
+    const invalidItems = selections.filter(row => 
+      row.status !== TOPIC_STATUS.OPEN && row.status !== TOPIC_STATUS.CLOSED
+    )
+    if (invalidItems.length > 0) {
+      return { 
+        valid: false, 
+        message: `只能删除审核通过的题目（开放或关闭状态），请取消选择 ${invalidItems.length} 道不符合条件的题目` 
+      }
+    }
+    return { valid: true, message: '' }
+  }
+  
+  if (userType === USER_TYPE_ENUM.TEACHER) {
+    // 教师批量撤销：只能撤销草稿状态的题目
+    const invalidItems = selections.filter(row => 
+      row.status !== TOPIC_STATUS.DRAFT
+    )
+    if (invalidItems.length > 0) {
+      return { 
+        valid: false, 
+        message: `只能撤销草稿状态的题目，请取消选择 ${invalidItems.length} 道不符合条件的题目` 
+      }
+    }
+    return { valid: true, message: '' }
+  }
+  
+  return { valid: false, message: '无权限操作' }
+}
+
 // 是否显示审核按钮（仅院系管理员可见，且题目状态为审核中）
 const showReviewButton = (row: TopicResponse) => {
   return currentUserType.value === USER_TYPE_ENUM.DEPARTMENT_ADMIN && 
          row.status === TOPIC_STATUS.REVIEWING
+}
+
+// 是否显示审核信息按钮（有审核记录时显示，即审核通过或审核驳回）
+const showReviewInfoButton = (row: TopicResponse) => {
+  return row.lastReviewOutcome !== undefined && row.lastReviewOutcome !== null
+}
+
+/**
+ * 获取审核状态标签（根据用户类型动态显示）
+ * - 院系管理员：未审核、已审核（包括审核通过和审核驳回）
+ * - 教师：审核通过、审核驳回、-（草稿和审核中）
+ */
+const getReviewStatusLabel = (row: TopicRow): string => {
+  const userType = authStore.userInfo?.userType
+  
+  // 院系管理员视角
+  if (userType === USER_TYPE_ENUM.DEPARTMENT_ADMIN) {
+    // 判断是否已审核：只要有审核结果（通过或驳回）都算已审核
+    if (row.lastReviewOutcome !== null && row.lastReviewOutcome !== undefined) {
+      return '已审核'
+    }
+    // 未审核：草稿或审核中且没有审核结果
+    return '未审核'
+  }
+  
+  // 教师视角
+  if (userType === USER_TYPE_ENUM.TEACHER) {
+    if (row.status === TOPIC_STATUS.OPEN || row.status === TOPIC_STATUS.CLOSED) {
+      return '审核通过'
+    } else if (row.status === TOPIC_STATUS.DRAFT && row.lastReviewOutcome === 2) {
+      return '审核驳回'
+    } else {
+      return '-' // 草稿（未提交或驳回后修改）和审核中
+    }
+  }
+  
+  // 其他角色（系统管理员、学生等）显示原始审核结果
+  return getTopicReviewOutcomeLabel(row.lastReviewOutcome)
 }
 
 // 是否显示申请题目按钮（教师 + 草稿状态）
@@ -118,7 +238,7 @@ const showSubmitButton = (row: TopicResponse) => {
          row.status === TOPIC_STATUS.DRAFT
 }
 
-// 是否显示撤销按钮（教师 + 草稿状态）
+// 是否显示撤销按钮（仅教师可撤销草稿状态的题目）
 const showRevokeButton = (row: TopicResponse) => {
   return currentUserType.value === USER_TYPE_ENUM.TEACHER && 
          row.status === TOPIC_STATUS.DRAFT
@@ -130,15 +250,16 @@ const showEditButton = (row: TopicResponse) => {
          row.status === TOPIC_STATUS.DRAFT
 }
 
-// 是否显示删除按钮（教师 + 草稿状态）
+// 是否显示删除按钮（仅院系管理员可删除审核通过的题目）
 const showDeleteButton = (row: TopicResponse) => {
-  return currentUserType.value === USER_TYPE_ENUM.TEACHER && 
-         row.status === TOPIC_STATUS.DRAFT
+  return currentUserType.value === USER_TYPE_ENUM.DEPARTMENT_ADMIN && 
+         (row.status === TOPIC_STATUS.OPEN || row.status === TOPIC_STATUS.CLOSED)
 }
 
 // 当前选中的题目和审核弹窗状态
 const currentTopic = ref<TopicResponse | null>(null)
 const reviewDialogVisible = ref(false)
+const reviewInfoRef = ref<InstanceType<typeof TopicReviewInfo>>()
 
 // 使用统一的类型定义
 type TopicRow = TopicResponse
@@ -199,6 +320,8 @@ const searchFields = [
     props: { 
       placeholder: '请选择状态',
       options: [
+        { label: '草稿', value: TOPIC_STATUS.DRAFT },
+        { label: '审核中', value: TOPIC_STATUS.REVIEWING },
         { label: '开放', value: TOPIC_STATUS.OPEN },
         { label: '关闭', value: TOPIC_STATUS.CLOSED }
       ]
@@ -230,62 +353,96 @@ const searchFields = [
   }
 ]
 
-// 表格列配置
-const tableColumns = [
-  { prop: 'id', label: 'ID', headerAlign: 'center', align: 'center', minWidth: 60, ellipsisMaxLength: 30 },
-  { prop: 'title', label: '课题标题', headerAlign: 'center', align: 'center', minWidth: 150, ellipsisMaxLength: 30 },
-  { prop: 'description', label: '课题描述', headerAlign: 'center', align: 'center', minWidth: 200, ellipsisMaxLength: 30 },
-  { prop: 'teacherId', label: '发布教师 ID', headerAlign: 'center', align: 'center',  minWidth: 60, ellipsisMaxLength: 30 },
-  { prop: 'departmentId', label: '所属院系 ID', headerAlign: 'center', align: 'center', width: 100 },
-  { prop: 'source', label: '题目来源', headerAlign: 'center', align: 'center', width: 120, ellipsisMaxLength: 20 },
-  { prop: 'type', label: '题目类型', headerAlign: 'center', align: 'center', width: 100 },
-  { prop: 'nature', label: '题目性质', headerAlign: 'center', align: 'center', width: 100 },
-  { 
-    prop: 'difficulty', 
-    label: '预计难度', 
-    headerAlign: 'center', 
-    align: 'center',
-    width: 90,
-    render: (row: TopicRow) => getDifficultyLabel(row.difficulty)
-  },
-  { 
-    prop: 'workload', 
-    label: '预计工作量', 
-    headerAlign: 'center', 
-    align: 'center',
-    width: 100,
-    render: (row: TopicRow) => getWorkloadLabel(row.workload)
-  },
-  { prop: 'maxSelections', label: '人数限制', headerAlign: 'center', align: 'center', width: 100 },
-  { prop: 'selectedCount', label: '已选人数', headerAlign: 'center', align: 'center', width: 90 },
-  {
-    prop: 'lastReviewOutcome',
-    label: '审核状态',
-    headerAlign: 'center',
-    align: 'center',
-    width: 120,
-    render: (row: TopicRow) => getTopicReviewOutcomeLabel(row.lastReviewOutcome)
-  },
-  {
-    prop: 'status',
-    label: '状态',
-    headerAlign: 'center',
-    align: 'center',
-    width: 120,
-    component: canEditOrDelete.value ? StatusSwitch : undefined,
-    props: canEditOrDelete.value ? {
-      row: (row: TopicRow) => row,
-      onToggle: (row: TopicRow) => () => toggleTopicStatus(row),
-    } : undefined,
-    render: !canEditOrDelete.value ? (row: TopicRow) => getStatusLabel(row.status) : undefined,
-  },
-]
+// 表格列配置（计算属性）
+const tableColumns = computed(() => {
+  const userType = authStore.userInfo?.userType
+  const isTeacher = userType === USER_TYPE_ENUM.TEACHER
+  
+  const columns: any[] = [
+    { prop: 'id', label: 'ID', headerAlign: 'center', align: 'center', minWidth: 60, ellipsisMaxLength: 30 },
+    { prop: 'title', label: '课题标题', headerAlign: 'center', align: 'center', minWidth: 150, ellipsisMaxLength: 30 },
+    { prop: 'description', label: '课题描述', headerAlign: 'center', align: 'center', minWidth: 200, ellipsisMaxLength: 30 },
+    { prop: 'teacherId', label: '发布教师 ID', headerAlign: 'center', align: 'center',  minWidth: 60, ellipsisMaxLength: 30 },
+    { prop: 'departmentId', label: '所属院系 ID', headerAlign: 'center', align: 'center', width: 100 },
+    { prop: 'source', label: '题目来源', headerAlign: 'center', align: 'center', width: 120, ellipsisMaxLength: 20 },
+    { prop: 'type', label: '题目类型', headerAlign: 'center', align: 'center', width: 100 },
+    { prop: 'nature', label: '题目性质', headerAlign: 'center', align: 'center', width: 100 },
+    { 
+      prop: 'difficulty', 
+      label: '预计难度', 
+      headerAlign: 'center', 
+      align: 'center',
+      width: 90,
+      render: (row: TopicRow) => getDifficultyLabel(row.difficulty)
+    },
+    { 
+      prop: 'workload', 
+      label: '预计工作量', 
+      headerAlign: 'center', 
+      align: 'center',
+      width: 100,
+      render: (row: TopicRow) => getWorkloadLabel(row.workload)
+    },
+    { prop: 'maxSelections', label: '人数限制', headerAlign: 'center', align: 'center', width: 100 },
+    { prop: 'selectedCount', label: '已选人数', headerAlign: 'center', align: 'center', width: 90 },
+    {
+      prop: 'lastReviewOutcome',
+      label: '审核状态',
+      headerAlign: 'center',
+      align: 'center',
+      width: 120,
+      render: (row: TopicRow) => getReviewStatusLabel(row)
+    },
+  ]
+  
+  // 只有教师能够看到状态列
+  if (isTeacher) {
+    columns.push({
+      prop: 'status',
+      label: '状态',
+      headerAlign: 'center',
+      align: 'center',
+      width: 120,
+      component: StatusSwitch,
+      props: (row: TopicRow) => {
+        const isReviewPassed = row.status === TOPIC_STATUS.OPEN || row.status === TOPIC_STATUS.CLOSED
+        
+        if (isReviewPassed) {
+          return {
+            row: row,
+            activeValue: TOPIC_STATUS.OPEN,      // 开放状态值 = 2（启用）
+            inactiveValue: TOPIC_STATUS.CLOSED,  // 关闭状态值 = 3（禁用）
+            onToggle: () => toggleTopicStatus(row) // 直接返回 Promise
+          }
+        } else {
+          return null
+        }
+      },
+      render: (row: TopicRow) => {
+        const isReviewPassed = row.status === TOPIC_STATUS.OPEN || row.status === TOPIC_STATUS.CLOSED
+        if (!isReviewPassed) {
+          return getStatusLabel(row.status)
+        }
+        return '' // 渲染开关时不显示文本
+      }
+    })
+  }
+  
+  return columns
+})
 
 /**
  * 查看课题详情
  */
 function viewDetail(row: TopicRow) {
   detailRef.value?.showModel(row)
+}
+
+/**
+ * 查看审核信息
+ */
+function viewReviewInfo(row: TopicRow) {
+  reviewInfoRef.value?.showModel(row)
 }
 
 /**
@@ -328,33 +485,6 @@ async function submitForReview(row: TopicRow) {
 }
 
 /**
- * 撤销题目（删除草稿）
- */
-async function revokeTopic(row: TopicRow) {
-  if (!showRevokeButton(row)) {
-    ElMessage.warning('无权限操作')
-    return
-  }
-  
-  try {
-    await ElMessageBox.confirm('确定要撤销该题目吗？撤销后无法恢复。', '警告', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-    
-    await topicApi.deleteTopic(String(row.id))
-    ElMessage.success('撤销成功')
-    getList()
-  } catch (error: any) {
-    if (error !== 'cancel') {
-      console.error('撤销失败:', error)
-      ElMessage.error(error?.message || '撤销失败')
-    }
-  }
-}
-
-/**
  * 处理审核成功后的操作
  */
 function handleReviewSuccess() {
@@ -387,16 +517,91 @@ function update(row: TopicRow) {
 }
 
 /**
- * 删除确认（仅教师可用）
+ * 删除确认（院系管理员批量删除审核通过的题目）
  */
 function confirmDel(id?: number | string) {
-  if (!canEditOrDelete.value) {
+  const userType = authStore.userInfo?.userType
+  if (userType !== USER_TYPE_ENUM.DEPARTMENT_ADMIN) {
     ElMessage.warning('无权限操作')
     return
   }
-  // 由于使用 BaseList，删除逻辑已在 BaseList 中处理
-  // 这里需要手动触发 BaseList 的 confirmDel 方法
-  listRef.value?.confirmDel && listRef.value.confirmDel(id)
+  
+  // 如果是单个删除，先验证题目状态
+  if (id !== undefined) {
+    // 获取选中的题目（单个删除时，selections 应该只有一条）
+    const selections = listRef.value?.multipeSelection || []
+    const targetRow = selections.find((row: TopicRow) => row.id === id)
+    
+    if (targetRow) {
+      // 验证单个题目是否符合删除条件
+      const validation = validateBatchOperation([targetRow])
+      if (!validation.valid) {
+        ElMessage.warning(validation.message)
+        return
+      }
+    }
+    
+    // 验证通过，调用 BaseList 的删除方法
+    listRef.value?.confirmDel && listRef.value.confirmDel(id)
+    return
+  }
+  
+  // 如果是批量删除，先验证选中的题目
+  const selections = listRef.value?.multipeSelection || []
+  const validation = validateBatchOperation(selections)
+  
+  if (!validation.valid) {
+    ElMessage.warning(validation.message)
+    return
+  }
+  
+  // 验证通过，执行批量删除
+  ElMessageBox.confirm(`确定要批量删除选中的 ${selections.length} 道题目吗？删除后无法恢复。`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    listRef.value?.confirmDel && listRef.value.confirmDel()
+  }).catch(() => {
+    // 用户取消
+  })
+}
+
+/**
+ * 撤销确认（教师批量撤销草稿状态的题目）
+ */
+function confirmRevoke(id?: number | string) {
+  const userType = authStore.userInfo?.userType
+  if (userType !== USER_TYPE_ENUM.TEACHER) {
+    ElMessage.warning('无权限操作')
+    return
+  }
+  
+  // 如果是单个撤销，直接调用 BaseList 的方法
+  if (id !== undefined) {
+    listRef.value?.confirmDel && listRef.value.confirmDel(id)
+    return
+  }
+  
+  // 如果是批量撤销，先验证选中的题目
+  const selections = listRef.value?.multipeSelection || []
+  const validation = validateBatchOperation(selections)
+  
+  if (!validation.valid) {
+    ElMessage.warning(validation.message)
+    return
+  }
+  
+  // 验证通过，执行批量撤销
+  ElMessageBox.confirm(`确定要批量撤销选中的 ${selections.length} 道题目吗？撤销后无法恢复。`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    listRef.value?.confirmDel && listRef.value.confirmDel()
+  }).catch(() => {
+    // 用户取消
+  })
 }
 
 /**

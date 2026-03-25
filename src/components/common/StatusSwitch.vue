@@ -1,8 +1,8 @@
 <template>
   <el-switch
     v-model="currentStatus"
-    :active-value="1"
-    :inactive-value="0"
+    :active-value="activeValue"
+    :inactive-value="inactiveValue"
     active-text="启用"
     inactive-text="禁用"
     inline-prompt
@@ -12,14 +12,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 
 interface Props {
   row: any
   onToggle: (row: any) => Promise<void>
+  activeValue?: number | string | boolean  // 启用的值，默认为 1
+  inactiveValue?: number | string | boolean  // 禁用的值，默认为 0
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  activeValue: 1,
+  inactiveValue: 0
+})
 
 // 使用 ref 存储当前状态
 const currentStatus = ref(props.row.status)

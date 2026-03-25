@@ -37,7 +37,8 @@ import {
   TOPIC_DIFFICULTY,
   TOPIC_DIFFICULTY_LABELS,
   TOPIC_WORKLOAD,
-  TOPIC_WORKLOAD_LABELS
+  TOPIC_WORKLOAD_LABELS,
+  getTopicReviewOutcomeLabel
 } from './enums'
 
 // 保持向后兼容的导出
@@ -77,7 +78,8 @@ export {
   TOPIC_DIFFICULTY,
   TOPIC_DIFFICULTY_LABELS,
   TOPIC_WORKLOAD,
-  TOPIC_WORKLOAD_LABELS
+  TOPIC_WORKLOAD_LABELS,
+  getTopicReviewOutcomeLabel
 }
 
 // 通用消息

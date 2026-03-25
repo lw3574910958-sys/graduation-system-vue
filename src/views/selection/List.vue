@@ -47,6 +47,14 @@
           >
             审核申请
           </el-button>
+          <el-button 
+            v-if="scope.row.status === SELECTION_STATUS.APPROVED || scope.row.status === SELECTION_STATUS.REJECTED" 
+            @click="viewReviewInfo(scope.row)" 
+            type="info" 
+            size="small"
+          >
+            审核信息
+          </el-button>
           <el-tag v-if="scope.row.status === 1" type="success" size="small">已通过</el-tag>
           <el-tag v-if="scope.row.status === 2" type="danger" size="small">已驳回</el-tag>
           <el-tag v-if="scope.row.status === 3" type="info" size="small">已确认</el-tag>
@@ -74,17 +82,28 @@
           @close="confirmDialogVisible = false"
           @success="handleConfirmSuccess"
         />
+        <review-info-dialog 
+          v-model:visible="reviewInfoVisible"
+          :title="reviewInfoData.title"
+          :entity-title="reviewInfoData.entityTitle"
+          :review-outcome="reviewInfoData.reviewOutcome"
+          :reviewer-name="reviewInfoData.reviewerName"
+          :reviewer-id="reviewInfoData.reviewerId"
+          :reviewed-at="reviewInfoData.reviewedAt"
+          :feedback="reviewInfoData.feedback"
+        />
       </template>
     </base-list>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import { selectionApi } from '@/api/selection'
 import SelectionApplyForm from '@/views/selection/SelectionApplyForm.vue'
 import SelectionReviewForm from '@/views/selection/SelectionReviewForm.vue'
 import ConfirmSelectionDialog from '@/views/selection/ConfirmSelectionDialog.vue'
+import ReviewInfoDialog from '@/components/common/ReviewInfoDialog.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { MESSAGE } from '@/constants/user'
 import BaseList from '@/components/common/BaseList.vue'
@@ -117,11 +136,24 @@ type SelectionRow = {
 const listRef = ref()
 const applyFormRef = ref()
 const reviewFormRef = ref()
+const reviewInfoRef = ref()
 
 // 对话框可见性
 const applyVisible = ref(false)
 const reviewVisible = ref(false)
 const confirmDialogVisible = ref(false)
+const reviewInfoVisible = ref(false)
+
+// 审核信息数据
+const reviewInfoData = reactive({
+  title: '审核信息',
+  entityTitle: '' as string,
+  reviewOutcome: null as number | null,
+  reviewerName: null as string | null,
+  reviewerId: null as string | number | null,
+  reviewedAt: null as string | null,
+  feedback: '' as string,
+})
 
 // 当前选中的选题记录（使用 SelectionResponse 类型）
 const currentSelection = ref<SelectionResponse | null>(null)
@@ -241,6 +273,23 @@ async function handleCancel(id: number) {
  */
 function handleReview(row: SelectionRow) {
   reviewFormRef.value?.show(row)
+}
+
+/**
+ * 查看审核信息
+ */
+function viewReviewInfo(row: SelectionRow) {
+  const rowData = row as any
+  if (rowData.status === SELECTION_STATUS.APPROVED || rowData.status === SELECTION_STATUS.REJECTED) {
+    reviewInfoData.title = '选题审核信息'
+    reviewInfoData.entityTitle = `课题：${row.topicTitle}`
+    reviewInfoData.reviewOutcome = rowData.status === SELECTION_STATUS.APPROVED ? 1 : 2
+    reviewInfoData.reviewerName = rowData.reviewerName || null
+    reviewInfoData.reviewerId = rowData.reviewerId || null
+    reviewInfoData.reviewedAt = rowData.reviewedAt || null
+    reviewInfoData.feedback = rowData.reviewComment || ''
+    reviewInfoVisible.value = true
+  }
 }
 
 /**

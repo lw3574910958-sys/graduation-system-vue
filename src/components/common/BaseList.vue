@@ -35,7 +35,7 @@
       <el-form-item>
         <el-button @click="onSearch()" type="primary" plain>查询</el-button>
         <el-button @click="add()" type="primary" plain v-if="showAddButton">{{ addButtonText }}</el-button>
-        <el-button @click="confirmDel()" type="danger" plain v-if="showDeleteButton">批量删除</el-button>
+        <el-button @click="confirmDel()" type="danger" plain v-if="showDeleteButton">{{ deleteButtonText }}</el-button>
         <el-button @click="resetQuery()">重置</el-button>
       </el-form-item>
     </el-form>
@@ -75,11 +75,13 @@
               <!-- 如果有 component 组件 -->
               <template v-else-if="column.component">
                 <component
+                  v-if="shouldRenderComponent(column, scope.row)"
                   :is="column.component"
                   :key="`${scope.row.id}-${column.prop}`"
                   v-bind="getComponentProps(column.props, scope.row)"
                   :avatar="scope.row[column.prop]"
                 />
+                <span v-else v-html="column.render ? column.render(scope.row, scope.$index, scope.column) : ''"></span>
               </template>
               <!-- 如果没有明确禁用省略号且不是特殊字段 -->
               <template v-else-if="shouldUseEllipsis(column, scope.row)">
@@ -175,7 +177,7 @@ interface TableColumn {
   width?: string | number
   render?: (row: T, index: number, column: any) => string
   component?: any
-  props?: Record<string, any> // 组件属性
+  props?: Record<string, any> | ((row: T) => Record<string, any> | null) // 组件属性，支持函数
   ellipsis?: boolean // 是否启用省略号 + 双击查看（已废弃，现在默认启用）
   ellipsisMaxLength?: number // 省略号显示的最大长度
   ellipsisDblclickable?: boolean // 是否允许双击查看，默认 true
@@ -205,6 +207,7 @@ interface Props {
   operationColumnLabel?: string
   operationColumnWidth?: string | number
   addButtonText?: string // 自定义新增按钮文字
+  deleteButtonText?: string // 自定义批量删除按钮文字
   
   // 分页配置
   showPagination?: boolean
@@ -228,7 +231,8 @@ const props = withDefaults(defineProps<Props>(), {
   showOperations: true,
   operationColumnLabel: '操作',
   operationColumnWidth: 200,
-  addButtonText: '新增', // 默认显示“新增”
+  addButtonText: '新增', // 默认显示"新增"
+  deleteButtonText: '批量删除', // 默认显示"批量删除"
   showPagination: true,
   initialQueryParams: () => ({
     current: 1,
@@ -332,7 +336,14 @@ const getColumnValue = (row: T, prop: string): any => {
 }
 
 // 处理组件 props，如果 prop 是函数则调用它
-const getComponentProps = (props: Record<string, any> | undefined, row: T): Record<string, any> => {
+const getComponentProps = (props: Record<string, any> | undefined | ((row: any) => Record<string, any> | null), row: T): Record<string, any> => {
+  // 如果 props 是函数，调用它
+  if (typeof props === 'function') {
+    const result = props(row)
+    if (!result) return {}
+    return result
+  }
+  
   if (!props) return {}
   
   const result: Record<string, any> = {}
@@ -346,6 +357,20 @@ const getComponentProps = (props: Record<string, any> | undefined, row: T): Reco
     }
   }
   return result
+}
+
+// 判断是否应该渲染组件（支持 props 为函数时返回 null 来控制是否渲染）
+const shouldRenderComponent = (column: TableColumn, row: T): boolean => {
+  if (!column.props) return true
+  
+  // 如果 props 是函数，调用它并判断返回值
+  if (typeof column.props === 'function') {
+    const propsResult = column.props(row)
+    // 如果返回 null 或 undefined，则不渲染组件
+    return propsResult !== null && propsResult !== undefined
+  }
+  
+  return true
 }
 
 // 获取列的固定状态：第一列固定，其他不固定

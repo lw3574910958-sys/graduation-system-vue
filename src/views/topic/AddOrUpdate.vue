@@ -232,20 +232,23 @@ async function handleSubmit(isDraft: boolean) {
   
   // 触发表单验证
   try {
-    await baseRef.value.$refs.formRef.validate()
+    await (baseRef.value as any).formRef.validate()
   } catch (error) {
     ElMessage.warning('请填写必填项')
     return
   }
   
-  // 获取表单数据
-  const formData = baseRef.value.getFormData()
+  // 获取表单数据（直接从 baseRef.value.formData 获取）
+  const formData = baseRef.value.formData
   
   try {
-    // 创建题目
+    // 设置状态字段：0-暂存为草稿，1-直接提交审核
+    formData.status = isDraft ? 0 : 1
+    
+    // 创建题目（后端会根据 status 字段设置初始状态）
     await topicApi.create(formData)
     
-    ElMessage.success(isDraft ? '暂存成功' : '申请成功')
+    ElMessage.success(isDraft ? '暂存成功' : '申请成功，已自动提交审核')
     emit('refreshList')
     baseRef.value.closeDialog()
   } catch (error: any) {

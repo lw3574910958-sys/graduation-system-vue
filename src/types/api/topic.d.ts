@@ -18,6 +18,7 @@ export interface TopicResponse {
   lastReviewOutcome?: number  // 最近一次审核结果：NULL-未审，1-通过，2-驳回
   lastReviewFeedback?: string  // 最近一次审核意见
   reviewerId?: string  // 审核人 ID
+  reviewerName?: string  // 审核人姓名
   reviewedAt?: string  // 审核时间
   createdAt?: string
   updatedAt?: string
@@ -34,6 +35,7 @@ export interface TopicCreateRequest {
   difficulty?: number
   workload?: number
   maxSelections?: number
+  status?: number  // 0-暂存为草稿，1-直接提交审核
 }
 
 // 题目更新请求类型 (对应后端 TopicUpdateDTO)

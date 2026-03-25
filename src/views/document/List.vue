@@ -36,10 +36,28 @@
         >
           审核
         </el-button>
+        <el-button 
+          @click="viewReviewInfo(scope.row)" 
+          type="info" 
+          size="small"
+          v-if="showReviewInfoButton(scope.row)"
+        >
+          审核信息
+        </el-button>
       </template>
       
       <template #dialogs>
         <document-review-form @success="handleReviewSuccess" ref="reviewFormRef" />
+        <review-info-dialog 
+          v-model:visible="reviewInfoVisible"
+          :title="reviewInfoData.title"
+          :entity-title="reviewInfoData.entityTitle"
+          :review-outcome="reviewInfoData.reviewOutcome"
+          :reviewer-name="reviewInfoData.reviewerName"
+          :reviewer-id="reviewInfoData.reviewerId"
+          :reviewed-at="reviewInfoData.reviewedAt"
+          :feedback="reviewInfoData.feedback"
+        />
       </template>
     </base-list>
   </div>
@@ -51,6 +69,7 @@ import { documentApi } from '@/api/document'
 import AddOrUpdate from '@/views/document/AddOrUpdate.vue'
 import DocumentReviewForm from '@/views/document/DocumentReviewForm.vue'
 import FilePreview from '@/components/common/FilePreview.vue'
+import ReviewInfoDialog from '@/components/common/ReviewInfoDialog.vue'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import storageUtil from '@/utils/storage'
 import { SYSTEM_CONSTANTS } from '@/constants'
@@ -75,9 +94,22 @@ const currentFileInfo = ref<any>({})
 
 // 组件引用
 const reviewFormRef = ref()
+const reviewInfoRef = ref()
 
 // 对话框可见性
 const reviewVisible = ref(false)
+const reviewInfoVisible = ref(false)
+
+// 审核信息数据
+const reviewInfoData = reactive({
+  title: '审核信息',
+  entityTitle: '' as string,
+  reviewOutcome: null as number | null,
+  reviewerName: null as string | null,
+  reviewerId: null as string | number | null,
+  reviewedAt: null as string | null,
+  feedback: '' as string,
+})
 
 // 搜索字段配置
 const searchFields = [
@@ -249,6 +281,23 @@ function handleReview(row: DocumentRow) {
 }
 
 /**
+ * 查看审核信息
+ */
+function viewReviewInfo(row: DocumentRow) {
+  const rowData = row as DocumentResponse
+  if (rowData.reviewStatus !== undefined && rowData.reviewStatus !== null) {
+    reviewInfoData.title = '文档审核信息'
+    reviewInfoData.entityTitle = rowData.originalFilename || ''
+    reviewInfoData.reviewOutcome = rowData.reviewStatus === 1 ? 1 : rowData.reviewStatus === 2 ? 2 : null
+    reviewInfoData.reviewerName = rowData.reviewerName || null
+    reviewInfoData.reviewerId = rowData.reviewerId || null
+    reviewInfoData.reviewedAt = rowData.reviewedAt || null
+    reviewInfoData.feedback = rowData.feedback || ''
+    reviewInfoVisible.value = true
+  }
+}
+
+/**
  * 审核成功回调
  */
 function handleReviewSuccess() {
@@ -258,5 +307,10 @@ function handleReviewSuccess() {
 // 判断是否可以审核文档
 function canReview(row: DocumentRow): boolean {
   return row.reviewStatus === 0 // 只有待审核的文档可以审核
+}
+
+// 是否显示审核信息按钮（有审核记录时显示，即通过或驳回）
+function showReviewInfoButton(row: DocumentRow): boolean {
+  return row.reviewStatus === 1 || row.reviewStatus === 2
 }
 </script>

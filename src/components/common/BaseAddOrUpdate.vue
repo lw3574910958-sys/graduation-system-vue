@@ -337,7 +337,16 @@ const dynamicComponents = {
 defineExpose({
   showModel,
   onCancel,
+  // 暴露表单数据和方法供自定义按钮使用
+  formData,
+  formRef,
+  closeDialog,
 })
+
+// 关闭对话框
+function closeDialog() {
+  visible.value = false
+}
 </script>
 
 <style scoped>
