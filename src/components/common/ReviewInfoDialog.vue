@@ -66,7 +66,8 @@ interface Props {
   entityTitle?: string // 实体标题（如题目标题、文档名称等）
   reviewOutcome?: number | null // 审核结果：1-通过，2-驳回
   reviewerName?: string | null // 审核人姓名
-  reviewerId?: string | number | null // 审核人 ID
+  reviewerNumber?: string | null // 审核人工号（选题审核用）
+  reviewerId?: string | number | null // 审核人 ID（文档审核用）
   reviewedAt?: string | null // 审核时间
   feedback?: string | null // 审核意见/反馈
 }
@@ -76,6 +77,7 @@ const props = withDefaults(defineProps<Props>(), {
   entityTitle: '',
   reviewOutcome: null,
   reviewerName: null,
+  reviewerNumber: null,
   reviewerId: null,
   reviewedAt: null,
   feedback: '',
@@ -96,13 +98,18 @@ const reviewOutcomeType = computed(() => {
   return props.reviewOutcome === 1 ? 'success' : 'danger'
 })
 
-// 计算属性：审核人显示名称（姓名 + ID）
+// 计算属性：审核人显示名称（姓名 + 工号/ID）
 const reviewerNameDisplay = computed(() => {
-  if (props.reviewerName && props.reviewerId) {
-    return `${props.reviewerName} - ${props.reviewerId}`
+  // 优先使用工号（选题审核）
+  if (props.reviewerName && props.reviewerNumber) {
+    return `${props.reviewerName} - ${props.reviewerNumber}`
   } else if (props.reviewerName) {
     return props.reviewerName
-  } else if (props.reviewerId) {
+  } else if (props.reviewerNumber) {
+    return `工号：${props.reviewerNumber}`
+  }
+  // 兼容文档审核（使用 ID）
+  else if (props.reviewerId) {
     return `ID: ${props.reviewerId}`
   }
   return '-'

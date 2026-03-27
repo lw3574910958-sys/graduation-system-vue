@@ -32,6 +32,11 @@
           <el-input v-model="formData.teacherNumber" readonly />
         </el-form-item>
 
+        <!-- 发布教师姓名 -->
+        <el-form-item label="发布教师姓名">
+          <el-input v-model="formData.teacherName" readonly />
+        </el-form-item>
+
         <!-- 院系名称 -->
         <el-form-item label="院系名称">
           <el-input v-model="formData.departmentName" readonly />
@@ -112,6 +117,7 @@ const formData = reactive<TopicResponse>({
   maxSelections: 1,
   selectedCount: 0,
   teacherNumber: '',
+  teacherName: '',
   departmentName: '',
 })
 
@@ -168,6 +174,7 @@ function showModel(row: TopicResponse) {
     maxSelections: 1,
     selectedCount: 0,
     teacherNumber: '',
+    teacherName: '',
     departmentName: '',
   })
 

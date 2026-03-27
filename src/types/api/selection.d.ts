@@ -10,6 +10,7 @@ export interface SelectionResponse {
   statusDesc: string
   reviewerId?: string
   reviewerName?: string
+  reviewerNumber?: string  // 教师工号
   reviewComment?: string
   applyReason?: string    // 申请理由
   studentAbility?: string // 学生能力说明
@@ -33,8 +34,6 @@ export interface SelectionReviewRequest {
   selectionId: string
   reviewResult: number  // 1-通过，2-驳回
   reviewComment?: string
-  suggestedChanges?: string
-  remark?: string
 }
 
 // 选题创建请求类型 (通用创建接口)
@@ -53,7 +52,10 @@ export interface SelectionUpdateRequest {
 // 选题查询参数类型
 export interface SelectionQueryParams {
   studentId?: string
+  studentName?: string
+  studentNumber?: string
   topicId?: string
+  topicTitle?: string
   teacherId?: string
   status?: number
   current?: number

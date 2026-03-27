@@ -52,24 +52,6 @@
           :placeholder="formData.reviewResult === 2 ? '请输入驳回原因' : '请输入审核意见'"
         />
       </el-form-item>
-      
-      <el-form-item label="建议修改" prop="suggestedChanges">
-        <el-input
-          v-model="formData.suggestedChanges"
-          type="textarea"
-          :rows="3"
-          placeholder="如有修改建议，请在此填写"
-        />
-      </el-form-item>
-      
-      <el-form-item label="备注说明" prop="remark">
-        <el-input
-          v-model="formData.remark"
-          type="textarea"
-          :rows="2"
-          placeholder="其他需要说明的事项"
-        />
-      </el-form-item>
     </el-form>
     
     <template #footer>
@@ -117,9 +99,7 @@ const selectionData = ref<SelectionResponse | null>(null)
 const formData = reactive({
   selectionId: '',
   reviewResult: 1, // 默认通过
-  reviewComment: '',
-  suggestedChanges: '',
-  remark: ''
+  reviewComment: ''
 })
 
 // 表单验证规则
@@ -156,8 +136,6 @@ watch(() => props.selection, (newVal) => {
 const resetForm = () => {
   formData.reviewResult = 1
   formData.reviewComment = ''
-  formData.suggestedChanges = ''
-  formData.remark = ''
   formRef.value?.resetFields()
 }
 
@@ -188,9 +166,7 @@ const handleSubmit = async () => {
     const requestData: SelectionReviewRequest = {
       selectionId: formData.selectionId,
       reviewResult: formData.reviewResult,
-      reviewComment: formData.reviewComment || undefined,
-      suggestedChanges: formData.suggestedChanges || undefined,
-      remark: formData.remark || undefined
+      reviewComment: formData.reviewComment || undefined
     }
     
     await selectionApi.reviewSelection(requestData)

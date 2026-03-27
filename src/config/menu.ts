@@ -24,7 +24,7 @@ export const menuConfig: MenuItem[] = [
     index: 'user-management',
     title: '用户管理',
     icon: 'User',
-    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN],
+    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN, USER_TYPE_ENUM.TEACHER],
     children: [
       {
         index: 'user-list',
@@ -144,6 +144,7 @@ export const menuConfig: MenuItem[] = [
 
 // 复用 permission.ts 中的权限检查逻辑
 import { checkPermissionAdvanced, type PermissionConfig } from '@/directives/permission'
+import { User } from '@element-plus/icons-vue'
 
 // 根据用户信息过滤菜单
 export function filterMenusByUser(menus: MenuItem[], userInfo: any): MenuItem[] {

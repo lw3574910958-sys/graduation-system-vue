@@ -3,9 +3,11 @@ export interface TopicResponse {
   id: string
   title: string
   description: string
-  teacherId: string
+  /** 发布教师 ID - 仅系统管理员可见 */
+  teacherId?: string
   status: number
-  departmentId: string
+  /** 所属院系 ID - 仅系统管理员可见 */
+  departmentId?: string
   source?: string
   type?: string
   nature?: string
@@ -14,7 +16,9 @@ export interface TopicResponse {
   maxSelections?: number
   selectedCount: number
   teacherNumber?: string  // 发布教师工号
+  teacherName?: string  // 发布教师姓名
   departmentName?: string  // 院系名称
+  departmentCode?: string  // 院系编码
   lastReviewOutcome?: number  // 最近一次审核结果：NULL-未审，1-通过，2-驳回
   lastReviewFeedback?: string  // 最近一次审核意见
   reviewerId?: string  // 审核人 ID

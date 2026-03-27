@@ -64,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { documentApi } from '@/api/document'
 import AddOrUpdate from '@/views/document/AddOrUpdate.vue'
 import DocumentReviewForm from '@/views/document/DocumentReviewForm.vue'
@@ -74,11 +74,17 @@ import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import storageUtil from '@/utils/storage'
 import { SYSTEM_CONSTANTS } from '@/constants'
 import { REVIEW_STATUS_LABELS, FILE_TYPE_LABELS, MESSAGE } from '@/constants/user'
+import { USER_TYPE_ENUM } from '@/constants/enums'
 import type { DocumentResponse, DocumentReviewRequest } from '@/types/api/document'
 import BaseList from '@/components/common/BaseList.vue'
+import { useAuthStore } from '@/stores'
 
 // 使用统一的类型定义
 type DocumentRow = DocumentResponse
+
+// 获取用户信息
+const authStore = useAuthStore()
+const userType = computed(() => authStore.userInfo?.userType)
 
 // 定义操作组件引用--新增/编辑
 const operateRef = ref()
@@ -151,8 +157,22 @@ const tableColumns = [
     render: (row: DocumentRow) => getFileTypeLabel(row.fileType),
   },
   { prop: 'fileSizeDisplay', label: '文件大小', headerAlign: 'center', align: 'center' },
-  { prop: 'userName', label: '上传人', headerAlign: 'center', align: 'center', ellipsisMaxLength: 15 },
-  { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
+  { 
+    prop: 'userName', 
+    label: '上传人', 
+    headerAlign: 'center', 
+    align: 'center', 
+    ellipsisMaxLength: 15,
+    showWhen: () => userType.value !== USER_TYPE_ENUM.STUDENT
+  },
+  { 
+    prop: 'topicTitle', 
+    label: '课题标题', 
+    headerAlign: 'center', 
+    align: 'center', 
+    ellipsisMaxLength: 30,
+    showWhen: () => userType.value !== USER_TYPE_ENUM.STUDENT
+  },
   {
     prop: 'reviewStatus',
     label: '审核状态',

@@ -14,6 +14,7 @@
       ref="listRef"
     >
       <template #operations="{ scope }">
+        <!-- 所有角色都可以查看详情 -->
         <el-button 
           @click="viewDetail(scope.row)" 
           type="info" 
@@ -21,14 +22,18 @@
         >
           详情
         </el-button>
+        
+        <!-- 学生角色：申请选题 -->
         <el-button 
-          @click="viewReviewInfo(scope.row)" 
-          type="info" 
+          @click="applyTopic(scope.row)" 
+          type="success" 
           size="small"
-          v-if="showReviewInfoButton(scope.row)"
+          v-if="showApplyButton(scope.row)"
         >
-          审核信息
+          申请选题
         </el-button>
+        
+        <!-- 教师角色：申请题目、编辑、撤销 -->
         <el-button 
           @click="submitForReview(scope.row)" 
           type="success" 
@@ -36,14 +41,6 @@
           v-if="showSubmitButton(scope.row)"
         >
           申请题目
-        </el-button>
-        <el-button 
-          @click="reviewTopic(scope.row)" 
-          type="warning" 
-          size="small"
-          v-if="showReviewButton(scope.row)"
-        >
-          审核
         </el-button>
         <el-button 
           @click="update(scope.row)" 
@@ -61,6 +58,16 @@
         >
           撤销
         </el-button>
+        
+        <!-- 院系管理员角色：审核、删除 -->
+        <el-button 
+          @click="reviewTopic(scope.row)" 
+          type="warning" 
+          size="small"
+          v-if="showReviewButton(scope.row)"
+        >
+          审核
+        </el-button>
         <el-button 
           @click="confirmDel(scope.row.id)" 
           type="danger" 
@@ -68,6 +75,16 @@
           v-if="showDeleteButton(scope.row)"
         >
           删除
+        </el-button>
+        
+        <!-- 教师和管理员角色：显示审核信息按钮（有审核结果时） -->
+        <el-button 
+          @click="viewReviewInfo(scope.row)" 
+          type="info" 
+          size="small"
+          v-if="showReviewInfoButton(scope.row)"
+        >
+          审核信息
         </el-button>
       </template>
       <template #dialogs>
@@ -80,18 +97,24 @@
           @success="handleReviewSuccess"
         />
         <topic-review-info ref="reviewInfoRef" />
+        <selection-apply-form 
+          ref="applyFormRef"
+          @success="handleApplySuccess"
+        />
       </template>
     </base-list>
   </div>
 </template>
 
 <script setup lang="ts" name="TopicList">
-import { ref, computed, h } from 'vue'
+import { ref, computed, h, onMounted } from 'vue'
 import { topicApi } from '@/api/topic'
+import { selectionApi } from '@/api/selection'
 import AddOrUpdate from '@/views/topic/AddOrUpdate.vue'
 import TopicDetail from '@/views/topic/Detail.vue'
 import TopicReviewForm from '@/views/topic/TopicReviewForm.vue'
 import TopicReviewInfo from '@/views/topic/TopicReviewInfo.vue'
+import SelectionApplyForm from '@/views/selection/SelectionApplyForm.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { MESSAGE } from '@/constants/user'
 import type { TopicResponse } from '@/types/api/topic'
@@ -194,27 +217,35 @@ const showReviewButton = (row: TopicResponse) => {
          row.status === TOPIC_STATUS.REVIEWING
 }
 
-// 是否显示审核信息按钮（有审核记录时显示，即审核通过或审核驳回）
+// 是否显示审核信息按钮（仅教师和管理员可见，且有审核记录）
 const showReviewInfoButton = (row: TopicResponse) => {
+  // 学生角色不显示审核信息按钮
+  if (currentUserType.value === USER_TYPE_ENUM.STUDENT) {
+    return false
+  }
+  // 教师和管理员角色：有审核结果时显示
   return row.lastReviewOutcome !== undefined && row.lastReviewOutcome !== null
 }
 
 /**
  * 获取审核状态标签（根据用户类型动态显示）
- * - 院系管理员：未审核、已审核（包括审核通过和审核驳回）
+ * - 院系管理员：未审核（草稿）、已审核（包括审核通过和审核驳回）、-（审核中）
  * - 教师：审核通过、审核驳回、-（草稿和审核中）
  */
 const getReviewStatusLabel = (row: TopicRow): string => {
   const userType = authStore.userInfo?.userType
   
-  // 院系管理员视角
-  if (userType === USER_TYPE_ENUM.DEPARTMENT_ADMIN) {
+  // 管理员视角
+  if (userType === USER_TYPE_ENUM.DEPARTMENT_ADMIN || userType === USER_TYPE_ENUM.SYSTEM_ADMIN) {
     // 判断是否已审核：只要有审核结果（通过或驳回）都算已审核
     if (row.lastReviewOutcome !== null && row.lastReviewOutcome !== undefined) {
       return '已审核'
+    } else if (row.status === TOPIC_STATUS.REVIEWING) {
+      return '未审核'
+    } else {
+      return '-'
     }
-    // 未审核：草稿或审核中且没有审核结果
-    return '未审核'
+    
   }
   
   // 教师视角
@@ -228,7 +259,7 @@ const getReviewStatusLabel = (row: TopicRow): string => {
     }
   }
   
-  // 其他角色（系统管理员、学生等）显示原始审核结果
+  // 其他角色显示原始审核结果
   return getTopicReviewOutcomeLabel(row.lastReviewOutcome)
 }
 
@@ -254,6 +285,68 @@ const showEditButton = (row: TopicResponse) => {
 const showDeleteButton = (row: TopicResponse) => {
   return currentUserType.value === USER_TYPE_ENUM.DEPARTMENT_ADMIN && 
          (row.status === TOPIC_STATUS.OPEN || row.status === TOPIC_STATUS.CLOSED)
+}
+
+// ========== 学生角色相关方法 ==========
+
+// 检查学生是否已申请选题（通过后端 API 查询）
+const hasAppliedTopic = ref(false)
+
+// 查询学生是否已申请选题
+const checkHasAppliedTopic = async () => {
+  if (currentUserType.value !== USER_TYPE_ENUM.STUDENT) {
+    hasAppliedTopic.value = false
+    return
+  }
+  
+  try {
+    // 调用选题 API 查询该学生的选题记录
+    const res = await selectionApi.getSelectionPage({
+      current: 1,
+      size: 1 // 只查一条记录即可
+    })
+    
+    // 如果有返回数据，说明学生已申请选题
+    hasAppliedTopic.value = res.data?.records && res.data.records.length > 0
+  } catch (error) {
+    console.error('查询学生选题记录失败:', error)
+    hasAppliedTopic.value = false
+  }
+}
+
+// 在组件挂载时检查
+onMounted(() => {
+  if (currentUserType.value === USER_TYPE_ENUM.STUDENT) {
+    checkHasAppliedTopic()
+  }
+})
+
+// 是否显示申请选题按钮（学生 + 开放状态 + 未申请选题）
+const showApplyButton = (row: TopicResponse) => {
+  return currentUserType.value === USER_TYPE_ENUM.STUDENT && 
+         row.status === TOPIC_STATUS.OPEN &&
+         !hasAppliedTopic.value
+}
+
+// 引用 SelectionApplyForm 组件
+const applyFormRef = ref()
+
+// 学生申请选题
+const applyTopic = (row: TopicResponse) => {
+  // 使用 SelectionApplyForm 组件进行申请
+  applyFormRef.value?.show(
+    row.id.toString(),
+    row.title
+  )
+}
+
+// 处理申请选题成功
+const handleApplySuccess = () => {
+  ElMessage.success('申请选题成功')
+  // 重新检查学生是否已申请选题
+  checkHasAppliedTopic()
+  // 刷新列表
+  getList()
 }
 
 // 当前选中的题目和审核弹窗状态
@@ -357,13 +450,53 @@ const searchFields = [
 const tableColumns = computed(() => {
   const userType = authStore.userInfo?.userType
   const isTeacher = userType === USER_TYPE_ENUM.TEACHER
+  const isDepartmentAdmin = userType === USER_TYPE_ENUM.DEPARTMENT_ADMIN
+  const isSystemAdmin = userType === USER_TYPE_ENUM.SYSTEM_ADMIN
+  const isStudent = userType === USER_TYPE_ENUM.STUDENT
   
-  const columns: any[] = [
-    { prop: 'id', label: 'ID', headerAlign: 'center', align: 'center', minWidth: 60, ellipsisMaxLength: 30 },
+  return [
+    // 仅系统管理员显示 ID 列
+    {
+      prop: 'id' as const,
+      label: 'ID',
+      headerAlign: 'center' as const,
+      align: 'center' as const,
+      minWidth: 60,
+      ellipsisMaxLength: 30,
+      vIf: isSystemAdmin
+    },
     { prop: 'title', label: '课题标题', headerAlign: 'center', align: 'center', minWidth: 150, ellipsisMaxLength: 30 },
     { prop: 'description', label: '课题描述', headerAlign: 'center', align: 'center', minWidth: 200, ellipsisMaxLength: 30 },
-    { prop: 'teacherId', label: '发布教师 ID', headerAlign: 'center', align: 'center',  minWidth: 60, ellipsisMaxLength: 30 },
-    { prop: 'departmentId', label: '所属院系 ID', headerAlign: 'center', align: 'center', width: 100 },
+    // 教师用户不显示发布教师（其他角色可见）
+    {
+      prop: 'teacherId' as const,
+      label: '发布教师',
+      headerAlign: 'center' as const,
+      align: 'center' as const,
+      minWidth: 120,
+      render: (row: TopicRow) => {
+        // 院系管理员和系统管理员显示：真实姓名 + 工号
+        if (row.teacherName) {
+          return `${row.teacherName}（${row.teacherNumber || row.teacherId}）`
+        }
+        // 如果没有姓名，显示工号
+        return row.teacherNumber || row.teacherId || ''
+      },
+      vIf: !isTeacher
+    },
+    // 教师用户和院系管理员不显示所属院系（仅系统管理员可见）
+    {
+      prop: 'departmentId' as const,
+      label: '所属院系',
+      headerAlign: 'center' as const,
+      align: 'center' as const,
+      width: 120,
+      render: (row: TopicRow) => {
+        // 系统管理员显示院系编码
+        return row.departmentCode || row.departmentId || ''
+      },
+      vIf: isSystemAdmin
+    },
     { prop: 'source', label: '题目来源', headerAlign: 'center', align: 'center', width: 120, ellipsisMaxLength: 20 },
     { prop: 'type', label: '题目类型', headerAlign: 'center', align: 'center', width: 100 },
     { prop: 'nature', label: '题目性质', headerAlign: 'center', align: 'center', width: 100 },
@@ -384,27 +517,35 @@ const tableColumns = computed(() => {
       render: (row: TopicRow) => getWorkloadLabel(row.workload)
     },
     { prop: 'maxSelections', label: '人数限制', headerAlign: 'center', align: 'center', width: 100 },
-    { prop: 'selectedCount', label: '已选人数', headerAlign: 'center', align: 'center', width: 90 },
+    { 
+      prop: 'selectedCount', 
+      label: '已选人数', 
+      headerAlign: 'center', 
+      align: 'center', 
+      width: 90,
+      render: (row: TopicRow) => String(row.selectedCount ?? 0)
+    },
     {
       prop: 'lastReviewOutcome',
       label: '审核状态',
       headerAlign: 'center',
       align: 'center',
       width: 120,
-      render: (row: TopicRow) => getReviewStatusLabel(row)
+      render: (row: TopicRow) => getReviewStatusLabel(row),
+      vIf: !isStudent
     },
-  ]
-  
-  // 只有教师能够看到状态列
-  if (isTeacher) {
-    columns.push({
+    // 教师和系统管理员能够看到状态列（教师可编辑，系统管理员只读）
+    {
       prop: 'status',
       label: '状态',
       headerAlign: 'center',
       align: 'center',
       width: 120,
-      component: StatusSwitch,
+      component: isTeacher ? StatusSwitch : undefined,  // 仅教师显示开关
       props: (row: TopicRow) => {
+        if (!isTeacher) {
+          return null  // 系统管理员不需要开关 props
+        }
         const isReviewPassed = row.status === TOPIC_STATUS.OPEN || row.status === TOPIC_STATUS.CLOSED
         
         if (isReviewPassed) {
@@ -423,12 +564,17 @@ const tableColumns = computed(() => {
         if (!isReviewPassed) {
           return getStatusLabel(row.status)
         }
-        return '' // 渲染开关时不显示文本
-      }
-    })
-  }
-  
-  return columns
+        // 如果是教师且是审核通过状态，显示开关（由 StatusSwitch 组件渲染）
+        // 如果是系统管理员，显示状态标签
+        if (isTeacher) {
+          return '' // 渲染开关时不显示文本
+        } else {
+          return getStatusLabel(row.status) // 系统管理员显示状态文本
+        }
+      },
+      vIf: isTeacher || isSystemAdmin
+    }
+  ]
 })
 
 /**

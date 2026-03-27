@@ -21,6 +21,20 @@
         />
       </el-form-item>
       
+      <!-- 审核意见（仅重新申请时显示） -->
+      <el-form-item 
+        v-if="showReviewFeedback" 
+        label="审核意见"
+      >
+        <el-alert
+          type="warning"
+          :closable="false"
+          class="review-feedback-alert"
+        >
+          {{ formData.reviewFeedback }}
+        </el-alert>
+      </el-form-item>
+      
       <el-form-item label="申请理由" prop="applyReason">
         <el-input
           v-model="formData.applyReason"
@@ -75,6 +89,9 @@ import { MESSAGE } from '@/constants/user'
 interface Props {
   topicId?: string
   topicTitle?: string
+  reviewFeedback?: string // 审核意见（驳回原因）
+  selectionId?: string // 原选题 ID（重新申请时使用）
+  isResubmit?: boolean // 是否为重新申请
 }
 
 const props = defineProps<Props>()
@@ -90,26 +107,36 @@ const loading = ref(false)
 
 // 表单数据
 const formData = reactive({
-  topicId: props.topicId || '',
-  topicTitle: props.topicTitle || '',
+  topicId: '',
+  topicTitle: '',
+  reviewFeedback: '', // 审核意见（仅重新申请时使用）
   applyReason: '',
   studentAbility: '',
-  expectedGoal: ''
+  expectedGoal: '',
+  selectionId: '' // 原选题 ID（重新申请时使用）
 })
+
+// 初始化数据
+if (props.topicId) {
+  formData.topicId = props.topicId
+}
+if (props.topicTitle) {
+  formData.topicTitle = props.topicTitle
+}
 
 // 表单验证规则
 const formRules: FormRules = {
   applyReason: [
     { required: true, message: '请输入申请理由', trigger: 'blur' },
-    { min: 10, message: '申请理由至少10个字符', trigger: 'blur' }
+    { min: 10, max: 500, message: '申请理由长度应在 10-500 个字符之间', trigger: 'blur' }
   ],
   studentAbility: [
     { required: true, message: '请输入学生能力说明', trigger: 'blur' },
-    { min: 10, message: '能力说明至少10个字符', trigger: 'blur' }
+    { min: 10, max: 500, message: '能力说明长度应在 10-500 个字符之间', trigger: 'blur' }
   ],
   expectedGoal: [
     { required: true, message: '请输入预期目标', trigger: 'blur' },
-    { min: 10, message: '预期目标至少10个字符', trigger: 'blur' }
+    { min: 10, max: 500, message: '预期目标长度应在 10-500 个字符之间', trigger: 'blur' }
   ]
 }
 
@@ -118,13 +145,26 @@ const dialogTitle = computed(() => {
   return props.topicTitle ? `申请选题 - ${props.topicTitle}` : '申请选题'
 })
 
+// 是否显示审核意见（检查 formData 中的值，因为 props.reviewFeedback 是只读的）
+const showReviewFeedback = computed(() => {
+  return formData.reviewFeedback && formData.reviewFeedback.trim() !== ''
+})
+
 // 显示对话框
-const show = (topicId: string, topicTitle: string) => {
+const show = (topicId: string, topicTitle: string, reviewFeedback?: string, selectionId?: string) => {
+  // 直接赋值，确保是原始值
   formData.topicId = topicId
   formData.topicTitle = topicTitle
+  formData.reviewFeedback = reviewFeedback || ''
   formData.applyReason = ''
   formData.studentAbility = ''
   formData.expectedGoal = ''
+  
+  // 如果是重新申请，记录原选题 ID
+  if (selectionId) {
+    formData.selectionId = selectionId
+  }
+  
   visible.value = true
 }
 
@@ -144,14 +184,22 @@ const handleSubmit = async () => {
   try {
     loading.value = true
     
-    const requestData: SelectionApplyRequest = {
+    // 构建纯对象，避免传递响应式对象
+    const requestData: any = {
       topicId: formData.topicId,
       applyReason: formData.applyReason,
       studentAbility: formData.studentAbility,
       expectedGoal: formData.expectedGoal
     }
     
-    await selectionApi.applySelection(requestData)
+    // 如果是重新申请，调用 resubmitSelection API
+    if (formData.selectionId) {
+      // 重新申请模式：调用 resubmitSelection
+      await selectionApi.resubmitSelection(formData.selectionId, requestData)
+    } else {
+      // 首次申请模式：调用 applySelection
+      await selectionApi.applySelection(requestData)
+    }
     
     ElMessage.success(MESSAGE.CREATE_SUCCESS)
     handleClose()
@@ -183,6 +231,12 @@ const emits = defineEmits<{
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+/* 审核意见样式优化 - 保留黄色背景 */
+.review-feedback-alert {
+  width: 100%;
+  background-color: #fdf6ec;
 }
 
 /* 统一表单样式 */

@@ -1,12 +1,12 @@
 <template>
   <el-dialog v-model="visible" :title="!formData.id ? '新增选题信息' : '修改选题信息'" width="50%">
     <el-form :rules="rules" :model="formData" ref="formRef" label-width="100px">
-      <el-form-item label="学生ID" prop="studentId">
+      <el-form-item label="学生 ID" prop="studentId">
         <el-input-number
           v-model.number="formData.studentId"
           :min="1"
           style="width: 60%"
-          placeholder="请输入学生ID"
+          placeholder="请输入学生 ID"
         />
       </el-form-item>
 
@@ -14,12 +14,12 @@
         <el-input v-model="formData.studentName" style="width: 60%" placeholder="请输入学生姓名" />
       </el-form-item>
 
-      <el-form-item label="课题ID" prop="topicId">
+      <el-form-item label="课题 ID" prop="topicId">
         <el-input-number
           v-model="formData.topicId"
           :min="1"
           style="width: 60%"
-          placeholder="请输入课题ID"
+          placeholder="请输入课题 ID"
         />
       </el-form-item>
 
@@ -27,7 +27,7 @@
         <el-input v-model="formData.topicTitle" style="width: 60%" placeholder="请输入选题标题" />
       </el-form-item>
 
-      <el-form-item label="状态" prop="status">
+      <el-form-item label="状态" prop="status" :show-when="() => !isStudent">
         <el-select v-model="formData.status" placeholder="请选择状态" style="width: 60%">
           <el-option label="待确认" :value="0" />
           <el-option label="已确认" :value="1" />
@@ -46,10 +46,15 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, computed } from 'vue'
 import { selectionApi } from '@/api/selection'
 import { ElMessage } from 'element-plus'
 import { MESSAGE } from '@/constants/user'
+import { useAuthStore } from '@/stores'
+
+// 获取认证信息
+const authStore = useAuthStore()
+const isStudent = computed(() => authStore.userInfo?.userType === 'student')
 
 // 暴露方法给父组件调用
 defineExpose({

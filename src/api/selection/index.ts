@@ -53,6 +53,16 @@ export const selectionApi = {
   },
   
   /**
+   * 学生重新申请选题（驳回后）
+   * @param id 原选题 ID
+   * @param data 申请参数
+   * @returns 重新申请结果
+   */
+  resubmitSelection: (id: number | string, data: any) => {
+    return post<ApiResponse<SelectionResponse>>(`/api/selections/${id}/resubmit`, data)
+  },
+  
+  /**
    * 学生撤销选题申请
    * @param id 选题 ID
    * @returns 撤销结果

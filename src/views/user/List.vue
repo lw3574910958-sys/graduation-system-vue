@@ -59,11 +59,11 @@ import { USER_TYPE_ENUM } from '@/constants/enums'
 // 获取当前用户信息
 const authStore = useAuthStore()
 
-// 判断当前用户是否为院系管理员（不能编辑/删除用户）
+// 判断当前用户是否为系统管理员（可编辑/删除用户）
 const canEditOrDelete = computed(() => {
   const userType = authStore.userInfo?.userType
-  // 院系管理员不能编辑或删除用户
-  return userType !== USER_TYPE_ENUM.DEPARTMENT_ADMIN
+  // 系统管理员可新增、编辑、删除用户，其他用户不能
+  return userType === USER_TYPE_ENUM.SYSTEM_ADMIN
 })
 
 // 使用统一的类型定义
@@ -81,6 +81,8 @@ const detailDialogRef = ref()
 const searchFields = computed(() => {
   const userType = authStore.userInfo?.userType
   const isDepartmentAdmin = userType === USER_TYPE_ENUM.DEPARTMENT_ADMIN
+  const isSystemAdmin = userType === USER_TYPE_ENUM.SYSTEM_ADMIN
+  const isTeacher = userType == USER_TYPE_ENUM.TEACHER
   
   const fields: any[] = [
     {
@@ -95,13 +97,16 @@ const searchFields = computed(() => {
       component: 'el-input',
       props: { placeholder: '请输入真实姓名' },
     },
-    {
+  ]
+
+  if (isSystemAdmin || isDepartmentAdmin){
+    fields.push({
       prop: 'userType',
       label: '用户类型：',
       component: 'el-select',
       props: {
         placeholder: '请选择用户类型',
-        // 院系管理员只显示教师和学生，其他管理员显示所有类型
+        // 院系管理员只显示教师和学生，系统管理员显示所有类型
         options: isDepartmentAdmin
           ? [
               { label: '学生', value: 'student' },
@@ -114,11 +119,11 @@ const searchFields = computed(() => {
               { label: '院系管理员', value: 'department_admin' },
             ],
       },
-    },
-  ]
+    })
+  }
   
-  // 院系管理员不显示状态查询
-  if (!isDepartmentAdmin) {
+  // 系统管理员显示状态查询
+  if (isSystemAdmin) {
     fields.push({
       prop: 'status',
       label: '状态：',
@@ -140,17 +145,19 @@ const searchFields = computed(() => {
 const tableColumns = computed(() => {
   const userType = authStore.userInfo?.userType
   const isDepartmentAdmin = userType === USER_TYPE_ENUM.DEPARTMENT_ADMIN
+  const isSystemAdmin = userType === USER_TYPE_ENUM.SYSTEM_ADMIN
+  const isTeacher = userType === USER_TYPE_ENUM.TEACHER
   
-  // 院系管理员不显示状态、最后登录时间、创建时间列
-  const columns: any[] = [
-    { prop: 'username', label: '用户名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 20 },
-    { prop: 'realName', label: '真实姓名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 10 },
+  return [
+    { prop: 'username', label: '用户名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 20},
+    { prop: 'realName', label: '姓名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 10 },
     {
       prop: 'userType',
       label: '用户类型',
       headerAlign: 'center',
       align: 'center',
       render: (row: UserRow) => getUserTypeLabel(row.userType),
+      vIf: isDepartmentAdmin || isSystemAdmin
     },
     {
       prop: 'avatar',
@@ -161,11 +168,7 @@ const tableColumns = computed(() => {
       component: Avatar,
       props: { size: 40 },
     },
-  ]
-  
-  // 非院系管理员显示状态列
-  if (!isDepartmentAdmin) {
-    columns.push({
+    {
       prop: 'status',
       label: '状态',
       headerAlign: 'center',
@@ -176,12 +179,23 @@ const tableColumns = computed(() => {
         row: (row: UserRow) => row,
         onToggle: (row: UserRow) => () => toggleStatus(row),
       },
-    })
-    columns.push({ prop: 'lastLoginAt', label: '最后登录时间', headerAlign: 'center', align: 'center' })
-    columns.push({ prop: 'createdAt', label: '创建时间', headerAlign: 'center', align: 'center' })
-  }
-  
-  return columns
+      vIf: isSystemAdmin
+    },
+    {
+      prop: 'lastLoginAt',
+      label: '最后登录时间',
+      headerAlign: 'center',
+      align: 'center',
+      vIf: isSystemAdmin
+    },
+    {
+      prop: 'createdAt',
+      label: '创建时间',
+      headerAlign: 'center',
+      align: 'center',
+      vIf: isSystemAdmin
+    }
+  ]
 })
 
 /**
@@ -192,7 +206,7 @@ function viewDetail(row: UserRow) {
   detailDialogVisible.value = true
 }
 
-// 新增用户（仅非院系管理员可用）
+// 新增用户（仅系统管理员可用）
 function add() {
   if (!canEditOrDelete.value) {
     ElMessage.warning('院系管理员无此权限')
@@ -202,7 +216,7 @@ function add() {
 }
 
 /**
- * 编辑用户（仅非院系管理员可用）
+ * 编辑用户（仅系统管理员可用）
  */
 function update(row: UserRow) {
   if (!canEditOrDelete.value) {
@@ -215,7 +229,7 @@ function update(row: UserRow) {
 }
 
 /**
- * 删除确认（仅非院系管理员可用）
+ * 删除确认（仅系统管理员可用）
  */
 function confirmDel(id?: any) {
   if (!canEditOrDelete.value) {

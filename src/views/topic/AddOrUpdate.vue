@@ -56,6 +56,7 @@ const emit = defineEmits(['refreshList'])
 
 // 获取用户信息
 const authStore = useAuthStore()
+const userType = computed(() => authStore.userInfo?.userType)
 
 // 基础组件引用
 const baseRef = ref()
@@ -65,8 +66,7 @@ const isAddMode = ref(false)
 
 // 判断是否为教师（可以申请课题）
 const canEditOrDelete = computed(() => {
-  const userType = authStore.userInfo?.userType
-  return userType === USER_TYPE_ENUM.TEACHER
+  return userType.value === USER_TYPE_ENUM.TEACHER
 })
 
 // 表单字段配置

@@ -142,6 +142,7 @@ interface FormField {
   disabled?: boolean
   disabledWhenUpdate?: boolean // 更新时禁用
   showWhen?: (formData: T) => boolean // 条件显示字段
+  vIf?: boolean // 条件显示字段（借鉴 BaseList）
   required?: boolean | ((formData: T) => boolean) // 是否必填，支持函数
   style?: Record<string, any> // 自定义样式
   fullWidth?: boolean // 是否独占一行
@@ -214,10 +215,16 @@ const getFileList = (prop: string) => {
 
 // ✅ 判断字段是否应该显示
 const shouldShowField = (field: FormField): boolean => {
+  // 如果配置了 vIf，优先检查 vIf 条件
+  if ('vIf' in field && typeof field.vIf === 'boolean') {
+    return field.vIf
+  }
+  
   // 如果没有配置 showWhen，默认显示
   if (!field.showWhen) {
     return true
   }
+  
   // 调用 showWhen 函数判断是否显示
   return field.showWhen(formData.value)
 }

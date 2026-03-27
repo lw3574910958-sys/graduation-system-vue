@@ -58,7 +58,7 @@
           <el-table-column type="selection" width="55" v-if="showSelection" fixed="left" />
           
           <el-table-column
-            v-for="(column, index) in tableColumns"
+            v-for="(column, index) in filteredColumns"
             :key="column.prop"
             :prop="column.prop"
             :label="column.label"
@@ -182,6 +182,7 @@ interface TableColumn {
   ellipsisMaxLength?: number // 省略号显示的最大长度
   ellipsisDblclickable?: boolean // 是否允许双击查看，默认 true
   disableEllipsis?: boolean // 是否禁用省略号（用于不需要截断的字段）
+  vIf?: boolean // 条件显示列
 }
 
 // 定义组件属性
@@ -293,6 +294,18 @@ const getDefaultMinWidth = (column: TableColumn): number => {
       return 120
   }
 }
+
+// 过滤表格列（支持 vIf 条件）
+const filteredColumns = computed(() => {
+  return props.tableColumns.filter(column => {
+    // 如果列有 vIf 属性，检查条件是否满足
+    if ('vIf' in column && typeof column.vIf === 'boolean') {
+      return column.vIf
+    }
+    // 没有 vIf 或 vIf 为 true 的列都显示
+    return true
+  })
+})
 
 // 判断是否应该使用 EllipsisText 组件
 const shouldUseEllipsis = (column: TableColumn, row: T): boolean => {

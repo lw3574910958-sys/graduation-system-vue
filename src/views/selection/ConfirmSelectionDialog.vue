@@ -25,6 +25,15 @@
         <el-descriptions-item label="审核意见">
           {{ selectionData?.reviewComment || '无' }}
         </el-descriptions-item>
+        <el-descriptions-item label="申请理由" v-if="selectionData?.applyReason">
+          {{ selectionData.applyReason }}
+        </el-descriptions-item>
+        <el-descriptions-item label="学生能力说明" v-if="selectionData?.studentAbility">
+          {{ selectionData.studentAbility }}
+        </el-descriptions-item>
+        <el-descriptions-item label="预期目标" v-if="selectionData?.expectedGoal">
+          {{ selectionData.expectedGoal }}
+        </el-descriptions-item>
       </el-descriptions>
 
       <el-alert
