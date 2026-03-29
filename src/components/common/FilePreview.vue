@@ -87,7 +87,7 @@ import { Picture } from '@element-plus/icons-vue'
 import storageUtil from '@/utils/storage'
 import { SYSTEM_CONSTANTS } from '@/constants'
 
-// 定义props
+// 定义 props
 const props = defineProps({
   modelValue: {
     type: Boolean,
@@ -99,11 +99,14 @@ const props = defineProps({
   }
 })
 
-// 定义emits
+// 定义 emits
 const emit = defineEmits(['update:modelValue'])
 
 // 响应式数据
-const visible = ref(false)
+const visible = computed({
+  get: () => props.modelValue,
+  set: (val) => emit('update:modelValue', val)
+})
 const fileUrl = ref('')
 const loaded = ref(false)
 const textContent = ref('')
@@ -115,30 +118,25 @@ const isPDF = computed(() => {
 })
 
 const isImage = computed(() => {
-  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']
+  // 与后端 FileFormatType.Category.IMAGE 保持一致
+  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif']
   return imageExtensions.includes(props.fileInfo?.fileExtension?.toLowerCase())
 })
 
 const isText = computed(() => {
-  const textExtensions = ['txt', 'md', 'csv', 'log']
+  // 与后端 FileFormatType.Category.DOCUMENT 中的文本文件保持一致
+  const textExtensions = ['txt', 'md']
   return textExtensions.includes(props.fileInfo?.fileExtension?.toLowerCase())
 })
 
-// 监听modelValue变化
-watch(() => props.modelValue, (val) => {
-  visible.value = val
+// 监听 visible 变化，当对话框打开时加载文件
+watch(visible, (val) => {
   if (val) {
     loadFile()
-  }
-})
-
-// 监听visible变化
-watch(visible, (val) => {
-  emit('update:modelValue', val)
-  if (!val) {
+  } else {
     reset()
   }
-})
+}, { immediate: true })
 
 // 加载文件
 async function loadFile() {

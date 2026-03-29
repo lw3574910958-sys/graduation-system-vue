@@ -102,21 +102,17 @@ function checkUserTypePermission(permissions: string[], userType: string, operat
   const normalizedUserType = userType.toLowerCase()
   const normalizedPermissions = permissions.map(p => p.toLowerCase())
   
-  // 系统管理员和院系管理员都拥有所有权限
-  if (normalizedUserType === USER_TYPE_ENUM.SYSTEM_ADMIN || 
-      normalizedUserType === USER_TYPE_ENUM.DEPARTMENT_ADMIN) {
-    return true
-  }
-  
   const checkResults = normalizedPermissions.map(permission => {
     switch (normalizedUserType) {
       case USER_TYPE_ENUM.STUDENT:
-        return permission === 'student'
+        //return permission === 'student'
       case USER_TYPE_ENUM.TEACHER:
-        return permission === 'teacher' || permission === 'student'
+        //return permission === 'teacher'
       case USER_TYPE_ENUM.SYSTEM_ADMIN:
       case USER_TYPE_ENUM.DEPARTMENT_ADMIN:
-        return true
+        // 系统管理员和院系管理员只拥有明确配置的权限
+        // 不再默认拥有所有用户类型的权限
+        return normalizedPermissions.includes(normalizedUserType)
       default:
         return false
     }

@@ -17,6 +17,7 @@ export interface DocumentResponse {
   reviewerId?: string
   reviewerName?: string
   feedback?: string
+  description?: string
   uploadedAt?: string
   createdAt?: string
   updatedAt?: string

@@ -8,6 +8,8 @@ export interface GradeResponse {
   topicTitle: string
   graderId: string
   graderName: string
+  gradeType?: number
+  gradeTypeDesc?: string
   score: number
   gradeLevel?: string
   gpa?: number
@@ -23,7 +25,7 @@ export interface GradeResponse {
 export interface GradeInputRequest {
   studentId: string
   topicId: string
-  graderId: string
+  gradeType: number
   score: number
   comment?: string
   gradeLevel?: string
@@ -32,12 +34,16 @@ export interface GradeInputRequest {
 
 // 成绩创建/更新请求类型 (通用接口)
 export interface GradeRequest {
-  studentId: string
-  topicId: string
-  graderId: string
+  studentId?: string
+  topicId?: string
+  studentNumber?: string
+  studentName?: string
+  topicTitle?: string
+  gradeType?: number
   score: number
+  graderId?: string
   comment?: string
-  status: number
+  status?: number
 }
 
 // 成绩查询参数类型

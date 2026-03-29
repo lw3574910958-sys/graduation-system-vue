@@ -118,12 +118,21 @@ export const SYSTEM_CONSTANTS = {
   USER_INFO_FETCH_TIMEOUT: 8000, // 获取用户信息超时时间
 } as const
 
-// 文件类型
-export const FILE_TYPES = {
-  IMAGE: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'],
-  DOCUMENT: ['doc', 'docx', 'pdf', 'xls', 'xlsx', 'ppt', 'pptx'],
-  VIDEO: ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'],
-  AUDIO: ['mp3', 'wav', 'ogg', 'aac'],
+/**
+ * 允许上传的文件格式
+ * 与后端 FileFormatType 保持一致
+ */
+export const ALLOWED_FILE_FORMATS = {
+  // 图片类型
+  IMAGE: ['jpg', 'jpeg', 'png', 'gif'],
+  // 文档类型
+  DOCUMENT: ['doc', 'docx', 'pdf', 'txt'],
+  // 表格类型
+  SPREADSHEET: ['xls', 'xlsx'],
+  // 演示文稿类型
+  PRESENTATION: ['ppt', 'pptx'],
+  // 压缩文件类型（通常不允许直接上传）
+  ARCHIVE: ['zip', 'rar'],
 } as const
 
 // 用户状态

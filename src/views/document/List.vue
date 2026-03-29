@@ -1,11 +1,14 @@
 <template>
   <div class="list-container">
     <base-list
-      :get-list-api="documentApi.getList"
+      :get-list-api="fileTypeFromRoute !== null ? getDocumentListWithFilter : documentApi.getList"
       :delete-api="documentApi.delete"
       :search-fields="searchFields"
       :table-columns="tableColumns"
-      @add="add"
+      :show-add-button="showUploadButton"
+      :show-delete-button="showBatchDeleteButton"
+      add-button-text="上传"
+      @add="uploadDocument"
       @edit="update"
       @refresh="getList"
       ref="listRef"
@@ -47,6 +50,7 @@
       </template>
       
       <template #dialogs>
+        <document-upload-dialog @success="handleUploadSuccess" ref="uploadDialogRef" />
         <document-review-form @success="handleReviewSuccess" ref="reviewFormRef" />
         <review-info-dialog 
           v-model:visible="reviewInfoVisible"
@@ -58,15 +62,22 @@
           :reviewed-at="reviewInfoData.reviewedAt"
           :feedback="reviewInfoData.feedback"
         />
+        <file-preview 
+          v-model="previewDialogVisible"
+          :file-info="currentFileInfo"
+          ref="filePreviewRef"
+        />
       </template>
     </base-list>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { documentApi } from '@/api/document'
-import AddOrUpdate from '@/views/document/AddOrUpdate.vue'
+import { selectionApi } from '@/api/selection'
+import DocumentUploadDialog from '@/views/document/DocumentUploadDialog.vue'
 import DocumentReviewForm from '@/views/document/DocumentReviewForm.vue'
 import FilePreview from '@/components/common/FilePreview.vue'
 import ReviewInfoDialog from '@/components/common/ReviewInfoDialog.vue'
@@ -86,8 +97,29 @@ type DocumentRow = DocumentResponse
 const authStore = useAuthStore()
 const userType = computed(() => authStore.userInfo?.userType)
 
-// 定义操作组件引用--新增/编辑
-const operateRef = ref()
+// 获取路由参数
+const route = useRoute()
+// 从路由参数中获取文件类型，用于过滤列表
+const fileTypeFromRoute = computed(() => {
+  const type = route.query.type as string
+  if (type !== undefined && type !== null) {
+    return parseInt(type)
+  }
+  return null
+})
+
+// 是否显示上传按钮（学生 + 有路由指定的文件类型）
+const showUploadButton = computed(() => {
+  return userType.value === USER_TYPE_ENUM.STUDENT && fileTypeFromRoute.value !== null
+})
+
+// 是否显示批量删除按钮（学生不显示批量删除）
+const showBatchDeleteButton = computed(() => {
+  return userType.value !== USER_TYPE_ENUM.STUDENT
+})
+
+// 定义操作组件引用--上传
+const uploadDialogRef = ref()
 const listRef = ref()
 
 // 审核对话框相关
@@ -101,6 +133,7 @@ const currentFileInfo = ref<any>({})
 // 组件引用
 const reviewFormRef = ref()
 const reviewInfoRef = ref()
+const filePreviewRef = ref()
 
 // 对话框可见性
 const reviewVisible = ref(false)
@@ -118,21 +151,26 @@ const reviewInfoData = reactive({
 })
 
 // 搜索字段配置
-const searchFields = [
-  {
-    prop: 'fileType',
-    label: '文件类型：',
-    component: 'el-select',
-    props: { placeholder: '请选择文件类型' },
-    options: [
-      { label: '开题报告', value: 0 },
-      { label: '中期报告', value: 1 },
-      { label: '毕业论文', value: 2 },
-      { label: '外文翻译', value: 3 },
-      { label: '其他文档', value: 4 },
-    ],
-  },
-  {
+const searchFields = computed(() => {
+  const fields: any[] = []
+  
+  // 如果没有路由指定的文件类型，显示文件类型筛选器
+  if (!fileTypeFromRoute.value) {
+    fields.push({
+      prop: 'fileType',
+      label: '文件类型：',
+      component: 'el-select',
+      props: { placeholder: '请选择文件类型' },
+      options: [
+        { label: '开题报告', value: 0 },
+        { label: '中期报告', value: 1 },
+        { label: '毕业论文', value: 2 }
+      ],
+    })
+  }
+  
+  // 始终显示审核状态筛选器
+  fields.push({
     prop: 'reviewStatus',
     label: '审核状态：',
     component: 'el-select',
@@ -142,8 +180,10 @@ const searchFields = [
       { label: '通过', value: 1 },
       { label: '驳回', value: 2 },
     ],
-  },
-]
+  })
+  
+  return fields
+})
 
 // 表格列配置
 const tableColumns = [
@@ -184,17 +224,72 @@ const tableColumns = [
 ]
 
 /**
- * 新增文档
+ * 上传文档
  */
-function add() {
-  operateRef.value.showModel()
+function uploadDocument() {
+  // 检查是否已确认选题
+  if (!hasConfirmedTopic.value) {
+    ElMessageBox.alert(
+      '请先确认选题后再上传文档',
+      '未确认选题',
+      {
+        confirmButtonText: '确定',
+        type: 'warning'
+      }
+    )
+    return
+  }
+  
+  // 打开上传对话框
+  uploadDialogRef.value?.show()
+}
+
+/**
+ * 检查学生是否已确认选题
+ */
+const hasConfirmedTopic = ref(false)
+
+const checkConfirmedTopic = async () => {
+  if (userType.value !== USER_TYPE_ENUM.STUDENT) {
+    hasConfirmedTopic.value = false
+    return
+  }
+  
+  try {
+    // 查询选题状态
+    const res = await selectionApi.getSelectionPage({
+      current: 1,
+      size: 100
+    })
+    
+    // 检查是否有已确认的选题
+    hasConfirmedTopic.value = res.data?.records?.some(
+      (record: any) => record.status === 3 // 3 表示已确认
+    ) || false
+  } catch (error) {
+    console.error('查询选题状态失败:', error)
+    hasConfirmedTopic.value = false
+  }
+}
+
+// 在组件挂载时检查
+onMounted(() => {
+  checkConfirmedTopic()
+})
+
+/**
+ * 上传成功回调
+ */
+function handleUploadSuccess() {
+  getList()
 }
 
 /**
  * 编辑文档
  */
 function update(row: DocumentRow) {
-  operateRef.value.showModel(row)
+  // 文档暂不支持编辑功能
+  ElMessage.info('文档不支持编辑功能')
 }
 
 /**
@@ -223,6 +318,20 @@ function getReviewStatusLabel(reviewStatus: number) {
 // 用于刷新列表的方法
 function getList() {
   listRef.value?.getList && listRef.value.getList()
+}
+
+/**
+ * 获取文档列表（重写，添加文件类型过滤参数）
+ */
+function getDocumentListWithFilter(params: any) {
+  // 如果有路由指定的文件类型，添加到查询参数中
+  if (fileTypeFromRoute.value !== null) {
+    return documentApi.getDocumentPage({
+      ...params,
+      fileType: fileTypeFromRoute.value
+    })
+  }
+  return documentApi.getDocumentPage(params)
 }
 
 /**

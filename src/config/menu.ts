@@ -8,23 +8,163 @@ import type { MenuItem } from '@/directives/permission'
 
 // 菜单配置
 export const menuConfig: MenuItem[] = [
+
+  /**
+   * 学生菜单
+  */
   {
     index: 'dashboard',
     title: '仪表盘',
     icon: 'DataBoard',
     path: '/dashboard',
     userType: [
-      USER_TYPE_ENUM.STUDENT,
-      USER_TYPE_ENUM.TEACHER,
-      USER_TYPE_ENUM.SYSTEM_ADMIN,
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
+      USER_TYPE_ENUM.STUDENT
+    ],
+  },
+  {
+    index: 'topic-management',
+    title: '课题',
+    icon: 'FolderOpened',
+    userType: [
+      USER_TYPE_ENUM.STUDENT
+    ],
+    children: [
+      {
+        index: 'topic-list',
+        title: '课题信息',
+        icon: 'List',
+        path: '/topic/list',
+      },
+      {
+        index: 'selection-list',
+        title: '选题信息',
+        icon: 'List',
+        path: '/selection/list',
+      },
+    ],
+  },
+  {
+    index: 'process-management',
+    title: '进程管理',
+    icon: 'Process',
+    userType: [
+      USER_TYPE_ENUM.STUDENT
+    ],
+    children: [
+      {
+        index: 'opening-statement',
+        title: '开题报告',
+        icon: 'List',
+        path: '/document/list?type=0',
+      },
+      {
+        index: 'mid-term-report',
+        title: '中期报告',
+        icon: 'List',
+        path: '/document/list?type=1',
+      },
+      {
+        index: 'graduation-paper',
+        title: '毕业论文',
+        icon: 'List',
+        path: '/document/list?type=2',
+      }
+    ],
+  },
+  
+
+
+  /**
+   * 教师菜单
+  */
+  {
+    index: 'dashboard',
+    title: '仪表盘',
+    icon: 'DataBoard',
+    path: '/dashboard',
+    userType: [
+      USER_TYPE_ENUM.TEACHER
+    ],
+  },
+  {
+    index: 'user-list',
+    title: '我的学生',
+    icon: 'List',
+    path: '/user/list',
+    userType: [
+      USER_TYPE_ENUM.TEACHER
+    ],
+  },
+  {
+    index: 'topic-management',
+    title: '课题管理',
+    icon: 'FolderOpened',
+    userType: [
+      USER_TYPE_ENUM.TEACHER
+    ],
+    children: [
+      {
+        index: 'topic-list',
+        title: '我的课题',
+        icon: 'List',
+        path: '/topic/list',
+      },
+    ],
+  },
+  {
+    index: 'review-management',
+    title: '我的审核',
+    icon: 'Review',
+    userType: [
+      USER_TYPE_ENUM.TEACHER
+    ],
+    children: [
+      {
+        index: 'selection-list',
+        title: '学生选题',
+        icon: 'List',
+        path: '/selection/list',
+      },
+      {
+        index: 'opening-statement',
+        title: '开题报告',
+        icon: 'List',
+        path: '/document/list?type=0',
+      },
+      {
+        index: 'mid-term-report',
+        title: '中期报告',
+        icon: 'List',
+        path: '/document/list?type=1',
+      },
+      {
+        index: 'graduation-paper',
+        title: '毕业论文',
+        icon: 'List',
+        path: '/document/list?type=2',
+      }
+    ],
+  },
+
+  /**
+   * 院系管理员菜单
+  */
+  {
+    index: 'dashboard',
+    title: '仪表盘',
+    icon: 'DataBoard',
+    path: '/dashboard',
+    userType: [
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN
     ],
   },
   {
     index: 'user-management',
     title: '用户管理',
     icon: 'User',
-    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN, USER_TYPE_ENUM.TEACHER],
+    userType: [
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN
+    ],
     children: [
       {
         index: 'user-list',
@@ -39,10 +179,7 @@ export const menuConfig: MenuItem[] = [
     title: '课题管理',
     icon: 'FolderOpened',
     userType: [
-      USER_TYPE_ENUM.STUDENT,
-      USER_TYPE_ENUM.TEACHER,
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
-      USER_TYPE_ENUM.SYSTEM_ADMIN,
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN
     ],
     children: [
       {
@@ -58,9 +195,6 @@ export const menuConfig: MenuItem[] = [
     title: '选题管理',
     icon: 'Collection',
     userType: [
-      USER_TYPE_ENUM.STUDENT,
-      USER_TYPE_ENUM.TEACHER,
-      USER_TYPE_ENUM.SYSTEM_ADMIN,
       USER_TYPE_ENUM.DEPARTMENT_ADMIN,
     ],
     children: [
@@ -77,10 +211,113 @@ export const menuConfig: MenuItem[] = [
     title: '文档管理',
     icon: 'Document',
     userType: [
-      USER_TYPE_ENUM.STUDENT,
-      USER_TYPE_ENUM.TEACHER,
-      USER_TYPE_ENUM.SYSTEM_ADMIN,
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
+      USER_TYPE_ENUM.DEPARTMENT_ADMIN
+    ],
+    children: [
+      {
+        index: 'opening-statement',
+        title: '开题报告',
+        icon: 'List',
+        path: '/document/list?type=0',
+      },
+      {
+        index: 'mid-term-report',
+        title: '中期报告',
+        icon: 'List',
+        path: '/document/list?type=1',
+      },
+      {
+        index: 'graduation-paper',
+        title: '毕业论文',
+        icon: 'List',
+        path: '/document/list?type=2',
+      }
+    ],
+  },
+
+
+  /**
+   * 系统管理员菜单菜单
+  */
+  {
+    index: 'dashboard',
+    title: '仪表盘',
+    icon: 'DataBoard',
+    path: '/dashboard',
+    userType: [
+      USER_TYPE_ENUM.SYSTEM_ADMIN
+    ],
+  },
+  {
+    index: 'user-management',
+    title: '用户管理',
+    icon: 'User',
+    userType: [
+      USER_TYPE_ENUM.SYSTEM_ADMIN
+    ],
+    children: [
+      {
+        index: 'user-list',
+        title: '用户列表',
+        icon: 'List',
+        path: '/user/list',
+      },
+    ],
+  },
+  {
+    index: 'department-management',
+    title: '院系管理',
+    icon: 'OfficeBuilding',
+    userType: [
+      USER_TYPE_ENUM.SYSTEM_ADMIN
+    ],
+    children: [
+      {
+        index: 'department-list',
+        title: '院系列表',
+        icon: 'List',
+        path: '/department/list',
+      },
+    ],
+  },
+  {
+    index: 'topic-management',
+    title: '课题管理',
+    icon: 'FolderOpened',
+    userType: [
+      USER_TYPE_ENUM.SYSTEM_ADMIN
+    ],
+    children: [
+      {
+        index: 'topic-list',
+        title: '课题列表',
+        icon: 'List',
+        path: '/topic/list',
+      },
+    ],
+  },
+  {
+    index: 'selection-management',
+    title: '选题管理',
+    icon: 'Collection',
+    userType: [
+      USER_TYPE_ENUM.SYSTEM_ADMIN
+    ],
+    children: [
+      {
+        index: 'selection-list',
+        title: '选题列表',
+        icon: 'List',
+        path: '/selection/list',
+      },
+    ],
+  },
+  {
+    index: 'document-management',
+    title: '文档管理',
+    icon: 'Document',
+    userType: [
+      USER_TYPE_ENUM.SYSTEM_ADMIN
     ],
     children: [
       {
@@ -91,6 +328,10 @@ export const menuConfig: MenuItem[] = [
       },
     ],
   },
+
+
+
+  //暂不优化的菜单
   {
     index: 'grade-management',
     title: '成绩管理',
@@ -106,20 +347,6 @@ export const menuConfig: MenuItem[] = [
         title: '成绩列表',
         icon: 'List',
         path: '/grade/list',
-      },
-    ],
-  },
-  {
-    index: 'department-management',
-    title: '院系管理',
-    icon: 'OfficeBuilding',
-    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN],
-    children: [
-      {
-        index: 'department-list',
-        title: '院系列表',
-        icon: 'List',
-        path: '/department/list',
       },
     ],
   },
