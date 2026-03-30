@@ -2,11 +2,10 @@
   <div class="list-container">
     <base-list
       :get-list-api="fileTypeFromRoute !== null ? getDocumentListWithFilter : documentApi.getList"
-      :delete-api="documentApi.delete"
       :search-fields="searchFields"
       :table-columns="tableColumns"
       :show-add-button="showUploadButton"
-      :show-delete-button="showBatchDeleteButton"
+      :show-delete-button="false"
       add-button-text="上传"
       @add="uploadDocument"
       @edit="update"
@@ -14,30 +13,13 @@
       ref="listRef"
     >
       <template #operations="{ scope }">
+        <!-- 所有角色都可以查看详情 -->
         <el-button 
-          @click="previewDocument(scope.row)" 
-          type="primary" 
+          @click="viewDetail(scope.row)" 
+          type="info" 
           size="small"
-          v-permission="'student'"
         >
-          预览
-        </el-button>
-        <el-button 
-          @click="downloadDocument(scope.row.id)" 
-          type="success" 
-          size="small"
-          v-permission="'student'"
-        >
-          下载
-        </el-button>
-        <el-button 
-          @click="handleReview(scope.row)" 
-          type="warning" 
-          size="small"
-          v-permission="'teacher'"
-          :disabled="!canReview(scope.row)"
-        >
-          审核
+          详情
         </el-button>
         <el-button 
           @click="viewReviewInfo(scope.row)" 
@@ -47,9 +29,55 @@
         >
           审核信息
         </el-button>
+        
+        <el-button 
+          @click="previewDocument(scope.row)" 
+          type="primary" 
+          size="small"
+        >
+          预览
+        </el-button>
+        <el-button 
+          @click="downloadDocument(scope.row.id)" 
+          type="success" 
+          size="small"
+        >
+          下载
+        </el-button>
+        
+        <!-- 学生角色：重新上传（仅驳回状态的文档可以重新上传） -->
+        <el-button 
+          @click="reuploadDocument(scope.row)" 
+          type="primary" 
+          size="small"
+          v-if="showReuploadButton(scope.row)"
+        >
+          重新上传
+        </el-button>
+        
+        <!-- 学生角色：撤销申请（仅待审核状态的文档可以撤销） -->
+        <el-button 
+          @click="handleCancel(scope.row.id)" 
+          type="warning" 
+          size="small"
+          v-if="showCancelButton(scope.row)"
+          :loading="cancelLoading"
+        >
+          撤销申请
+        </el-button>
+        
+        <el-button 
+          @click="handleReview(scope.row)" 
+          type="warning" 
+          size="small"
+          v-if="showReviewButton(scope.row)"
+        >
+          审核
+        </el-button>
       </template>
       
       <template #dialogs>
+        <document-detail ref="detailRef" />
         <document-upload-dialog @success="handleUploadSuccess" ref="uploadDialogRef" />
         <document-review-form @success="handleReviewSuccess" ref="reviewFormRef" />
         <review-info-dialog 
@@ -65,6 +93,7 @@
         <file-preview 
           v-model="previewDialogVisible"
           :file-info="currentFileInfo"
+          @download="downloadDocument"
           ref="filePreviewRef"
         />
       </template>
@@ -73,10 +102,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { documentApi } from '@/api/document'
 import { selectionApi } from '@/api/selection'
+import DocumentDetail from '@/views/document/Detail.vue'
 import DocumentUploadDialog from '@/views/document/DocumentUploadDialog.vue'
 import DocumentReviewForm from '@/views/document/DocumentReviewForm.vue'
 import FilePreview from '@/components/common/FilePreview.vue'
@@ -113,14 +143,10 @@ const showUploadButton = computed(() => {
   return userType.value === USER_TYPE_ENUM.STUDENT && fileTypeFromRoute.value !== null
 })
 
-// 是否显示批量删除按钮（学生不显示批量删除）
-const showBatchDeleteButton = computed(() => {
-  return userType.value !== USER_TYPE_ENUM.STUDENT
-})
-
 // 定义操作组件引用--上传
 const uploadDialogRef = ref()
 const listRef = ref()
+const detailRef = ref()
 
 // 审核对话框相关
 const reviewDialogVisible = ref(false)
@@ -129,6 +155,9 @@ const currentDocumentId = ref<number | null>(null)
 // 预览对话框相关
 const previewDialogVisible = ref(false)
 const currentFileInfo = ref<any>({})
+
+// 撤销加载状态
+const cancelLoading = ref(false)
 
 // 组件引用
 const reviewFormRef = ref()
@@ -150,22 +179,64 @@ const reviewInfoData = reactive({
   feedback: '' as string,
 })
 
-// 搜索字段配置
+// 搜索字段配置（使用 computed 实现动态显示）
 const searchFields = computed(() => {
   const fields: any[] = []
   
+  // 上传人（真实姓名）- 仅教师和管理员可见
+  if (userType.value !== USER_TYPE_ENUM.STUDENT) {
+    fields.push({
+      prop: 'userName',
+      label: '上传人：',
+      component: 'el-input',
+      props: { placeholder: '请输入上传人姓名' }
+    })
+  }
+  
+  // 学号（学生学号）- 仅教师和管理员可见
+  if (userType.value !== USER_TYPE_ENUM.STUDENT) {
+    fields.push({
+      prop: 'studentNumber',
+      label: '学号：',
+      component: 'el-input',
+      props: { placeholder: '请输入学号' }
+    })
+  }
+  
+  // 审核人（真实姓名）- 仅院系管理员和系统管理员可见
+  if (userType.value === USER_TYPE_ENUM.DEPARTMENT_ADMIN || userType.value === USER_TYPE_ENUM.SYSTEM_ADMIN) {
+    fields.push({
+      prop: 'reviewerName',
+      label: '审核人：',
+      component: 'el-input',
+      props: { placeholder: '请输入审核人姓名' }
+    })
+  }
+  
+  // 工号 - 仅院系管理员和系统管理员可见
+  if (userType.value === USER_TYPE_ENUM.DEPARTMENT_ADMIN || userType.value === USER_TYPE_ENUM.SYSTEM_ADMIN) {
+    fields.push({
+      prop: 'reviewerWorkNumber',
+      label: '工号：',
+      component: 'el-input',
+      props: { placeholder: '请输入工号' }
+    })
+  }
+  
   // 如果没有路由指定的文件类型，显示文件类型筛选器
-  if (!fileTypeFromRoute.value) {
+  if (fileTypeFromRoute.value === null) {
     fields.push({
       prop: 'fileType',
       label: '文件类型：',
       component: 'el-select',
-      props: { placeholder: '请选择文件类型' },
-      options: [
-        { label: '开题报告', value: 0 },
-        { label: '中期报告', value: 1 },
-        { label: '毕业论文', value: 2 }
-      ],
+      props: { 
+        placeholder: '请选择文件类型',
+        options: [
+          { label: '开题报告', value: 0 },
+          { label: '中期报告', value: 1 },
+          { label: '毕业论文', value: 2 }
+        ]
+      }
     })
   }
   
@@ -174,54 +245,110 @@ const searchFields = computed(() => {
     prop: 'reviewStatus',
     label: '审核状态：',
     component: 'el-select',
-    props: { placeholder: '请选择审核状态' },
-    options: [
-      { label: '待审', value: 0 },
-      { label: '通过', value: 1 },
-      { label: '驳回', value: 2 },
-    ],
+    props: { 
+      placeholder: '请选择审核状态',
+      options: [
+        { label: '待审核', value: 0 },
+        { label: '审核通过', value: 1 },
+        { label: '审核驳回', value: 2 }
+      ]
+    }
   })
   
   return fields
 })
 
-// 表格列配置
-const tableColumns = [
-  { prop: 'id', label: 'ID', headerAlign: 'center', align: 'center' },
-  { prop: 'originalFilename', label: '原始文件名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
-  {
-    prop: 'fileType',
-    label: '文件类型',
-    headerAlign: 'center',
-    align: 'center',
-    render: (row: DocumentRow) => getFileTypeLabel(row.fileType),
-  },
-  { prop: 'fileSizeDisplay', label: '文件大小', headerAlign: 'center', align: 'center' },
-  { 
-    prop: 'userName', 
-    label: '上传人', 
-    headerAlign: 'center', 
-    align: 'center', 
-    ellipsisMaxLength: 15,
-    showWhen: () => userType.value !== USER_TYPE_ENUM.STUDENT
-  },
-  { 
-    prop: 'topicTitle', 
-    label: '课题标题', 
-    headerAlign: 'center', 
-    align: 'center', 
-    ellipsisMaxLength: 30,
-    showWhen: () => userType.value !== USER_TYPE_ENUM.STUDENT
-  },
-  {
-    prop: 'reviewStatus',
-    label: '审核状态',
-    headerAlign: 'center',
-    align: 'center',
-    render: (row: DocumentRow) => getReviewStatusLabel(row.reviewStatus),
-  },
-  { prop: 'uploadedAt', label: '上传时间', headerAlign: 'center', align: 'center' },
-]
+// 表格列配置（使用 computed 实现动态显示）
+const tableColumns = computed(() => {
+  const isSystemAdmin = userType.value === USER_TYPE_ENUM.SYSTEM_ADMIN
+  
+  return [
+    // 仅系统管理员显示 ID 列
+    {
+      prop: 'id' as const,
+      label: 'ID',
+      headerAlign: 'center' as const,
+      align: 'center' as const,
+      minWidth: 60,
+      ellipsisMaxLength: 30,
+      vIf: isSystemAdmin
+    },
+    { 
+      prop: 'originalFilename', 
+      label: '文件名称', 
+      headerAlign: 'center', 
+      align: 'center', 
+      ellipsisMaxLength: 30 
+    },
+    {
+      prop: 'fileType',
+      label: '文件类型',
+      headerAlign: 'center',
+      align: 'center',
+      render: (row: DocumentRow) => getFileTypeLabel(row.fileType),
+    },
+    { prop: 'fileSizeDisplay', label: '文件大小', headerAlign: 'center', align: 'center' },
+    
+    // 学生用户不显示课题标题（其他角色可见）
+    {
+      prop: 'topicTitle' as const,
+      label: '课题标题',
+      headerAlign: 'center' as const,
+      align: 'center' as const,
+      ellipsisMaxLength: 30,
+      vIf: userType.value !== USER_TYPE_ENUM.STUDENT
+    },
+    {
+      prop: 'description',
+      label: '文档描述',
+      headerAlign: 'center',
+      align: 'center',
+      minWidth: 200,
+      ellipsisMaxLength: 30,
+    },
+    // 学生用户不显示上传人（其他角色可见）- 显示格式：真实姓名 - 学号
+    {
+      prop: 'userName' as const,
+      label: '上传人',
+      headerAlign: 'center' as const,
+      align: 'center' as const,
+      minWidth: 150,
+      render: (row: DocumentRow) => {
+        if (!row.userName) return '-';
+        if (row.studentNumber) {
+          return `${row.userName}-${row.studentNumber}`;
+        }
+        return row.userName;
+      },
+      vIf: userType.value !== USER_TYPE_ENUM.STUDENT
+    },
+    // 仅院系管理员和系统管理员显示审核人 - 显示格式：真实姓名 - 工号
+    {
+      prop: 'reviewerName' as const,
+      label: '审核人',
+      headerAlign: 'center' as const,
+      align: 'center' as const,
+      minWidth: 150,
+      render: (row: DocumentRow) => {
+        if (!row.reviewerName) return '-';
+        if (row.reviewerWorkNumber) {
+          return `${row.reviewerName}-${row.reviewerWorkNumber}`;
+        }
+        return row.reviewerName;
+      },
+      vIf: userType.value === USER_TYPE_ENUM.DEPARTMENT_ADMIN || userType.value === USER_TYPE_ENUM.SYSTEM_ADMIN
+    },
+    {
+      prop: 'reviewStatus',
+      label: '审核状态',
+      headerAlign: 'center',
+      align: 'center',
+      render: (row: DocumentRow) => getReviewStatusLabel(row.reviewStatus),
+    },
+    
+    { prop: 'uploadedAt', label: '上传时间', headerAlign: 'center', align: 'center' },
+  ]
+})
 
 /**
  * 上传文档
@@ -272,6 +399,15 @@ const checkConfirmedTopic = async () => {
   }
 }
 
+// 监听路由参数变化，当文件类型改变时重新加载列表
+watch(
+  () => route.query.type,
+  () => {
+    // 路由参数变化时，重新加载列表
+    getList()
+  }
+)
+
 // 在组件挂载时检查
 onMounted(() => {
   checkConfirmedTopic()
@@ -290,13 +426,6 @@ function handleUploadSuccess() {
 function update(row: DocumentRow) {
   // 文档暂不支持编辑功能
   ElMessage.info('文档不支持编辑功能')
-}
-
-/**
- * 删除确认
- */
-function confirmDel(id?: any) {
-  // 由BaseList组件处理删除逻辑
 }
 
 /**
@@ -350,33 +479,48 @@ function previewDocument(row: DocumentRow) {
  * 下载文档
  */
 async function downloadDocument(id: number) {
+  let loadingInstance: ReturnType<typeof ElLoading.service> | undefined
+  
   try {
     // 显示加载状态
-    const loadingInstance = ElLoading.service({
+    loadingInstance = ElLoading.service({
       text: '正在下载文档...',
       background: 'rgba(0, 0, 0, 0.7)'
     })
     
     // 调用后端下载接口
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
     const token = storageUtil.get(SYSTEM_CONSTANTS.TOKEN_NAME)
-    const response = await fetch(`/api/documents/${id}/download`, {
+    const response = await fetch(`${apiBaseUrl}/api/documents/${id}/download`, {
       method: 'GET',
       headers: {
-        'Authorization': token ? `${SYSTEM_CONSTANTS.TOKEN_PREFIX}${token.replace(/^Bearer\s*/i, '').trim()}` : ''
+        // 使用配置的 TOKEN_NAME 作为 header 名称，与后端 Sa-Token 配置一致
+        [SYSTEM_CONSTANTS.TOKEN_NAME]: token ? `${SYSTEM_CONSTANTS.TOKEN_PREFIX}${token.replace(/^Bearer\s*/i, '').trim()}` : ''
       }
     })
     
     if (!response.ok) {
-      throw new Error(`下载失败: ${response.status} ${response.statusText}`)
+      if (response.status === 403) {
+        throw new Error('无权下载该文档')
+      }
+      throw new Error(`下载失败：${response.status} ${response.statusText}`)
     }
     
-    // 获取文件名
+    // 从 Content-Disposition header 获取文件名（支持 RFC 5987 编码）
     const contentDisposition = response.headers.get('content-disposition')
-    let filename = 'document.pdf'
+    let filename = 'document'
+    
     if (contentDisposition) {
-      const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
-      if (filenameMatch && filenameMatch[1]) {
-        filename = decodeURIComponent(filenameMatch[1].replace(/['"]/g, ''))
+      // 尝试解析 RFC 5987 编码的文件名（filename*=UTF-8''encoded_filename）
+      const filenameStarMatch = contentDisposition.match(/filename\*=UTF-8''([^;\n]*)/i)
+      if (filenameStarMatch && filenameStarMatch[1]) {
+        filename = decodeURIComponent(filenameStarMatch[1])
+      } else {
+        // 尝试解析普通 filename 参数
+        const filenameMatch = contentDisposition.match(/filename[\s]*=[\s]*([^;\n]*)/i)
+        if (filenameMatch && filenameMatch[1]) {
+          filename = decodeURIComponent(filenameMatch[1].replace(/['"]/g, ''))
+        }
       }
     }
     
@@ -395,10 +539,11 @@ async function downloadDocument(id: number) {
     window.URL.revokeObjectURL(url)
     
     loadingInstance.close()
-    ElMessage.success('文档下载成功')
-  } catch (error) {
-    console.error('下载失败:', error)
-    ElMessage.error('文档下载失败')
+    ElMessage.success(`文档下载成功`)
+  } catch (error: any) {
+    console.error('文档下载失败:', error)
+    ElMessage.error(error.message || '文档下载失败')
+    loadingInstance?.close()
   }
 }
 
@@ -433,13 +578,69 @@ function handleReviewSuccess() {
   getList()
 }
 
-// 判断是否可以审核文档
-function canReview(row: DocumentRow): boolean {
-  return row.reviewStatus === 0 // 只有待审核的文档可以审核
+// 是否显示审核按钮（仅教师角色，且文档状态为待审核）
+function showReviewButton(row: DocumentRow): boolean {
+  return userType.value === USER_TYPE_ENUM.TEACHER && row.reviewStatus === 0
 }
 
 // 是否显示审核信息按钮（有审核记录时显示，即通过或驳回）
 function showReviewInfoButton(row: DocumentRow): boolean {
   return row.reviewStatus === 1 || row.reviewStatus === 2
+}
+
+// 是否显示重新上传按钮（仅学生角色，且文档状态为驳回）
+function showReuploadButton(row: DocumentRow): boolean {
+  if (userType.value !== USER_TYPE_ENUM.STUDENT) {
+    return false
+  }
+  return row.reviewStatus === 2 // 驳回状态
+}
+
+// 是否显示撤销按钮（仅学生角色，且文档状态为待审核）
+function showCancelButton(row: DocumentRow): boolean {
+  if (userType.value !== USER_TYPE_ENUM.STUDENT) {
+    return false
+  }
+  return row.reviewStatus === 0 // 待审核状态
+}
+
+/**
+ * 重新上传文档（驳回后）
+ */
+function reuploadDocument(row: DocumentRow) {
+  // 打开上传对话框，传递原文档 ID 用于重新上传
+  uploadDialogRef.value?.show(row.id.toString(), row.fileType)
+}
+
+/**
+ * 查看文档详情
+ */
+function viewDetail(row: DocumentRow) {
+  detailRef.value?.showModel(row)
+}
+
+/**
+ * 处理撤销申请
+ */
+async function handleCancel(id: number) {
+  try {
+    await ElMessageBox.confirm('确定要撤销此文档申请吗？撤销后无法恢复。', '提示', {
+      type: 'warning',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消'
+    })
+    
+    cancelLoading.value = true
+    await documentApi.cancelDocument(id)
+    ElMessage.success('撤销申请成功')
+    getList()
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      console.error('撤销失败:', error)
+      ElMessage.error(error.message || '撤销失败')
+    }
+  } finally {
+    cancelLoading.value = false
+  }
 }
 </script>

@@ -3,6 +3,7 @@ export interface DocumentResponse {
   id: string
   userId: string
   userName: string
+  studentNumber?: string
   topicId: string
   topicTitle: string
   fileType: number
@@ -16,6 +17,7 @@ export interface DocumentResponse {
   reviewedAt?: string
   reviewerId?: string
   reviewerName?: string
+  reviewerWorkNumber?: string
   feedback?: string
   description?: string
   uploadedAt?: string
@@ -44,7 +46,6 @@ export interface DocumentReviewRequest {
   documentId: string
   reviewStatus: number  // 1-通过，2-驳回
   feedback?: string
-  suggestion?: string
 }
 
 // 文档查询参数类型 (对应后端 DocumentPageQueryDTO)

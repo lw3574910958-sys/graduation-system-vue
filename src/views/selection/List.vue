@@ -201,60 +201,76 @@ const currentSelectionForDetail = ref<SelectionResponse | null>(null)
 // 加载状态
 const cancelLoading = ref(false)
 
-// 搜索字段配置
-const searchFields = [
-  {
-    prop: 'studentNumber',
-    label: '学号：',
-    component: 'el-input',
-    props: { placeholder: '请输入学号' }
-  },
-  {
-    prop: 'studentName',
-    label: '学生姓名：',
-    component: 'el-input',
-    props: { placeholder: '请输入学生姓名' }
-  },
-  {
-    prop: 'topicTitle',
-    label: '课题标题：',
-    component: 'el-input',
-    props: { placeholder: '请输入课题标题' }
-  },
-  {
-    prop: 'status',
-    label: '状态：',
-    component: 'el-select',
-    props: { 
-      placeholder: '请选择状态',
-      options: [
-        { label: '待审核', value: SELECTION_STATUS.PENDING_REVIEW },
-        { label: '审核通过', value: SELECTION_STATUS.APPROVED },
-        { label: '审核驳回', value: SELECTION_STATUS.REJECTED },
-        { label: '已确认', value: SELECTION_STATUS.CONFIRMED }
-      ]
+// 搜索字段配置（使用 computed 实现动态显示）
+const searchFields = computed(() => {
+  return [
+    {
+      prop: 'studentNumber',
+      label: '学号：',
+      component: 'el-input',
+      props: { placeholder: '请输入学号' }
+    },
+    {
+      prop: 'studentName',
+      label: '学生姓名：',
+      component: 'el-input',
+      props: { placeholder: '请输入学生姓名' }
+    },
+    {
+      prop: 'topicTitle',
+      label: '课题标题：',
+      component: 'el-input',
+      props: { placeholder: '请输入课题标题' }
+    },
+    {
+      prop: 'status',
+      label: '状态：',
+      component: 'el-select',
+      props: { 
+        placeholder: '请选择状态',
+        options: [
+          { label: '待审核', value: SELECTION_STATUS.PENDING_REVIEW },
+          { label: '审核通过', value: SELECTION_STATUS.APPROVED },
+          { label: '审核驳回', value: SELECTION_STATUS.REJECTED },
+          { label: '已确认', value: SELECTION_STATUS.CONFIRMED }
+        ]
+      }
     }
-  }
-]
+  ]
+})
 
-// 表格列配置
-const tableColumns = [
-  { prop: 'studentName', label: '学生姓名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 10 },
-  { prop: 'studentNumber', label: '学号', headerAlign: 'center', align: 'center' },
-  { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
-  { prop: 'applyReason', label: '申请理由', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
-  { prop: 'studentAbility', label: '学生能力说明', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
-  { prop: 'expectedGoal', label: '预期目标', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
-  { prop: 'createdAt', label: '申请时间', headerAlign: 'center', align: 'center' },
-  { prop: 'reviewedAt', label: '审核时间', headerAlign: 'center', align: 'center' },
-  { 
-    prop: 'statusDesc', 
-    label: '状态', 
-    headerAlign: 'center', 
-    align: 'center',
-    render: (row: SelectionRow) => row.statusDesc || getStatusLabel(row.status)
-  },
-]
+// 表格列配置（使用 computed 实现动态显示）
+const tableColumns = computed(() => {
+  const isSystemAdmin = userType.value === 'system_admin'
+  
+  return [
+    // 仅系统管理员显示 ID 列
+    {
+      prop: 'id' as const,
+      label: 'ID',
+      headerAlign: 'center' as const,
+      align: 'center' as const,
+      minWidth: 60,
+      ellipsisMaxLength: 30,
+      vIf: isSystemAdmin
+    },
+    { prop: 'studentName', label: '学生姓名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 10 },
+    { prop: 'studentNumber', label: '学号', headerAlign: 'center', align: 'center' },
+    { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
+    { prop: 'applyReason', label: '申请理由', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
+    { prop: 'studentAbility', label: '学生能力说明', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
+    { prop: 'expectedGoal', label: '预期目标', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
+    { prop: 'createdAt', label: '申请时间', headerAlign: 'center', align: 'center' },
+    { prop: 'reviewedAt', label: '审核时间', headerAlign: 'center', align: 'center' },
+    { 
+      prop: 'statusDesc', 
+      label: '状态', 
+      headerAlign: 'center', 
+      align: 'center',
+      render: (row: SelectionRow) => row.statusDesc || getStatusLabel(row.status)
+    },
+  ]
+})
 
 /**
  * 处理确认选题（使用对话框）

@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { gradeApi } from '@/api/grade'
 import AddOrUpdate from '@/views/grade/AddOrUpdate.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -49,49 +49,53 @@ type GradeRow = {
 const operateRef = ref()
 const listRef = ref()
 
-// 搜索字段配置
-const searchFields = [
-  {
-    prop: 'studentId',
-    label: '学生 ID：',
-    component: 'el-input',
-    props: { placeholder: '请输入学生 ID' }
-  },
-  {
-    prop: 'topicId',
-    label: '课题 ID：',
-    component: 'el-input',
-    props: { placeholder: '请输入课题 ID' }
-  },
-  {
-    prop: 'gradeType',
-    label: '成绩类型：',
-    component: 'el-select',
-    props: { placeholder: '请选择成绩类型' },
-    options: [
-      { label: '开题报告教师评分', value: 1 },
-      { label: '中期报告教师评分', value: 2 },
-      { label: '毕业论文教师评分', value: 3 },
-      { label: '综合成绩', value: 4 },
-    ]
-  }
-]
+// 搜索字段配置（使用 computed 实现动态显示）
+const searchFields = computed(() => {
+  return [
+    {
+      prop: 'studentId',
+      label: '学生 ID：',
+      component: 'el-input',
+      props: { placeholder: '请输入学生 ID' }
+    },
+    {
+      prop: 'topicId',
+      label: '课题 ID：',
+      component: 'el-input',
+      props: { placeholder: '请输入课题 ID' }
+    },
+    {
+      prop: 'gradeType',
+      label: '成绩类型：',
+      component: 'el-select',
+      props: { placeholder: '请选择成绩类型' },
+      options: [
+        { label: '开题报告教师评分', value: 1 },
+        { label: '中期报告教师评分', value: 2 },
+        { label: '毕业论文教师评分', value: 3 },
+        { label: '综合成绩', value: 4 },
+      ]
+    }
+  ]
+})
 
-// 表格列配置
-const tableColumns = [
-  { prop: 'studentName', label: '学生姓名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 10 },
-  { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
-  {
-    prop: 'gradeType',
-    label: '成绩类型',
-    headerAlign: 'center',
-    align: 'center',
-    render: (row: GradeRow) => row.gradeTypeDesc || '未知类型',
-  },
-  { prop: 'score', label: '成绩', headerAlign: 'center', align: 'center' },
-  { prop: 'comment', label: '评语', headerAlign: 'center', align: 'center', ellipsisMaxLength: 50 },
-  { prop: 'gradedAt', label: '评分时间', headerAlign: 'center', align: 'center' },
-]
+// 表格列配置（使用 computed 实现动态显示）
+const tableColumns = computed(() => {
+  return [
+    { prop: 'studentName', label: '学生姓名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 10 },
+    { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
+    {
+      prop: 'gradeType',
+      label: '成绩类型',
+      headerAlign: 'center',
+      align: 'center',
+      render: (row: GradeRow) => row.gradeTypeDesc || '未知类型',
+    },
+    { prop: 'score', label: '成绩', headerAlign: 'center', align: 'center' },
+    { prop: 'comment', label: '评语', headerAlign: 'center', align: 'center', ellipsisMaxLength: 50 },
+    { prop: 'gradedAt', label: '评分时间', headerAlign: 'center', align: 'center' },
+  ]
+})
 
 /**
  * 新增成绩

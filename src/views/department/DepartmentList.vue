@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { departmentApi } from '@/api/department'
 import AddOrUpdate from '@/views/department/DepartmentForm.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -42,29 +42,33 @@ type DepartmentRow = {
 const operateRef = ref()
 const listRef = ref()
 
-// 搜索字段配置
-const searchFields = [
-  {
-    prop: 'name',
-    label: '院系名称：',
-    component: 'el-input',
-    props: { placeholder: '请输入院系名称' }
-  },
-  {
-    prop: 'code',
-    label: '院系代码：',
-    component: 'el-input',
-    props: { placeholder: '请输入院系代码' }
-  }
-]
+// 搜索字段配置（使用 computed 实现动态显示）
+const searchFields = computed(() => {
+  return [
+    {
+      prop: 'name',
+      label: '院系名称：',
+      component: 'el-input',
+      props: { placeholder: '请输入院系名称' }
+    },
+    {
+      prop: 'code',
+      label: '院系代码：',
+      component: 'el-input',
+      props: { placeholder: '请输入院系代码' }
+    }
+  ]
+})
 
-// 表格列配置
-const tableColumns = [
-  { prop: 'id', label: 'ID', width: 100, headerAlign: 'center', align: 'center' },
-  { prop: 'name', label: '院系名称', headerAlign: 'center', align: 'center' },
-  { prop: 'code', label: '院系代码', headerAlign: 'center', align: 'center' },
-  { prop: 'createdAt', label: '创建时间', headerAlign: 'center', align: 'center' },
-]
+// 表格列配置（使用 computed 实现动态显示）
+const tableColumns = computed(() => {
+  return [
+    { prop: 'id', label: 'ID', width: 100, headerAlign: 'center', align: 'center' },
+    { prop: 'name', label: '院系名称', headerAlign: 'center', align: 'center' },
+    { prop: 'code', label: '院系代码', headerAlign: 'center', align: 'center' },
+    { prop: 'createdAt', label: '创建时间', headerAlign: 'center', align: 'center' },
+  ]
+})
 
 // 处理新增
 function handleAdd() {

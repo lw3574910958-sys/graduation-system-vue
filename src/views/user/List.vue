@@ -223,8 +223,6 @@ function update(row: UserRow) {
     ElMessage.warning('院系管理员无此权限')
     return
   }
-  console.log('🔍 List.vue update 方法接收到的 row:', row)
-  console.log('🔍 row.id:', row.id)
   operateRef.value.showModel(row)
 }
 
@@ -236,7 +234,6 @@ function confirmDel(id?: any) {
     ElMessage.warning('院系管理员无此权限')
     return
   }
-  console.log('🔍 List.vue confirmDel 方法接收到的 id:', id)
   // 由于使用 BaseList，删除逻辑已在 BaseList 中处理
   // 这里需要手动触发 BaseList 的 confirmDel 方法
   listRef.value?.confirmDel && listRef.value.confirmDel(id)

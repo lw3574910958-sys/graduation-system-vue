@@ -275,19 +275,12 @@ async function onSubmit() {
         // ✅ 关键：由于启用了 autoUpload，文件在选择后已自动上传
         // 这里只需要确保 formData 中的值是正确的即可
         // 文件上传组件的 updateValue 会自动更新 formData 中的对应字段
-        console.log('✅ 文件已自动上传，无需手动处理')
-
-        // 调试：打印 formData
-        console.log('🔍 提交表单数据:', formData.value)
-        console.log('🔍 formData.id:', formData.value.id)
 
         if (formData.value.id) {
           // 更新操作
           if (props.updateApi) {
             // 只传递需要更新的字段（排除 ID）
             const { id, ...updateData } = formData.value
-            console.log('🔍 更新操作 - ID:', formData.value.id)
-            console.log('🔍 更新操作 - updateData:', updateData)
             await props.updateApi(formData.value.id, updateData)
           } else {
             ElMessage.warning('未提供更新 API')
@@ -295,7 +288,6 @@ async function onSubmit() {
           }
         } else {
           // 新增操作
-          console.log('🔍 新增操作 - formData:', formData.value)
           await props.saveApi(formData.value)
         }
 

@@ -36,9 +36,7 @@ const departmentOptions = ref<DepartmentResponse[]>([])
 const loadDepartments = async () => {
   try {
     const response = await departmentApi.getAllDepartments()
-    console.log('获取院系数据响应:', response)
     departmentOptions.value = response.data || []
-    console.log('院系选项:', departmentOptions.value)
   } catch (error) {
     console.error('获取院系数据失败:', error)
   }

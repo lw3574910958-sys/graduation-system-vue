@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { noticeApi } from '@/api/notice'
 import type { NoticeResponse } from '@/types'
@@ -181,183 +181,175 @@ const getTypeText = (row: NoticeResponse): { text: string, color: string } => {
   return { text: String(type), color: '#606266' }
 }
 
-// 搜索字段配置
-const searchFields = [
-  {
-    prop: 'title',
-    label: '标题：',
-    component: 'el-input',
-    props: { placeholder: '请输入标题' }
-  },
-  {
-    prop: 'type',
-    label: '类型：',
-    component: 'el-select',
-    props: { 
-      placeholder: '请选择类型',
-      options: [
-        { label: '系统通知', value: 1 },
-        { label: '公告', value: 2 },
-        { label: '提醒', value: 3 }
-      ]
-    }
-  },
-  {
-    prop: 'status',
-    label: '状态：',
-    component: 'el-select',
-    props: {
-      placeholder: '请选择状态',
-      options: [
-        { label: '草稿', value: 0 },
-        { label: '已发布', value: 1 },
-        { label: '已撤回', value: 2 }
-      ]
-    }
-  },
-  {
-    prop: 'isSticky',
-    label: '置顶：',
-    component: 'el-select',
-    props: {
-      placeholder: '请选择是否置顶',
-      options: [
-        { label: '是', value: 1 },
-        { label: '否', value: 0 }
-      ]
-    }
-  },
-  {
-    prop: 'priority',
-    label: '优先级：',
-    component: 'el-select',
-    props: {
-      placeholder: '请选择优先级',
-      options: [
-        { label: '高', value: 3 },
-        { label: '中', value: 2 },
-        { label: '低', value: 1 }
-      ]
-    }
-  },
-  {
-    prop: 'targetScope',
-    label: '目标范围：',
-    component: 'el-select',
-    props: {
-      placeholder: '请选择目标范围',
-      options: [
-        { label: '全体', value: 0 },
-        { label: '学生', value: 1 },
-        { label: '教师', value: 2 },
-        { label: '管理员', value: 3 }
-      ]
-    }
-  },
-  {
-    prop: 'effectiveStatus',
-    label: '生效状态：',
-    component: 'el-select',
-    props: {
-      placeholder: '请选择生效状态',
-      options: [
-        { label: '生效中', value: 'effective' },
-        { label: '待生效', value: 'pending' },
-        { label: '已过期', value: 'expired' }
-      ]
-    }
-  }
-]
-
-// 表格列配置
-const tableColumns = [
-  { prop: 'title', label: '标题', headerAlign: 'center', align: 'center', minWidth: 180, ellipsisMaxLength: 30 },
-  { 
-    prop: 'content', 
-    label: '内容', 
-    headerAlign: 'center', 
-    align: 'center',
-    minWidth: 200,
-    ellipsisMaxLength: 30
-  },
-  { 
-    prop: 'isSticky', 
-    label: '置顶', 
-    headerAlign: 'center', 
-    align: 'center',
-    minWidth: 60,
-    render: (row: NoticeResponse) => {
-      const { text, color } = getStickyText(row)
-      return `<span style="color: ${color}; font-weight: ${row.isSticky === 1 ? 'bold' : 'normal'}">${text}</span>`
-    }
-  },
-  { 
-    prop: 'type', 
-    label: '类型', 
-    headerAlign: 'center', 
-    align: 'center',
-    minWidth: 90,
-    render: (row: NoticeResponse) => {
-      const { text, color } = getTypeText(row)
-      return `<span style="color: ${color}">${text}</span>`
-    }
-  },
-  { 
-    prop: 'priority', 
-    label: '优先级', 
-    headerAlign: 'center', 
-    align: 'center',
-    minWidth: 70,
-    render: (row: NoticeResponse) => {
-      const { text, color } = getPriorityText(row)
-      return `<span style="color: ${color}">${text}</span>`
-    }
-  },
-  { 
-    prop: 'status', 
-    label: '状态', 
-    headerAlign: 'center', 
-    align: 'center',
-    minWidth: 80,
-    render: (row: NoticeResponse) => {
-      const { text, color } = getStatusText(row)
-      return `<span style="color: ${color}">${text}</span>`
-    }
-  },
-  { 
-    prop: 'targetScope', 
-    label: '目标范围', 
-    headerAlign: 'center', 
-    align: 'center',
-    minWidth: 90,
-    render: (row: NoticeResponse) => {
-      const { text, color } = getTargetScopeText(row)
-      return `<span style="color: ${color}">${text}</span>`
-    }
-  },
-  { 
-    prop: 'effectiveStatus', 
-    label: '生效状态', 
-    headerAlign: 'center', 
-    align: 'center',
-    minWidth: 90,
-    render: (row: NoticeResponse) => {
-      const status = getEffectiveStatusText(row)
-      // 根据状态返回带样式的文本
-      if (status === '生效中') {
-        return `<span style="color: #67C23A">生效中</span>`
-      } else if (status === '待生效') {
-        return `<span style="color: #E6A23C">待生效</span>`
-      } else if (status === '已过期') {
-        return `<span style="color: #F56C6C">已过期</span>`
+// 搜索字段配置（使用 computed 实现动态显示）
+const searchFields = computed(() => {
+  return [
+    {
+      prop: 'title',
+      label: '标题：',
+      component: 'el-input',
+      props: { placeholder: '请输入标题' }
+    },
+    {
+      prop: 'type',
+      label: '类型：',
+      component: 'el-select',
+      props: { 
+        placeholder: '请选择类型',
+        options: [
+          { label: '系统通知', value: 1 },
+          { label: '公告', value: 2 },
+          { label: '提醒', value: 3 }
+        ]
       }
-      return String(status)
+    },
+    {
+      prop: 'status',
+      label: '状态：',
+      component: 'el-select',
+      props: {
+        placeholder: '请选择状态',
+        options: [
+          { label: '草稿', value: 0 },
+          { label: '已发布', value: 1 },
+          { label: '已撤回', value: 2 }
+        ]
+      }
+    },
+    {
+      prop: 'isSticky',
+      label: '置顶：',
+      component: 'el-select',
+      props: {
+        placeholder: '请选择是否置顶',
+        options: [
+          { label: '是', value: 1 },
+          { label: '否', value: 0 }
+        ]
+      }
+    },
+    {
+      prop: 'priority',
+      label: '优先级：',
+      component: 'el-select',
+      props: {
+        placeholder: '请选择优先级',
+        options: [
+          { label: '高', value: 3 },
+          { label: '中', value: 2 },
+          { label: '低', value: 1 }
+        ]
+      }
+    },
+    {
+      prop: 'targetScope',
+      label: '目标范围：',
+      component: 'el-select',
+      props: {
+        placeholder: '请选择目标范围',
+        options: [
+          { label: '全体', value: 0 },
+          { label: '学生', value: 1 },
+          { label: '教师', value: 2 },
+          { label: '管理员', value: 3 }
+        ]
+      }
+    },
+    {
+      prop: 'effectiveStatus',
+      label: '生效状态：',
+      component: 'el-select',
+      props: {
+        placeholder: '请选择生效状态',
+        options: [
+          { label: '生效中', value: 'effective' },
+          { label: '待生效', value: 'pending' },
+          { label: '已过期', value: 'expired' }
+        ]
+      }
     }
-  },
-  { prop: 'publisherName', label: '发布人', headerAlign: 'center', align: 'center', minWidth: 90, ellipsisMaxLength: 15 },
-  { prop: 'publishedAt', label: '发布时间', headerAlign: 'center', align: 'center', minWidth: 160 },
-  { prop: 'createdAt', label: '创建时间', headerAlign: 'center', align: 'center', minWidth: 160 }
-]
+  ]
+})
+
+// 表格列配置（使用 computed 实现动态显示）
+const tableColumns = computed(() => {
+  return [
+    { prop: 'title', label: '标题', headerAlign: 'center', align: 'center', minWidth: 180, ellipsisMaxLength: 30 },
+    { 
+      prop: 'content', 
+      label: '内容', 
+      headerAlign: 'center', 
+      align: 'center',
+      minWidth: 200,
+      ellipsisMaxLength: 30
+    },
+    { 
+      prop: 'isSticky', 
+      label: '置顶', 
+      headerAlign: 'center', 
+      align: 'center',
+      minWidth: 60,
+      render: (row: NoticeResponse) => {
+        const { text, color } = getStickyText(row)
+        return `<el-tag type="${color === '#67C23A' ? 'success' : color === '#F56C6C' ? 'danger' : 'warning'}">${text}</el-tag>`
+      }
+    },
+    { 
+      prop: 'priority', 
+      label: '优先级', 
+      headerAlign: 'center', 
+      align: 'center',
+      minWidth: 60,
+      render: (row: NoticeResponse) => {
+        const { text, color } = getPriorityText(row)
+        return `<el-tag type="${color === '#67C23A' ? 'success' : color === '#F56C6C' ? 'danger' : color === '#E6A23C' ? 'warning' : ''}">${text}</el-tag>`
+      }
+    },
+    { 
+      prop: 'targetScope', 
+      label: '目标范围', 
+      headerAlign: 'center', 
+      align: 'center',
+      minWidth: 80,
+      render: (row: NoticeResponse) => {
+        const { text, color } = getTargetScopeText(row)
+        return `<el-tag type="${color === '#409EFF' ? '' : color === '#67C23A' ? 'success' : color === '#E6A23C' ? 'warning' : 'danger'}">${text}</el-tag>`
+      }
+    },
+    { 
+      prop: 'type', 
+      label: '类型', 
+      headerAlign: 'center', 
+      align: 'center',
+      minWidth: 80,
+      render: (row: NoticeResponse) => {
+        const { text, color } = getTypeText(row)
+        return `<el-tag type="${color === '#409EFF' ? '' : color === '#67C23A' ? 'success' : color === '#E6A23C' ? 'warning' : 'danger'}">${text}</el-tag>`
+      }
+    },
+    { 
+      prop: 'status', 
+      label: '状态', 
+      headerAlign: 'center', 
+      align: 'center',
+      minWidth: 80,
+      render: (row: NoticeResponse) => {
+        const { text, color } = getStatusText(row)
+        return `<el-tag type="${color === '#67C23A' ? 'success' : color === '#F56C6C' ? 'danger' : color === '#E6A23C' ? 'warning' : 'info'}">${text}</el-tag>`
+      }
+    },
+    { 
+      prop: 'effectiveStatus', 
+      label: '生效状态', 
+      headerAlign: 'center', 
+      align: 'center',
+      minWidth: 80,
+      render: (row: NoticeResponse) => getEffectiveStatusText(row)
+    },
+    { prop: 'createdAt', label: '创建时间', headerAlign: 'center', align: 'center', minWidth: 160 },
+    { prop: 'updatedAt', label: '更新时间', headerAlign: 'center', align: 'center', minWidth: 160 },
+  ]
+})
 
 // 添加操作
 function handleAdd() {
@@ -373,7 +365,6 @@ function handleEdit(row: NoticeResponse) {
 
 // 确认删除
 async function confirmDel(id?: any) {
-  console.log('🔍 List.vue confirmDel 方法接收到的 id:', id)
   // 由于使用 BaseList，删除逻辑已在 BaseList 中处理
   // 这里需要手动触发 BaseList 的 confirmDel 方法
   listRef.value?.confirmDel && listRef.value.confirmDel(id)

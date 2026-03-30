@@ -17,6 +17,9 @@
             {{ documentData?.reviewStatusDesc }}
           </el-tag>
         </el-descriptions-item>
+        <el-descriptions-item label="文档描述" :span="2">
+          {{ documentData?.description || '暂无描述' }}
+        </el-descriptions-item>
       </el-descriptions>
     </div>
 
@@ -37,25 +40,12 @@
         </el-radio-group>
       </el-form-item>
       
-      <el-form-item 
-        label="审核意见" 
-        prop="feedback"
-        :required="formData.reviewStatus === 2"
-      >
+      <el-form-item label="审核意见" prop="feedback">
         <el-input
           v-model="formData.feedback"
           type="textarea"
-          :rows="4"
+          :rows="6"
           :placeholder="formData.reviewStatus === 2 ? '请输入驳回原因' : '请输入审核意见'"
-        />
-      </el-form-item>
-      
-      <el-form-item label="审核建议" prop="suggestion">
-        <el-input
-          v-model="formData.suggestion"
-          type="textarea"
-          :rows="3"
-          placeholder="如有修改建议，请在此填写"
         />
       </el-form-item>
     </el-form>
@@ -105,8 +95,7 @@ const documentData = ref<DocumentResponse | null>(null)
 const formData = reactive({
   documentId: '',
   reviewStatus: 1, // 默认通过
-  feedback: '',
-  suggestion: ''
+  feedback: ''
 })
 
 // 表单验证规则
@@ -143,7 +132,6 @@ watch(() => props.document, (newVal) => {
 const resetForm = () => {
   formData.reviewStatus = 1
   formData.feedback = ''
-  formData.suggestion = ''
   formRef.value?.resetFields()
 }
 
@@ -184,8 +172,7 @@ const handleSubmit = async () => {
     const requestData: DocumentReviewRequest = {
       documentId: formData.documentId,
       reviewStatus: formData.reviewStatus,
-      feedback: formData.feedback || undefined,
-      suggestion: formData.suggestion || undefined
+      feedback: formData.feedback || undefined
     }
     
     await documentApi.reviewDocument(requestData)

@@ -87,7 +87,8 @@ const formData = reactive({
   topicId: '' as string,
   fileType: null as number | null,
   file: '' as string,
-  description: ''
+  description: '',
+  originalDocumentId: '' as string | null // 原文档 ID（重新上传时使用）
 })
 
 // 文件类型标签（从路由参数读取）
@@ -147,6 +148,7 @@ const resetForm = () => {
   formData.fileType = null
   formData.file = ''
   formData.description = ''
+  formData.originalDocumentId = null
   selectedFileName.value = ''
   formRef.value?.resetFields()
   if (fileInputRef.value) {
@@ -161,13 +163,27 @@ const handleClose = () => {
 }
 
 // 显示对话框
-const show = async () => {
+const show = async (originalDocumentId?: string, fileTypeFromRoute?: number) => {
   resetForm()
   
-  // 从路由参数获取文件类型
-  const type = route.query.type as string
-  if (type !== undefined && type !== null) {
-    formData.fileType = parseInt(type)
+  // 如果是重新上传，记录原文档 ID
+  if (originalDocumentId) {
+    formData.originalDocumentId = originalDocumentId
+  }
+  
+  // 从路由参数或函数参数获取文件类型
+  let fileType: number | null = null
+  if (fileTypeFromRoute !== undefined && fileTypeFromRoute !== null) {
+    fileType = fileTypeFromRoute
+  } else {
+    const type = route.query.type as string
+    if (type !== undefined && type !== null) {
+      fileType = parseInt(type)
+    }
+  }
+  
+  if (fileType !== null) {
+    formData.fileType = fileType
   }
   
   // 查询用户的选题记录，获取 topicId
@@ -220,16 +236,28 @@ const handleSubmit = async () => {
   try {
     loading.value = true
     
-    // 使用 documentApi 的 uploadDocument 方法
-    await documentApi.uploadDocument({
-      topicId: formData.topicId,
-      fileType: formData.fileType!,
-      file: file,
-      description: formData.description || undefined,
-      version: '1.0'
-    })
+    // 判断是首次上传还是重新上传
+    if (formData.originalDocumentId) {
+      // 重新上传模式：调用 reuploadDocument API
+      await documentApi.reuploadDocument(formData.originalDocumentId, {
+        topicId: formData.topicId,
+        fileType: formData.fileType!,
+        file: file,
+        description: formData.description || undefined
+      })
+      ElMessage.success('重新上传成功')
+    } else {
+      // 首次上传模式：调用 uploadDocument
+      await documentApi.uploadDocument({
+        topicId: formData.topicId,
+        fileType: formData.fileType!,
+        file: file,
+        description: formData.description || undefined,
+        version: '1.0'
+      })
+      ElMessage.success(MESSAGE.CREATE_SUCCESS)
+    }
     
-    ElMessage.success(MESSAGE.CREATE_SUCCESS)
     handleClose()
     
     // 触发刷新事件
@@ -237,7 +265,7 @@ const handleSubmit = async () => {
     
   } catch (error: any) {
     console.error('上传失败:', error)
-    ElMessage.error(error.message || MESSAGE.CREATE_FAILED)
+    ElMessage.error(error.message || '上传失败')
   } finally {
     loading.value = false
   }

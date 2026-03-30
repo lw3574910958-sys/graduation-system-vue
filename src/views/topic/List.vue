@@ -362,89 +362,91 @@ const operateRef = ref()
 const detailRef = ref()
 const listRef = ref()
 
-// 搜索字段配置
-const searchFields = [
-  {
-    prop: 'title',
-    label: '课题标题：',
-    component: 'el-input',
-    props: { placeholder: '请输入课题标题' }
-  },
-  {
-    prop: 'source',
-    label: '题目来源：',
-    component: 'el-select',
-    props: { 
-      placeholder: '请选择题目来源',
-      options: Object.entries(TOPIC_SOURCE).map(([key, value]) => ({
-        label: value,
-        value: value
-      }))
+// 搜索字段配置（使用 computed 实现动态显示）
+const searchFields = computed(() => {
+  return [
+    {
+      prop: 'title',
+      label: '课题标题：',
+      component: 'el-input',
+      props: { placeholder: '请输入课题标题' }
+    },
+    {
+      prop: 'source',
+      label: '题目来源：',
+      component: 'el-select',
+      props: { 
+        placeholder: '请选择题目来源',
+        options: Object.entries(TOPIC_SOURCE).map(([key, value]) => ({
+          label: value,
+          value: value
+        }))
+      }
+    },
+    {
+      prop: 'type',
+      label: '题目类型：',
+      component: 'el-select',
+      props: { 
+        placeholder: '请选择题目类型',
+        options: Object.entries(TOPIC_TYPE).map(([key, value]) => ({
+          label: value,
+          value: value
+        }))
+      }
+    },
+    {
+      prop: 'nature',
+      label: '题目性质：',
+      component: 'el-select',
+      props: { 
+        placeholder: '请选择题目性质',
+        options: Object.entries(TOPIC_NATURE).map(([key, value]) => ({
+          label: value,
+          value: value
+        }))
+      }
+    },
+    {
+      prop: 'status',
+      label: '状态：',
+      component: 'el-select',
+      props: { 
+        placeholder: '请选择状态',
+        options: [
+          { label: '草稿', value: TOPIC_STATUS.DRAFT },
+          { label: '审核中', value: TOPIC_STATUS.REVIEWING },
+          { label: '开放', value: TOPIC_STATUS.OPEN },
+          { label: '关闭', value: TOPIC_STATUS.CLOSED }
+        ]
+      }
+    },
+    {
+      prop: 'difficulty',
+      label: '预计难度：',
+      component: 'el-select',
+      props: { 
+        placeholder: '请选择预计难度',
+        options: Object.entries(TOPIC_DIFFICULTY).map(([key, value]) => ({
+          label: TOPIC_DIFFICULTY_LABELS[value as keyof typeof TOPIC_DIFFICULTY_LABELS],
+          value: value
+        }))
+      }
+    },
+    {
+      prop: 'workload',
+      label: '预计工作量：',
+      component: 'el-select',
+      props: { 
+        placeholder: '请选择预计工作量',
+        options: Object.entries(TOPIC_WORKLOAD).map(([key, value]) => ({
+          label: TOPIC_WORKLOAD_LABELS[value as keyof typeof TOPIC_WORKLOAD_LABELS],
+          value: value
+        }))
+      }
     }
-  },
-  {
-    prop: 'type',
-    label: '题目类型：',
-    component: 'el-select',
-    props: { 
-      placeholder: '请选择题目类型',
-      options: Object.entries(TOPIC_TYPE).map(([key, value]) => ({
-        label: value,
-        value: value
-      }))
-    }
-  },
-  {
-    prop: 'nature',
-    label: '题目性质：',
-    component: 'el-select',
-    props: { 
-      placeholder: '请选择题目性质',
-      options: Object.entries(TOPIC_NATURE).map(([key, value]) => ({
-        label: value,
-        value: value
-      }))
-    }
-  },
-  {
-    prop: 'status',
-    label: '状态：',
-    component: 'el-select',
-    props: { 
-      placeholder: '请选择状态',
-      options: [
-        { label: '草稿', value: TOPIC_STATUS.DRAFT },
-        { label: '审核中', value: TOPIC_STATUS.REVIEWING },
-        { label: '开放', value: TOPIC_STATUS.OPEN },
-        { label: '关闭', value: TOPIC_STATUS.CLOSED }
-      ]
-    }
-  },
-  {
-    prop: 'difficulty',
-    label: '预计难度：',
-    component: 'el-select',
-    props: { 
-      placeholder: '请选择预计难度',
-      options: Object.entries(TOPIC_DIFFICULTY).map(([key, value]) => ({
-        label: TOPIC_DIFFICULTY_LABELS[value as keyof typeof TOPIC_DIFFICULTY_LABELS],
-        value: value
-      }))
-    }
-  },
-  {
-    prop: 'workload',
-    label: '预计工作量：',
-    component: 'el-select',
-    props: { 
-      placeholder: '请选择预计工作量',
-      options: Object.entries(TOPIC_WORKLOAD).map(([key, value]) => ({
-        label: TOPIC_WORKLOAD_LABELS[value as keyof typeof TOPIC_WORKLOAD_LABELS],
-        value: value
-      }))
-    }
-  }
-]
+  ]
+})
 
 // 表格列配置（计算属性）
 const tableColumns = computed(() => {

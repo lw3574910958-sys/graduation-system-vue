@@ -63,6 +63,33 @@ export const documentApi = {
   },
 
   /**
+   * 学生重新上传文档（驳回后）
+   * @param originalDocumentId 原文档 ID
+   * @param param 上传参数
+   * @returns 重新上传结果
+   */
+  reuploadDocument: (originalDocumentId: number | string, param: DocumentUploadRequest) => {
+    const formData = new FormData()
+    formData.append('file', param.file)
+    formData.append('topicId', param.topicId.toString())
+    formData.append('fileType', param.fileType.toString())
+    if (param.description) {
+      formData.append('description', param.description)
+    }
+    
+    return post<ApiResponse<DocumentResponse>>(`/api/documents/${originalDocumentId}/reupload`, formData)
+  },
+  
+  /**
+   * 学生撤销文档申请（待审核状态）
+   * @param id 文档 ID
+   * @returns 撤销结果
+   */
+  cancelDocument: (id: number | string) => {
+    return del<ApiResponse<void>>(`/api/documents/${id}/cancel`)
+  },
+
+  /**
    * 更新文档信息
    * @param id 文档 ID
    * @param param 更新参数
