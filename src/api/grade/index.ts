@@ -9,9 +9,6 @@ import type { ApiResponse } from '@/types/global'
 
 export const gradeApi = {
   // 为兼容视图组件而添加的别名方法
-  delete: (id: number | string) => {
-    return gradeApi.deleteGrade(id)
-  },
   getList: (params: GradeQueryParams) => {
     return gradeApi.getGradePage(params)
   },
@@ -43,15 +40,6 @@ export const gradeApi = {
     return get<ApiResponse<GradeResponse>>(`/api/grades/${id}`, {})
   },
   
-  /**
-   * 删除成绩
-   * @param id 成绩 ID
-   * @returns 请求结果
-   */
-  deleteGrade: (id: number | string) => {
-    return del<ApiResponse<void>>(`/api/grades/${id}`)
-  },
-
   /**
    * 获取学生成绩列表
    * @param studentId 学生 ID

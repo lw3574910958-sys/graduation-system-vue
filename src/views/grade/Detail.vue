@@ -47,16 +47,6 @@
           <el-input v-model="gpaDisplay" readonly />
         </el-form-item>
 
-        <!-- 是否及格（已评分时显示） -->
-        <el-form-item v-if="isGraded" label="是否及格">
-          <el-input v-model="passingLabel" readonly />
-        </el-form-item>
-
-        <!-- 是否优秀（已评分时显示） -->
-        <el-form-item v-if="isGraded" label="是否优秀">
-          <el-input v-model="excellentLabel" readonly />
-        </el-form-item>
-
         <!-- 评分教师姓名（仅院系管理员和系统管理员显示） -->
         <el-form-item 
           v-if="canSeeGraderInfo" 
@@ -163,16 +153,6 @@ const gradeLevelLabel = computed(() => {
 const gpaDisplay = computed(() => {
   if (formData.gpa === null || formData.gpa === undefined) return '-'
   return typeof formData.gpa === 'number' ? formData.gpa.toFixed(2) : formData.gpa
-})
-
-// 计算属性：是否及格标签
-const passingLabel = computed(() => {
-  return formData.passing ? '是' : '否'
-})
-
-// 计算属性：是否优秀标签
-const excellentLabel = computed(() => {
-  return formData.excellent ? '是' : '否'
 })
 
 // 计算属性：评分教师显示（格式：姓名 - 工号）

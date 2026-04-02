@@ -2,7 +2,6 @@
   <div class="list-container">
     <base-list
       :get-list-api="gradeTypeFromRoute !== null ? getGradeListWithFilter : gradeApi.getList"
-      :delete-api="gradeApi.delete"
       :search-fields="searchFields"
       :table-columns="tableColumns"
       :show-add-button="false"
@@ -27,14 +26,6 @@
         >
           评分
         </el-button>
-        <el-button 
-          v-if="isSystemAdmin" 
-          @click="confirmDel(scope.row.id)" 
-          type="danger" 
-          size="small"
-        >
-          删除
-        </el-button>
       </template>
       <template #dialogs>
         <add-or-update @refresh-list="getList" ref="operateRef" />
@@ -50,7 +41,7 @@ import { useRoute } from 'vue-router'
 import { gradeApi } from '@/api/grade'
 import AddOrUpdate from '@/views/grade/AddOrUpdate.vue'
 import GradeDetail from '@/views/grade/Detail.vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { MESSAGE } from '@/constants/user'
 import BaseList from '@/components/common/BaseList.vue'
 import { GRADE_TYPE_LABELS } from '@/constants/enums'
@@ -60,7 +51,6 @@ import { USER_TYPE_ENUM } from '@/constants/enums'
 // 获取用户信息
 const authStore = useAuthStore()
 const userType = computed(() => authStore.userInfo?.userType || '')
-const isSystemAdmin = computed(() => userType.value === USER_TYPE_ENUM.SYSTEM_ADMIN)
 const isTeacher = computed(() => userType.value === USER_TYPE_ENUM.TEACHER)
 
 // 获取路由参数
@@ -97,6 +87,8 @@ type GradeRow = {
   gradeType?: number
   gradeTypeDesc?: string
   score: number
+  gradeLevel?: string
+  gpa?: number
   comment: string
   gradedAt?: string | Date
   createdAt?: string | Date
@@ -150,6 +142,10 @@ const searchFields = computed(() => {
 
 // 表格列配置（使用 computed 实现动态显示）
 const tableColumns = computed(() => {
+  const isDepartmentAdmin = userType.value === USER_TYPE_ENUM.DEPARTMENT_ADMIN
+  const isSystemAdmin = userType.value === USER_TYPE_ENUM.SYSTEM_ADMIN
+  const showGraderInfo = isDepartmentAdmin || isSystemAdmin
+  
   const columns: any[] = [
     { 
       prop: 'studentName', 
@@ -166,28 +162,30 @@ const tableColumns = computed(() => {
       },
     },
     { prop: 'topicTitle', label: '课题标题', headerAlign: 'center', align: 'center', ellipsisMaxLength: 30 },
+    // 成绩类型字段：仅当未传入 type 参数时才显示
     {
       prop: 'gradeType',
       label: '成绩类型',
       headerAlign: 'center',
       align: 'center',
+      vIf: gradeTypeFromRoute.value === null, // 只有未传入成绩类型时才显示
       render: (row: GradeRow) => {
         return GRADE_TYPE_LABELS[row.gradeType as keyof typeof GRADE_TYPE_LABELS] || '未知类型';
       },
     },
     { prop: 'score', label: '成绩', headerAlign: 'center', align: 'center' },
-    { prop: 'comment', label: '评语', headerAlign: 'center', align: 'center', ellipsisMaxLength: 50 },
-    { prop: 'gradedAt', label: '评分时间', headerAlign: 'center', align: 'center' },
-  ]
-  
-  // 评分教师 - 仅院系管理员和系统管理员可见
-  if (userType.value === USER_TYPE_ENUM.DEPARTMENT_ADMIN || userType.value === USER_TYPE_ENUM.SYSTEM_ADMIN) {
-    columns.push({
+    // 新增：成绩等级字段（所有用户可见）
+    { prop: 'gradeLevel', label: '成绩等级', headerAlign: 'center', align: 'center' },
+    // 新增：绩点字段（所有用户可见）
+    { prop: 'gpa', label: '绩点', headerAlign: 'center', align: 'center' },
+    // 评分教师 - 使用 vIf 控制显示，仅院系管理员和系统管理员可见
+    {
       prop: 'graderName',
       label: '评分教师',
       headerAlign: 'center',
       align: 'center',
       ellipsisMaxLength: 15,
+      vIf: showGraderInfo, // 使用 vIf 控制显示
       render: (row: GradeRow) => {
         if (!row.graderName) return '-';
         if (row.graderWorkNumber) {
@@ -195,8 +193,10 @@ const tableColumns = computed(() => {
         }
         return row.graderName;
       },
-    })
-  }
+    },
+    { prop: 'comment', label: '评语', headerAlign: 'center', align: 'center', ellipsisMaxLength: 50 },
+    { prop: 'gradedAt', label: '评分时间', headerAlign: 'center', align: 'center' },
+  ]
   
   return columns
 })
@@ -213,13 +213,6 @@ function viewDetail(row: GradeRow) {
  */
 function update(row: GradeRow) {
   operateRef.value.showModel(row)
-}
-
-/**
- * 删除确认
- */
-function confirmDel(id?: any) {
-  // 由BaseList组件处理删除逻辑
 }
 
 // 用于刷新列表的方法
