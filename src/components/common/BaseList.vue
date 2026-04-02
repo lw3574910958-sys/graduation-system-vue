@@ -152,7 +152,8 @@
 </template>
 
 <script setup lang="ts" generic="T = any" name="BaseList">
-import { ref, reactive, onMounted, computed, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, computed, onUnmounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import constants from '@/utils/constants'
 import { MESSAGE } from '@/constants/user'
@@ -270,6 +271,24 @@ const queryForm = reactive({ ...queryFormState })
 // 所有勾选的记录
 const multipeSelection = ref<T[]>([])
 
+
+// 获取路由参数（用于监听路由变化自动刷新列表）
+const route = useRoute()
+
+// 监听路由参数变化，当路由参数改变时重新加载列表
+watch(
+  () => route.query,
+  (newQuery, oldQuery) => {
+    // 只有当 query 参数真正发生变化时才刷新（排除初始化）
+    if (oldQuery && JSON.stringify(newQuery) !== JSON.stringify(oldQuery)) {
+      // 重置查询表单到第一页
+      queryForm.current = 1
+      // 重新加载列表
+      getList()
+    }
+  },
+  { deep: true } // 深度监听 query 对象
+)
 
 // 获取默认最小宽度
 const getDefaultMinWidth = (column: TableColumn): number => {

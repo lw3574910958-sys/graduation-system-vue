@@ -8,26 +8,21 @@ import type { MenuItem } from '@/directives/permission'
 
 // 菜单配置
 export const menuConfig: MenuItem[] = [
-
   /**
    * 学生菜单
-  */
+   */
   {
     index: 'dashboard',
     title: '仪表盘',
     icon: 'DataBoard',
     path: '/dashboard',
-    userType: [
-      USER_TYPE_ENUM.STUDENT
-    ],
+    userType: [USER_TYPE_ENUM.STUDENT],
   },
   {
     index: 'topic-management',
     title: '课题',
     icon: 'FolderOpened',
-    userType: [
-      USER_TYPE_ENUM.STUDENT
-    ],
+    userType: [USER_TYPE_ENUM.STUDENT],
     children: [
       {
         index: 'topic-list',
@@ -47,9 +42,7 @@ export const menuConfig: MenuItem[] = [
     index: 'process-management',
     title: '进程管理',
     icon: 'Process',
-    userType: [
-      USER_TYPE_ENUM.STUDENT
-    ],
+    userType: [USER_TYPE_ENUM.STUDENT],
     children: [
       {
         index: 'opening-statement',
@@ -68,40 +61,32 @@ export const menuConfig: MenuItem[] = [
         title: '毕业论文',
         icon: 'List',
         path: '/document/list?type=2',
-      }
+      },
     ],
   },
-  
-
 
   /**
    * 教师菜单
-  */
+   */
   {
     index: 'dashboard',
     title: '仪表盘',
     icon: 'DataBoard',
     path: '/dashboard',
-    userType: [
-      USER_TYPE_ENUM.TEACHER
-    ],
+    userType: [USER_TYPE_ENUM.TEACHER],
   },
   {
     index: 'user-list',
     title: '我的学生',
     icon: 'List',
     path: '/user/list',
-    userType: [
-      USER_TYPE_ENUM.TEACHER
-    ],
+    userType: [USER_TYPE_ENUM.TEACHER],
   },
   {
     index: 'topic-management',
     title: '课题管理',
     icon: 'FolderOpened',
-    userType: [
-      USER_TYPE_ENUM.TEACHER
-    ],
+    userType: [USER_TYPE_ENUM.TEACHER],
     children: [
       {
         index: 'topic-list',
@@ -115,9 +100,7 @@ export const menuConfig: MenuItem[] = [
     index: 'review-management',
     title: '我的审核',
     icon: 'Review',
-    userType: [
-      USER_TYPE_ENUM.TEACHER
-    ],
+    userType: [USER_TYPE_ENUM.TEACHER],
     children: [
       {
         index: 'selection-list',
@@ -142,29 +125,57 @@ export const menuConfig: MenuItem[] = [
         title: '毕业论文',
         icon: 'List',
         path: '/document/list?type=2',
-      }
+      },
+    ],
+  },
+  {
+    index: 'grade-management',
+    title: '我的评分',
+    icon: 'Star',
+    userType: [USER_TYPE_ENUM.TEACHER],
+    children: [
+      {
+        index: 'grade-list',
+        title: '开题报告',
+        icon: 'List',
+        path: '/grade/list?type=0',
+      },
+      {
+        index: 'grade-list',
+        title: '中期报告',
+        icon: 'List',
+        path: '/grade/list?type=1',
+      },
+      {
+        index: 'grade-list',
+        title: '毕业论文',
+        icon: 'List',
+        path: '/grade/list?type=2',
+      },
+      {
+        index: 'grade-list',
+        title: '综合成绩',
+        icon: 'List',
+        path: '/grade/list?type=3',
+      },
     ],
   },
 
   /**
    * 院系管理员菜单
-  */
+   */
   {
     index: 'dashboard',
     title: '仪表盘',
     icon: 'DataBoard',
     path: '/dashboard',
-    userType: [
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN
-    ],
+    userType: [USER_TYPE_ENUM.DEPARTMENT_ADMIN],
   },
   {
     index: 'user-management',
     title: '用户管理',
     icon: 'User',
-    userType: [
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN
-    ],
+    userType: [USER_TYPE_ENUM.DEPARTMENT_ADMIN],
     children: [
       {
         index: 'user-list',
@@ -178,9 +189,7 @@ export const menuConfig: MenuItem[] = [
     index: 'topic-management',
     title: '课题管理',
     icon: 'FolderOpened',
-    userType: [
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN
-    ],
+    userType: [USER_TYPE_ENUM.DEPARTMENT_ADMIN],
     children: [
       {
         index: 'topic-list',
@@ -194,9 +203,7 @@ export const menuConfig: MenuItem[] = [
     index: 'selection-management',
     title: '选题管理',
     icon: 'Collection',
-    userType: [
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
-    ],
+    userType: [USER_TYPE_ENUM.DEPARTMENT_ADMIN],
     children: [
       {
         index: 'selection-list',
@@ -210,9 +217,7 @@ export const menuConfig: MenuItem[] = [
     index: 'document-management',
     title: '文档管理',
     icon: 'Document',
-    userType: [
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN
-    ],
+    userType: [USER_TYPE_ENUM.DEPARTMENT_ADMIN],
     children: [
       {
         index: 'opening-statement',
@@ -231,30 +236,39 @@ export const menuConfig: MenuItem[] = [
         title: '毕业论文',
         icon: 'List',
         path: '/document/list?type=2',
-      }
+      },
+    ],
+  },
+  {
+    index: 'grade-management',
+    title: '评分管理',
+    icon: 'Star',
+    userType: [USER_TYPE_ENUM.DEPARTMENT_ADMIN],
+    children: [
+      {
+        index: 'grade-list',
+        title: '评分列表',
+        icon: 'List',
+        path: '/grade/list',
+      },
     ],
   },
 
-
   /**
    * 系统管理员菜单菜单
-  */
+   */
   {
     index: 'dashboard',
     title: '仪表盘',
     icon: 'DataBoard',
     path: '/dashboard',
-    userType: [
-      USER_TYPE_ENUM.SYSTEM_ADMIN
-    ],
+    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN],
   },
   {
     index: 'user-management',
     title: '用户管理',
     icon: 'User',
-    userType: [
-      USER_TYPE_ENUM.SYSTEM_ADMIN
-    ],
+    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN],
     children: [
       {
         index: 'user-list',
@@ -268,9 +282,7 @@ export const menuConfig: MenuItem[] = [
     index: 'department-management',
     title: '院系管理',
     icon: 'OfficeBuilding',
-    userType: [
-      USER_TYPE_ENUM.SYSTEM_ADMIN
-    ],
+    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN],
     children: [
       {
         index: 'department-list',
@@ -284,9 +296,7 @@ export const menuConfig: MenuItem[] = [
     index: 'topic-management',
     title: '课题管理',
     icon: 'FolderOpened',
-    userType: [
-      USER_TYPE_ENUM.SYSTEM_ADMIN
-    ],
+    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN],
     children: [
       {
         index: 'topic-list',
@@ -300,9 +310,7 @@ export const menuConfig: MenuItem[] = [
     index: 'selection-management',
     title: '选题管理',
     icon: 'Collection',
-    userType: [
-      USER_TYPE_ENUM.SYSTEM_ADMIN
-    ],
+    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN],
     children: [
       {
         index: 'selection-list',
@@ -316,9 +324,7 @@ export const menuConfig: MenuItem[] = [
     index: 'document-management',
     title: '文档管理',
     icon: 'Document',
-    userType: [
-      USER_TYPE_ENUM.SYSTEM_ADMIN
-    ],
+    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN],
     children: [
       {
         index: 'document-list',
@@ -328,19 +334,11 @@ export const menuConfig: MenuItem[] = [
       },
     ],
   },
-
-
-
-  //暂不优化的菜单
   {
     index: 'grade-management',
     title: '成绩管理',
     icon: 'Star',
-    userType: [
-      USER_TYPE_ENUM.TEACHER,
-      USER_TYPE_ENUM.SYSTEM_ADMIN,
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
-    ],
+    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN],
     children: [
       {
         index: 'grade-list',
@@ -350,14 +348,14 @@ export const menuConfig: MenuItem[] = [
       },
     ],
   },
+
+  //暂不优化的菜单
+
   {
     index: 'notice-management',
     title: '公告管理',
     icon: 'Bell',
-    userType: [
-      USER_TYPE_ENUM.SYSTEM_ADMIN,
-      USER_TYPE_ENUM.DEPARTMENT_ADMIN,
-    ],
+    userType: [USER_TYPE_ENUM.SYSTEM_ADMIN, USER_TYPE_ENUM.DEPARTMENT_ADMIN],
     children: [
       {
         index: 'notice-list',
@@ -408,7 +406,7 @@ function checkMenuPermission(menu: MenuItem, userInfo: any): boolean {
     const config: PermissionConfig = {
       mode: 'userType',
       permissions: menu.userType,
-      operator: 'OR'
+      operator: 'OR',
     }
     if (!checkPermissionAdvanced(config, userInfo)) {
       return false
@@ -420,7 +418,7 @@ function checkMenuPermission(menu: MenuItem, userInfo: any): boolean {
     const config: PermissionConfig = {
       mode: 'systemRole',
       permissions: menu.systemRole,
-      operator: 'OR'
+      operator: 'OR',
     }
     if (!checkPermissionAdvanced(config, userInfo)) {
       return false
@@ -432,7 +430,7 @@ function checkMenuPermission(menu: MenuItem, userInfo: any): boolean {
     const config: PermissionConfig = {
       mode: 'permission',
       permissions: menu.permission,
-      operator: 'OR'
+      operator: 'OR',
     }
     if (!checkPermissionAdvanced(config, userInfo)) {
       return false

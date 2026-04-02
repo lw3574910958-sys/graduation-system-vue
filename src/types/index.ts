@@ -45,7 +45,6 @@ export type {
 // 成绩相关类型
 export type {
   GradeResponse,
-  GradeRequest,
   GradePageResponse,
   GradeQueryParams
 } from './api/grade'

@@ -2,7 +2,6 @@ import { get, post, put, del } from '@/utils/request'
 import type {
   GradeResponse,
   GradePageResponse,
-  GradeRequest,
   GradeInputRequest,
   GradeQueryParams,
 } from '@/types/api/grade'
@@ -10,12 +9,6 @@ import type { ApiResponse } from '@/types/global'
 
 export const gradeApi = {
   // 为兼容视图组件而添加的别名方法
-  create: (param: GradeRequest) => {
-    return gradeApi.saveGrade(param)
-  },
-  update: (id: number | string, param: Partial<GradeRequest>) => {
-    return gradeApi.updateGrade(String(id), param)
-  },
   delete: (id: number | string) => {
     return gradeApi.deleteGrade(id)
   },
@@ -42,36 +35,17 @@ export const gradeApi = {
   },
 
   /**
-   * 根据ID获取成绩详情
-   * @param id 成绩ID
+   * 根据 ID 获取成绩详情
+   * @param id 成绩 ID
    * @returns 成绩详情
    */
   getGradeById: (id: number | string) => {
     return get<ApiResponse<GradeResponse>>(`/api/grades/${id}`, {})
   },
-
-  /**
-   * 创建/更新成绩
-   * @param param 成绩信息
-   * @returns 请求结果
-   */
-  saveGrade: (param: GradeRequest) => {
-    return post<ApiResponse<void>>('/api/grades', param)
-  },
-
-  /**
-   * 更新成绩信息
-   * @param id 成绩 ID
-   * @param param 成绩信息
-   * @returns 请求结果
-   */
-  updateGrade: (id: number | string, param: Partial<GradeRequest>) => {
-    return put<ApiResponse<void>>(`/api/grades/${id}`, param)
-  },
-
+  
   /**
    * 删除成绩
-   * @param id 成绩ID
+   * @param id 成绩 ID
    * @returns 请求结果
    */
   deleteGrade: (id: number | string) => {

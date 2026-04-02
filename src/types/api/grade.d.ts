@@ -8,9 +8,10 @@ export interface GradeResponse {
   topicTitle: string
   graderId: string
   graderName: string
+  graderWorkNumber?: string // 评分教师工号
   gradeType?: number
   gradeTypeDesc?: string
-  score: number
+  score?: number // 可以为 null/undefined，未评分时为空
   gradeLevel?: string
   gpa?: number
   comment?: string
@@ -25,31 +26,18 @@ export interface GradeResponse {
 export interface GradeInputRequest {
   studentId: string
   topicId: string
-  gradeType: number
+  gradeType: number // 0-开题报告，1-中期报告，2-毕业论文，3-综合成绩
   score: number
   comment?: string
   gradeLevel?: string
   gpa?: number
 }
 
-// 成绩创建/更新请求类型 (通用接口)
-export interface GradeRequest {
-  studentId?: string
-  topicId?: string
-  studentNumber?: string
-  studentName?: string
-  topicTitle?: string
-  gradeType?: number
-  score: number
-  graderId?: string
-  comment?: string
-  status?: number
-}
-
 // 成绩查询参数类型
 export interface GradeQueryParams {
   studentId?: string
   topicId?: string
+  gradeType?: number // 成绩类型：0-开题报告，1-中期报告，2-毕业论文，3-综合成绩
   teacherId?: string
   status?: number
   current?: number

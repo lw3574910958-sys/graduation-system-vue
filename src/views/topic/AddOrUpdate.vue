@@ -242,15 +242,37 @@ async function handleSubmit(isDraft: boolean) {
   const formData = baseRef.value.formData
   
   try {
-    // 设置状态字段：0-暂存为草稿，1-直接提交审核
-    formData.status = isDraft ? 0 : 1
-    
-    // 创建题目（后端会根据 status 字段设置初始状态）
-    await topicApi.create(formData)
-    
-    ElMessage.success(isDraft ? '暂存成功' : '申请成功，已自动提交审核')
-    emit('refreshList')
-    baseRef.value.closeDialog()
+    // 编辑模式：调用更新接口
+    if (formData.id) {
+      // 设置状态字段：编辑草稿状态的题目时，保持草稿状态
+      const updateData: TopicUpdateRequest = {
+        title: formData.title,
+        description: formData.description,
+        source: formData.source,
+        type: formData.type,
+        nature: formData.nature,
+        difficulty: formData.difficulty,
+        workload: formData.workload,
+        maxSelections: formData.maxSelections,
+      }
+      
+      await topicApi.update(formData.id, updateData)
+      
+      ElMessage.success('修改成功')
+      emit('refreshList')
+      baseRef.value.closeDialog()
+    } else {
+      // 新增模式：调用创建接口
+      // 设置状态字段：0-暂存为草稿，1-直接提交审核
+      formData.status = isDraft ? 0 : 1
+      
+      // 创建题目（后端会根据 status 字段设置初始状态）
+      await topicApi.create(formData)
+      
+      ElMessage.success(isDraft ? '暂存成功' : '申请成功，已自动提交审核')
+      emit('refreshList')
+      baseRef.value.closeDialog()
+    }
   } catch (error: any) {
     console.error('提交失败:', error)
     ElMessage.error(error?.message || '提交失败')

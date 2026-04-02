@@ -43,8 +43,8 @@ export interface TopicCreateRequest {
 }
 
 // 题目更新请求类型 (对应后端 TopicUpdateDTO)
+// 注意：id 作为路径参数传递，不需要包含在请求体中
 export interface TopicUpdateRequest {
-  id: string
   title: string
   description: string
   source?: string
@@ -53,7 +53,6 @@ export interface TopicUpdateRequest {
   difficulty?: number
   workload?: number
   maxSelections?: number
-  status?: number
 }
 
 // 题目查询参数类型 (对应后端 TopicPageQueryDTO)

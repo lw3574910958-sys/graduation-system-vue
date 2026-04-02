@@ -90,18 +90,14 @@ export const SELECTION_STATUS_LABELS = {
 export const DOCUMENT_FILE_TYPE = {
   PROPOSAL: 0,     // 开题报告
   MIDTERM: 1,      // 中期报告
-  THESIS: 2,       // 毕业论文
-  TRANSLATION: 3,  // 外文翻译
-  OTHER: 4         // 其他文档
+  THESIS: 2        // 毕业论文
 } as const
 
 // 文档文件类型标签映射
 export const DOCUMENT_FILE_TYPE_LABELS = {
   [DOCUMENT_FILE_TYPE.PROPOSAL]: '开题报告',
   [DOCUMENT_FILE_TYPE.MIDTERM]: '中期报告',
-  [DOCUMENT_FILE_TYPE.THESIS]: '毕业论文',
-  [DOCUMENT_FILE_TYPE.TRANSLATION]: '外文翻译',
-  [DOCUMENT_FILE_TYPE.OTHER]: '其他文档'
+  [DOCUMENT_FILE_TYPE.THESIS]: '毕业论文'
 } as const
 
 // 审核状态枚举 (对应后端 ReviewStatus)
@@ -232,6 +228,22 @@ export const TOPIC_REVIEW_RESULT_LABELS = {
   [TOPIC_REVIEW_RESULT.REJECTED]: '审核驳回'
 } as const
 
+// 成绩类型枚举 (对应后端 GradeType: 0-开题报告，1-中期报告，2-毕业论文，3-综合成绩)
+export const GRADE_TYPE = {
+  PROPOSAL: 0,      // 开题报告
+  MIDTERM: 1,       // 中期报告
+  THESIS: 2,        // 毕业论文
+  COMPOSITE: 3      // 综合成绩
+} as const
+
+// 成绩类型标签映射
+export const GRADE_TYPE_LABELS = {
+  [GRADE_TYPE.PROPOSAL]: '开题报告',
+  [GRADE_TYPE.MIDTERM]: '中期报告',
+  [GRADE_TYPE.THESIS]: '毕业论文',
+  [GRADE_TYPE.COMPOSITE]: '综合成绩'
+} as const
+
 // 导出类型定义
 export type UserTypeEnum = typeof USER_TYPE_ENUM[keyof typeof USER_TYPE_ENUM]
 export type SystemRole = typeof SYSTEM_ROLE[keyof typeof SYSTEM_ROLE]
@@ -241,6 +253,7 @@ export type SelectionStatus = typeof SELECTION_STATUS[keyof typeof SELECTION_STA
 export type DocumentFileType = typeof DOCUMENT_FILE_TYPE[keyof typeof DOCUMENT_FILE_TYPE]
 export type ReviewStatus = typeof REVIEW_STATUS[keyof typeof REVIEW_STATUS]
 export type GradeLevel = typeof GRADE_LEVEL[keyof typeof GRADE_LEVEL]
+export type GradeType = typeof GRADE_TYPE[keyof typeof GRADE_TYPE]
 export type TopicReviewResult = typeof TOPIC_REVIEW_RESULT[keyof typeof TOPIC_REVIEW_RESULT]
 export type TopicSource = typeof TOPIC_SOURCE[keyof typeof TOPIC_SOURCE]
 export type TopicType = typeof TOPIC_TYPE[keyof typeof TOPIC_TYPE]
