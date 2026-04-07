@@ -100,6 +100,7 @@ export interface LoginUserInfoResponse {
   userType: string
   avatar?: string // 头像 URL
   createdAt?: string
+  departmentId?: string // 院系 ID（学生/教师/院系管理员有值，系统管理员为 null）
 }
 
 // 用户查询参数类型

@@ -110,6 +110,7 @@
 import { ref, computed, h, onMounted } from 'vue'
 import { topicApi } from '@/api/topic'
 import { selectionApi } from '@/api/selection'
+import { departmentApi } from '@/api/department'
 import AddOrUpdate from '@/views/topic/AddOrUpdate.vue'
 import TopicDetail from '@/views/topic/Detail.vue'
 import TopicReviewForm from '@/views/topic/TopicReviewForm.vue'
@@ -126,6 +127,30 @@ import StatusSwitch from '@/components/common/StatusSwitch.vue'
 // 获取当前用户信息
 const authStore = useAuthStore()
 const currentUserType = computed(() => authStore.userInfo?.userType)
+
+// 院系选项（用于系统管理员搜索）
+const departmentOptions = ref<{ label: string; value: number }[]>([])
+
+// 加载院系列表
+const loadDepartments = async () => {
+  if (currentUserType.value !== USER_TYPE_ENUM.SYSTEM_ADMIN) return
+  try {
+    const res = await departmentApi.getAllDepartments()
+    departmentOptions.value = (res.data || []).map((dept: any) => ({
+      label: `${dept.name}-${dept.code}`,
+      value: dept.id
+    }))
+  } catch (error) {
+    console.error('加载院系列表失败:', error)
+  }
+}
+
+onMounted(() => {
+  loadDepartments()
+  if (currentUserType.value === USER_TYPE_ENUM.STUDENT) {
+    checkHasAppliedTopic()
+  }
+})
 
 // 判断当前是否为教师（可以申请课题）
 const showAddButton = computed(() => {
@@ -488,6 +513,19 @@ const searchFields = computed(() => {
       props: { 
         placeholder: '请选择审核状态',
         options: getReviewStatusOptions()
+      }
+    })
+  }
+  
+  // 仅系统管理员显示院系名称搜索字段
+  if (isSystemAdmin) {
+    fields.push({
+      prop: 'departmentId',
+      label: '院系名称：',
+      component: 'el-select',
+      props: { 
+        placeholder: '请选择院系',
+        options: departmentOptions.value
       }
     })
   }

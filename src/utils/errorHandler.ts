@@ -3,7 +3,7 @@
  * 统一处理应用中的各种错误类型
  */
 
-import { ElMessage, ElNotification } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import type { AxiosError } from 'axios'
 import router from '@/router'
 import { clearTokens } from '@/utils/tokenManager'
@@ -38,7 +38,7 @@ interface ErrorHandlerConfig {
 
 // 默认配置
 const DEFAULT_CONFIG: Required<ErrorHandlerConfig> = {
-  showNotification: true,
+  showNotification: false,
   showMessage: true,
   redirectToLogin: true,
   logToConsole: true
@@ -201,19 +201,10 @@ class GlobalErrorHandler {
   }
 
   /**
-   * 显示通知
+   * 显示通知（已禁用）
    */
-  private showNotification(error: AppError): void {
-    // 对于严重错误显示通知
-    if ([ErrorType.AUTH_ERROR, ErrorType.SERVER_ERROR, ErrorType.NETWORK_ERROR].includes(error.type)) {
-      ElNotification({
-        title: this.getErrorTitle(error),
-        message: this.formatErrorMessage(error),
-        type: 'error',
-        duration: 0,
-        dangerouslyUseHTMLString: true
-      })
-    }
+  private showNotification(_error: AppError): void {
+    // 通知功能已移除，仅使用 ElMessage 显示错误信息
   }
 
   /**
@@ -256,14 +247,8 @@ class GlobalErrorHandler {
    * 格式化错误消息
    */
   private formatErrorMessage(error: AppError): string {
-    let message = error.message
-    
-    // 添加错误码信息
-    if (error.code) {
-      message = `[${error.code}] ${message}`
-    }
-    
-    return message
+    // 直接返回错误消息，不添加状态码前缀
+    return error.message
   }
 
   /**

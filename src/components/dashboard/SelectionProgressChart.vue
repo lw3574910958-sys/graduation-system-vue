@@ -4,7 +4,15 @@
       <template #header>
         <div class="card-header">
           <span>题目统计</span>
-          <el-select v-model="departmentId" size="small" @change="loadData" placeholder="选择院系" clearable>
+          <!-- 系统管理员显示院系选择器，院系管理员自动过滤 -->
+          <el-select 
+            v-if="!isDepartmentAdmin" 
+            v-model="departmentId" 
+            size="small" 
+            @change="loadData" 
+            placeholder="选择院系" 
+            clearable
+          >
             <el-option label="全部院系" value="" />
             <el-option 
               v-for="dept in departmentList" 
@@ -21,15 +29,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import * as echarts from 'echarts'
 import type { EChartsOption } from 'echarts'
 import type { TopicProgressResponse } from '@/api/dashboard'
 import { dashboardApi } from '@/api/dashboard'
 import { departmentApi } from '@/api/department'
 import type { DepartmentResponse } from '@/types/api/department'
+import { useAuthStore } from '@/stores'
+import { USER_TYPE_ENUM } from '@/constants'
 
-// 院系选择
+const authStore = useAuthStore()
+
+// 判断是否为院系管理员
+const isDepartmentAdmin = computed(() => authStore.userInfo?.userType === USER_TYPE_ENUM.DEPARTMENT_ADMIN)
+
+// 获取当前用户的院系 ID（院系管理员自动过滤）
+const userDepartmentId = computed(() => {
+  if (isDepartmentAdmin.value) {
+    return authStore.userInfo?.departmentId
+  }
+  return undefined
+})
+
+// 院系选择（仅系统管理员使用）
 const departmentId = ref<string>('')
 
 // 院系列表
@@ -61,11 +84,10 @@ const loadDepartmentList = async () => {
 // 加载数据
 const loadData = async () => {
   try {
-    // 直接使用字符串，避免大数字精度丢失
-    // 注意：雪花算法生成的 ID 是 18-19 位，超出 JavaScript Number 的安全范围
-    const validDeptId = departmentId.value === '' ? undefined : departmentId.value
+    // 院系管理员自动传递本院系 ID，后端会强制使用；系统管理员使用选择的院系 ID
+    const effectiveDeptId = userDepartmentId.value || (departmentId.value === '' ? undefined : departmentId.value)
     
-    const res = await dashboardApi.getTopicProgress(validDeptId)
+    const res = await dashboardApi.getTopicProgress(effectiveDeptId)
     const data: TopicProgressResponse = res.data
     
     selectionData.value = {

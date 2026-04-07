@@ -49,6 +49,7 @@ const gradeData = ref({
 // 加载年份列表
 const loadYearList = async () => {
   try {
+    // 后端已实现院系管理员自动过滤，无需传递参数
     const res = await dashboardApi.getAvailableGradeYears()
     yearList.value = res.data || []
     // 默认选择第一个（最近的）年份
@@ -66,6 +67,7 @@ const loadYearList = async () => {
 // 加载数据
 const loadData = async () => {
   try {
+    // 后端已实现院系管理员自动过滤，只需传递年份参数
     const res = await dashboardApi.getGradeDistribution(year.value)
     const data: GradeDistributionResponse = res.data
     

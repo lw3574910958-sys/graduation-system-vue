@@ -128,17 +128,6 @@ const handleLogin = async () => {
     router.push('/index')
   } catch (error: any) {
     console.error('登录失败:', error)
-    let message = MESSAGE.OPERATION_FAILED
-    if (error.message) {
-      message = error.message
-    } else if (error.response?.data?.message) {
-      // 如果响应拦截器已处理，数据在 data 字段中
-      message = error.response.data.message
-    } else if (error.response?.message) {
-      // 如果是原始错误响应
-      message = error.response.message
-    }
-    ElMessage.error(message)
     getCaptcha() // 登录失败时刷新验证码
   }
 }
