@@ -31,8 +31,8 @@
     <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px">
       <el-form-item label="审核结果" prop="reviewResult">
         <el-radio-group v-model="formData.reviewResult">
-          <el-radio :label="REVIEW_RESULT.APPROVED">审核通过</el-radio>
-          <el-radio :label="REVIEW_RESULT.REJECTED">审核驳回</el-radio>
+          <el-radio :label="REVIEW_STATUS.APPROVED">审核通过</el-radio>
+          <el-radio :label="REVIEW_STATUS.REJECTED">审核驳回</el-radio>
         </el-radio-group>
       </el-form-item>
 
@@ -59,7 +59,7 @@
 import { ref, reactive, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
-import { TOPIC_STATUS, TOPIC_STATUS_LABELS, TOPIC_REVIEW_RESULT as REVIEW_RESULT } from '@/constants/enums'
+import { TOPIC_STATUS, TOPIC_STATUS_LABELS, REVIEW_STATUS } from '@/constants/enums'
 import { topicApi } from '@/api/topic'
 import type { TopicResponse } from '@/types/api/topic'
 
@@ -88,7 +88,7 @@ const submitLoading = ref(false)
 // 表单数据
 const formData = reactive({
   topicId: '',
-  reviewResult: REVIEW_RESULT.APPROVED,
+  reviewResult: REVIEW_STATUS.APPROVED,
   reviewComment: ''
 })
 

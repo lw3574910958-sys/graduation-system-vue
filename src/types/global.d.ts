@@ -2,14 +2,6 @@
  * 全局类型定义
  */
 
-// 用户类型枚举
-export enum UserType {
-  Student = 'student',
-  Teacher = 'teacher',
-  SystemAdmin = 'system_admin',
-  DepartmentAdmin = 'department_admin',
-}
-
 // 分页查询参数
 export interface PageQuery {
   current?: number

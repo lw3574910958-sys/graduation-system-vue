@@ -6,6 +6,5 @@ export default pinia
 
 // 导出所有 store 模块
 export { useAuthStore } from './modules/auth'
-export { useUserStore } from './modules/user'
 export { useMenuStore } from './modules/menu'
 export { useAppStateStore } from './modules/appState'

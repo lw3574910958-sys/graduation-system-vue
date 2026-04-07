@@ -38,7 +38,13 @@ import {
   TOPIC_DIFFICULTY_LABELS,
   TOPIC_WORKLOAD,
   TOPIC_WORKLOAD_LABELS,
-  getTopicReviewOutcomeLabel
+  getTopicReviewOutcomeLabel,
+  NOTICE_PRIORITY_ENUM,
+  NOTICE_PRIORITY_LABELS,
+  TARGET_SCOPE_ENUM,
+  TARGET_SCOPE_LABELS,
+  GENDER_ENUM,
+  GENDER_LABELS
 } from './enums'
 
 // 保持向后兼容的导出
@@ -79,7 +85,13 @@ export {
   TOPIC_DIFFICULTY_LABELS,
   TOPIC_WORKLOAD,
   TOPIC_WORKLOAD_LABELS,
-  getTopicReviewOutcomeLabel
+  getTopicReviewOutcomeLabel,
+  NOTICE_PRIORITY_ENUM,
+  NOTICE_PRIORITY_LABELS,
+  TARGET_SCOPE_ENUM,
+  TARGET_SCOPE_LABELS,
+  GENDER_ENUM,
+  GENDER_LABELS
 }
 
 // 通用消息
@@ -134,17 +146,4 @@ export const ALLOWED_FILE_FORMATS = {
   // 压缩文件类型（通常不允许直接上传）
   ARCHIVE: ['zip', 'rar'],
 } as const
-
-// 用户状态
-export const USER_STATUS = {
-  ACTIVE: 1,
-  INACTIVE: 0,
-} as const
-
-// 用户状态标签映射
-export const USER_STATUS_LABELS = {
-  [USER_STATUS.ACTIVE]: '启用',
-  [USER_STATUS.INACTIVE]: '禁用',
-} as const
-
 

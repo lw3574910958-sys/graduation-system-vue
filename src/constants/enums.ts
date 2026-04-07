@@ -225,18 +225,6 @@ export const TOPIC_WORKLOAD_LABELS = {
   [TOPIC_WORKLOAD.MORE_THAN_FORTY_HOURS]: '40 学时以上'
 } as const
 
-// 题目审核结果枚举 (用于院系管理员审核题目)
-export const TOPIC_REVIEW_RESULT = {
-  APPROVED: 1,    // 审核通过
-  REJECTED: 2     // 审核驳回
-} as const
-
-// 题目审核结果标签映射
-export const TOPIC_REVIEW_RESULT_LABELS = {
-  [TOPIC_REVIEW_RESULT.APPROVED]: '审核通过',
-  [TOPIC_REVIEW_RESULT.REJECTED]: '审核驳回'
-} as const
-
 // 成绩类型枚举 (对应后端 GradeType: 0-开题报告，1-中期报告，2-毕业论文，3-综合成绩)
 export const GRADE_TYPE = {
   PROPOSAL: 0,      // 开题报告
@@ -297,6 +285,18 @@ export const TARGET_SCOPE_LABELS = {
   [TARGET_SCOPE_ENUM.DEPARTMENT_ADMIN]: '院系管理员'
 } as const
 
+// 性别枚举 (对应后端 Gender: 0-女, 1-男)
+export const GENDER_ENUM = {
+  FEMALE: 0,
+  MALE: 1
+} as const
+
+// 性别标签映射
+export const GENDER_LABELS = {
+  [GENDER_ENUM.FEMALE]: '女',
+  [GENDER_ENUM.MALE]: '男'
+} as const
+
 // 导出类型定义
 export type UserTypeEnum = typeof USER_TYPE_ENUM[keyof typeof USER_TYPE_ENUM]
 export type SystemRole = typeof SYSTEM_ROLE[keyof typeof SYSTEM_ROLE]
@@ -307,9 +307,9 @@ export type DocumentFileType = typeof DOCUMENT_FILE_TYPE[keyof typeof DOCUMENT_F
 export type ReviewStatus = typeof REVIEW_STATUS[keyof typeof REVIEW_STATUS]
 export type GradeLevel = typeof GRADE_LEVEL[keyof typeof GRADE_LEVEL]
 export type GradeType = typeof GRADE_TYPE[keyof typeof GRADE_TYPE]
-export type TopicReviewResult = typeof TOPIC_REVIEW_RESULT[keyof typeof TOPIC_REVIEW_RESULT]
 export type TopicSource = typeof TOPIC_SOURCE[keyof typeof TOPIC_SOURCE]
 export type TopicType = typeof TOPIC_TYPE[keyof typeof TOPIC_TYPE]
 export type TopicNature = typeof TOPIC_NATURE[keyof typeof TOPIC_NATURE]
 export type TopicDifficulty = typeof TOPIC_DIFFICULTY[keyof typeof TOPIC_DIFFICULTY]
 export type TopicWorkload = typeof TOPIC_WORKLOAD[keyof typeof TOPIC_WORKLOAD]
+export type Gender = typeof GENDER_ENUM[keyof typeof GENDER_ENUM]

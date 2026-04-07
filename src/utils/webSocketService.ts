@@ -4,8 +4,6 @@
  */
 
 import { Client } from '@stomp/stompjs'
-import { ElMessage } from 'element-plus'
-import { showNotification } from './webSocketNotification'
 import { useAuthStore } from '@/stores/modules/auth'
 import storageUtil from '@/utils/storage'
 import constants from '@/utils/constants'
@@ -73,7 +71,7 @@ class WebSocketService {
           // 订阅公告通知主题
           this.subscribeToNotice()
           
-          ElMessage.success('实时通知服务已连接')
+          console.log('✅ 实时通知服务已连接')
         },
         onStompError: (frame: any) => {
           console.error('STOMP 错误:', frame)
@@ -110,7 +108,8 @@ class WebSocketService {
       
       try {
         const body = JSON.parse(message.body!)
-        showNotification(body)
+        console.log('📢 公告内容:', body)
+        // 不显示通知框，用户可在仪表盘通知公告中查看
       } catch (error) {
         console.error('解析消息失败:', error)
       }
@@ -132,7 +131,7 @@ class WebSocketService {
     
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       console.log('达到最大重连次数，停止重连')
-      ElMessage.warning('实时通知服务连接中断，请刷新页面重试')
+      console.warn('⚠️ 实时通知服务连接中断，请刷新页面重试')
       
       // 停用 STOMP 客户端，防止其继续重连
       if (this.stompClient) {
