@@ -213,6 +213,16 @@ const tableColumns = computed(() => {
   const showGraderInfo = isDepartmentAdmin || isSystemAdmin
   
   const columns: any[] = [
+    // 仅系统管理员显示 ID 列
+    {
+      prop: 'id',
+      label: 'ID',
+      headerAlign: 'center',
+      align: 'center',
+      minWidth: 60,
+      ellipsisMaxLength: 30,
+      vIf: isSystemAdmin
+    },
     { 
       prop: 'studentName', 
       label: '学生姓名', 

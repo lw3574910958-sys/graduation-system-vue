@@ -149,6 +149,16 @@ const tableColumns = computed(() => {
   const isTeacher = userType === USER_TYPE_ENUM.TEACHER
   
   return [
+    // 仅系统管理员显示 ID 列
+    {
+      prop: 'id',
+      label: 'ID',
+      headerAlign: 'center',
+      align: 'center',
+      minWidth: 60,
+      ellipsisMaxLength: 30,
+      vIf: isSystemAdmin
+    },
     { prop: 'username', label: '用户名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 20},
     { prop: 'realName', label: '姓名', headerAlign: 'center', align: 'center', ellipsisMaxLength: 10 },
     {

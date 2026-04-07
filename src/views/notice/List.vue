@@ -368,6 +368,16 @@ const tableColumns = computed(() => {
   const isSystemAdmin = currentUserType.value === USER_TYPE_ENUM.SYSTEM_ADMIN
   
   const columns: any[] = [
+    // 仅系统管理员显示 ID 列
+    {
+      prop: 'id',
+      label: 'ID',
+      headerAlign: 'center',
+      align: 'center',
+      minWidth: 60,
+      ellipsisMaxLength: 30,
+      vIf: isSystemAdmin
+    },
     { prop: 'title', label: '标题', headerAlign: 'center', align: 'center', minWidth: 180, ellipsisMaxLength: 30 },
     { 
       prop: 'content', 
