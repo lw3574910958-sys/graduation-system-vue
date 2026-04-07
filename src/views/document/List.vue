@@ -38,7 +38,7 @@
           预览
         </el-button>
         <el-button 
-          @click="downloadDocument(scope.row.id)" 
+          @click="handleDownloadDocument(scope.row.id)"
           type="success" 
           size="small"
         >
@@ -93,7 +93,7 @@
         <file-preview 
           v-model="previewDialogVisible"
           :file-info="currentFileInfo"
-          @download="downloadDocument"
+          @download="handleDownloadDocument"
           ref="filePreviewRef"
         />
       </template>
@@ -111,11 +111,10 @@ import DocumentUploadDialog from '@/views/document/DocumentUploadDialog.vue'
 import DocumentReviewForm from '@/views/document/DocumentReviewForm.vue'
 import FilePreview from '@/components/common/FilePreview.vue'
 import ReviewInfoDialog from '@/components/common/ReviewInfoDialog.vue'
-import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
-import storageUtil from '@/utils/storage'
-import { SYSTEM_CONSTANTS } from '@/constants'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { downloadDocument } from '@/utils/download'
 import { REVIEW_STATUS_LABELS, FILE_TYPE_LABELS, MESSAGE } from '@/constants/user'
-import { USER_TYPE_ENUM } from '@/constants/enums'
+import { USER_TYPE_ENUM, REVIEW_STATUS } from '@/constants/enums'
 import type { DocumentResponse, DocumentReviewRequest } from '@/types/api/document'
 import BaseList from '@/components/common/BaseList.vue'
 import { useAuthStore } from '@/stores'
@@ -248,9 +247,9 @@ const searchFields = computed(() => {
     props: { 
       placeholder: '请选择审核状态',
       options: [
-        { label: '待审核', value: 0 },
-        { label: '审核通过', value: 1 },
-        { label: '审核驳回', value: 2 }
+        { label: '待审核', value: REVIEW_STATUS.PENDING },
+        { label: '审核通过', value: REVIEW_STATUS.APPROVED },
+        { label: '审核驳回', value: REVIEW_STATUS.REJECTED }
       ]
     }
   })
@@ -476,75 +475,10 @@ function previewDocument(row: DocumentRow) {
 }
 
 /**
- * 下载文档
+ * 下载文档（使用通用下载工具）
  */
-async function downloadDocument(id: number) {
-  let loadingInstance: ReturnType<typeof ElLoading.service> | undefined
-  
-  try {
-    // 显示加载状态
-    loadingInstance = ElLoading.service({
-      text: '正在下载文档...',
-      background: 'rgba(0, 0, 0, 0.7)'
-    })
-    
-    // 调用后端下载接口
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
-    const token = storageUtil.get(SYSTEM_CONSTANTS.TOKEN_NAME)
-    const response = await fetch(`${apiBaseUrl}/api/documents/${id}/download`, {
-      method: 'GET',
-      headers: {
-        // 使用配置的 TOKEN_NAME 作为 header 名称，与后端 Sa-Token 配置一致
-        [SYSTEM_CONSTANTS.TOKEN_NAME]: token ? `${SYSTEM_CONSTANTS.TOKEN_PREFIX}${token.replace(/^Bearer\s*/i, '').trim()}` : ''
-      }
-    })
-    
-    if (!response.ok) {
-      if (response.status === 403) {
-        throw new Error('无权下载该文档')
-      }
-      throw new Error(`下载失败：${response.status} ${response.statusText}`)
-    }
-    
-    // 从 Content-Disposition header 获取文件名（支持 RFC 5987 编码）
-    const contentDisposition = response.headers.get('content-disposition')
-    let filename = 'document'
-    
-    if (contentDisposition) {
-      // 尝试解析 RFC 5987 编码的文件名（filename*=UTF-8''encoded_filename）
-      const filenameStarMatch = contentDisposition.match(/filename\*=UTF-8''([^;\n]*)/i)
-      if (filenameStarMatch && filenameStarMatch[1]) {
-        filename = decodeURIComponent(filenameStarMatch[1])
-      } else {
-        // 尝试解析普通 filename 参数
-        const filenameMatch = contentDisposition.match(/filename[\s]*=[\s]*([^;\n]*)/i)
-        if (filenameMatch && filenameMatch[1]) {
-          filename = decodeURIComponent(filenameMatch[1].replace(/['"]/g, ''))
-        }
-      }
-    }
-    
-    // 获取文件内容
-    const blob = await response.blob()
-    
-    // 创建下载链接
-    const url = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    link.style.display = 'none'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(url)
-    
-    loadingInstance.close()
-    ElMessage.success(`文档下载成功`)
-  } catch (error: any) {
-    console.error('文档下载失败:', error)
-    ElMessage.error(error.message || '文档下载失败')
-    loadingInstance?.close()
-  }
+async function handleDownloadDocument(id: number) {
+  await downloadDocument(id)
 }
 
 /**

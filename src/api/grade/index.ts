@@ -82,9 +82,9 @@ export const gradeApi = {
   /**
    * 导出成绩报表
    * @param params 查询参数
-   * @returns 导出结果
+   * @returns 导出结果 (Blob)
    */
   exportGradeReport: (params: GradeQueryParams) => {
-    return get<ApiResponse<string>>('/api/grades/export', params)
+    return get<Blob>('/api/grades/export', params, { responseType: 'blob' })
   },
 }

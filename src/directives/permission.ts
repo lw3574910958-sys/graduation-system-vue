@@ -130,11 +130,8 @@ function checkSystemRolePermission(permissions: string[], systemRoles: string[],
   const normalizedPermissions = permissions.map(p => p.toLowerCase())
   const normalizedRoles = systemRoles.map(r => r.toLowerCase())
   
-  // 开发阶段：系统管理员拥有所有角色权限
-  if (normalizedRoles.includes(SYSTEM_ROLE.SYSTEM_ADMIN)) {
-    return true
-  }
-  
+  // 系统管理员只拥有 system_admin 角色权限
+  // 不再默认拥有所有用户类型的权限
   const checkResults = normalizedPermissions.map(permission => {
     switch (permission) {
       case 'admin':

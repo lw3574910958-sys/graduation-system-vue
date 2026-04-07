@@ -28,19 +28,19 @@ export interface DashboardApi {
    * 获取选题进度统计
    */
   getTopicProgress: (departmentId?: number | string | null) => Promise<any>
+
+  /**
+   * 获取可用的成绩年份列表
+   */
+  getAvailableGradeYears: () => Promise<any>
 }
 
 /**
  * 学生仪表盘信息
  */
 export interface StudentDashboardResponse {
-  pendingDocuments: number
-  submittedDocuments: number
-  approvedDocuments: number
   currentStep: number
   topicTitle?: string
-  teacherName?: string
-  totalDocuments: number
 }
 
 /**
@@ -113,15 +113,19 @@ export const dashboardApi: DashboardApi = {
 
   getTopicProgress: (departmentId?: number | string | null) => {
     // 空字符串、null 或 undefined 都不传参数
-    // 注意：Number("") === 0，所以要单独判断空字符串
-    let deptId: number | undefined
+    // 注意：雪花算法生成的 ID 是 18-19 位，超出 JavaScript Number 安全范围 (2^53-1)
+    // 必须使用字符串传递，避免精度丢失
+    let deptId: string | undefined
     if (departmentId === '' || departmentId === null || departmentId === undefined) {
       deptId = undefined
     } else {
-      const numValue = Number(departmentId)
-      // 如果是有效数字则使用，否则不传参数
-      deptId = isNaN(numValue) ? undefined : numValue
+      // 直接转为字符串，确保不会丢失精度
+      deptId = String(departmentId)
     }
     return get(`/api/dashboard/statistics/topic/progress${deptId !== undefined ? `?departmentId=${deptId}` : ''}`)
+  },
+
+  getAvailableGradeYears: () => {
+    return get('/api/dashboard/statistics/grade/years')
   }
 }

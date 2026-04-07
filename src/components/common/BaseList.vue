@@ -36,13 +36,14 @@
         <el-button @click="onSearch()" type="primary" plain>查询</el-button>
         <el-button @click="add()" type="primary" plain v-if="showAddButton">{{ addButtonText }}</el-button>
         <el-button @click="confirmDel()" type="danger" plain v-if="showDeleteButton">{{ deleteButtonText }}</el-button>
+        <slot name="extra-actions"></slot>
         <el-button @click="resetQuery()">重置</el-button>
       </el-form-item>
     </el-form>
 
     <el-divider border-style="dashed" v-if="showSearchForm" />
 
-    <div class="table-container">
+    <div class="table-container" ref="tableContainerRef">
       <div class="table-wrapper">
         <el-table
           border
@@ -66,11 +67,14 @@
             :align="column.align || 'center'"
             :min-width="column.width || getDefaultMinWidth(column)"
             :fixed="getColumnFixedStatus(index)"
+            show-overflow-tooltip
           >
             <template #default="scope">
               <!-- 如果有 render 函数且没有 component -->
               <template v-if="column.render && !column.component">
-                <span v-html="column.render(scope.row, scope.$index, scope.column)"></span>
+                <div class="cell-content" :title="String(column.render(scope.row, scope.$index, scope.column))">
+                  <span v-html="column.render(scope.row, scope.$index, scope.column)"></span>
+                </div>
               </template>
               <!-- 如果有 component 组件 -->
               <template v-else-if="column.component">
@@ -117,7 +121,7 @@
         </el-table>
       </div>
 
-      <div class="pagination-container">
+      <div class="pagination-container" ref="paginationRef">
         <div class="pagination-left">
           <el-select 
             v-model="queryForm.size" 
@@ -152,7 +156,7 @@
 </template>
 
 <script setup lang="ts" generic="T = any" name="BaseList">
-import { ref, reactive, onMounted, computed, onUnmounted, watch } from 'vue'
+import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import constants from '@/utils/constants'
@@ -256,13 +260,64 @@ const emit = defineEmits<{
 const datalist = ref<T[]>([])
 const listLoading = ref(false)
 const total = ref(0)
-// 根据布局尺寸计算表格最大高度：
-// 100vh - header高度(90px) - search表单高度(约120px) - pagination高度(约50px) - 其他间距(约60px)
-const tableMaxHeight = ref('calc(100vh - 320px)')
+const tableMaxHeight = ref(500) // ✅ Element Plus 表格需要明确的像素值
+const tableContainerRef = ref<HTMLElement | null>(null)
+const paginationRef = ref<HTMLElement | null>(null)
 
-// 表单初始值
+// 动态计算表格高度（Element Plus 需要明确的像素值）
+function calculateTableHeight() {
+  nextTick(() => {
+    const wrapperEl = tableContainerRef.value
+    const paginationEl = paginationRef.value
+    
+    if (!wrapperEl || !paginationEl) return
+    
+    const wrapperRect = wrapperEl.getBoundingClientRect()
+    const paginationRect = paginationEl.getBoundingClientRect()
+    
+    // 表格高度 = 容器高度 - 分页高度
+    const height = Math.max(350, wrapperRect.height - paginationRect.height)
+    tableMaxHeight.value = height
+  })
+}
+
+// 生命周期 - 挂载后计算高度并监听窗口变化
+onMounted(() => {
+  nextTick(() => {
+    calculateTableHeight()
+  })
+  window.addEventListener('resize', calculateTableHeight)
+  
+  // 初始化时加载数据（无论是否有 URL query 参数）
+  getList()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', calculateTableHeight)
+})
+
+// 获取路由参数（用于监听路由变化自动刷新列表）
+const route = useRoute()
+
+// 表单初始值（合并 initialQueryParams 和 route.query）
+// 注意：需要对 URL 参数进行类型转换，以匹配搜索字段的配置
 const queryFormState = reactive({
-  ...props.initialQueryParams
+  ...props.initialQueryParams,
+  // 从 URL query 参数中读取初始值，并进行类型转换
+  ...Object.fromEntries(
+    Object.entries(route.query).map(([key, value]) => {
+      // 查找对应的搜索字段配置
+      const field = props.searchFields.find(f => f.prop === key)
+      if (field && field.component === 'el-select' && field.props?.options) {
+        // 对于 el-select 字段，尝试将字符串值转换为选项中的实际类型
+        const option = field.props.options.find((opt: any) => String(opt.value) === value)
+        if (option) {
+          return [key, option.value] // 使用选项中的实际值类型
+        }
+      }
+      return [key, value]
+    })
+  )
 })
 
 // 表单查询参数
@@ -271,16 +326,16 @@ const queryForm = reactive({ ...queryFormState })
 // 所有勾选的记录
 const multipeSelection = ref<T[]>([])
 
-
-// 获取路由参数（用于监听路由变化自动刷新列表）
-const route = useRoute()
-
 // 监听路由参数变化，当路由参数改变时重新加载列表
 watch(
   () => route.query,
   (newQuery, oldQuery) => {
     // 只有当 query 参数真正发生变化时才刷新（排除初始化）
     if (oldQuery && JSON.stringify(newQuery) !== JSON.stringify(oldQuery)) {
+      // 同步路由参数到查询表单
+      Object.entries(newQuery).forEach(([key, value]) => {
+        (queryForm as any)[key] = value
+      })
       // 重置查询表单到第一页
       queryForm.current = 1
       // 重新加载列表
@@ -424,6 +479,11 @@ async function getList() {
       const pageData = response.data
       datalist.value = Array.isArray(pageData.records) ? pageData.records : []
       total.value = typeof pageData.total === 'number' ? pageData.total : 0
+      
+      // 数据加载后重新计算高度
+      nextTick(() => {
+        calculateTableHeight()
+      })
     } else {
       ElMessage.error(response?.message || MESSAGE.FORMAT_ERROR)
       datalist.value = []
@@ -564,12 +624,20 @@ function confirmDel(id?: number | string) {
     })
 }
 
+// 获取当前查询参数（供父组件使用，如导出功能）
+function getQueryParams() {
+  // 返回查询参数（排除分页参数）
+  const { current, size, ...queryParams } = queryForm
+  return queryParams
+}
+
 // 暴露方法给父组件
 defineExpose({
   getList,
   resetQuery,
   onSearch,
-  confirmDel  // 暴露删除确认方法
+  confirmDel,  // 暴露删除确认方法
+  getQueryParams  // 暴露获取查询参数方法
 })
 </script>
 
@@ -578,10 +646,10 @@ defineExpose({
   padding: 20px;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 90px - 60px); /* 100vh - header 高度 - 底部版权栏高度 */
+  height: 100%; /* ✅ 改为 100% 自适应父容器，避免固定高度计算导致分页被遮挡 */
   width: 100%;
   box-sizing: border-box;
-  overflow: hidden; /* ✅ 防止容器本身滚动 */
+  overflow: hidden;
 }
 
 .search-form {
@@ -618,10 +686,16 @@ defineExpose({
 /* 表格包装器 - 用于处理滚动 */
 .table-wrapper {
   flex: 1;
-  overflow: hidden; /* ✅ 改为 hidden，让外层容器处理滚动 */
-  min-height: 0;
+  overflow: hidden; /* 防止溢出，表格内部处理滚动 */
+  min-height: 0; /* Flex 子元素必须设置 min-height: 0 才能正确收缩 */
   position: relative;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+:deep(.el-table) {
+  width: 100% !important;
 }
 
 /* 表格容器 - 处理固定列和滚动 */
@@ -656,10 +730,10 @@ defineExpose({
   padding: 16px 20px;
   background: #fff;
   border-top: 1px solid #ebeef5;
-  flex-shrink: 0;
+  flex-shrink: 0; /* ✅ 固定分页区域，防止被压缩 */
   width: 100%;
   box-sizing: border-box;
-  overflow: visible; /* ✅ 改为 visible，让分页完全显示 */
+  overflow: hidden;
 }
 
 .pagination-left {
@@ -673,6 +747,14 @@ defineExpose({
 .pagination {
   white-space: nowrap;
   flex-shrink: 0; /* ✅ 防止被压缩 */
+}
+
+/* 修复单元格内容溢出问题 */
+.cell-content {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
 

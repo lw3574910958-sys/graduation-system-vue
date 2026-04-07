@@ -11,14 +11,6 @@ export interface DepartmentResponse {
   updatedAt?: string
 }
 
-// 部门树形结构响应类型
-export interface DepartmentTreeResponse {
-  id: string
-  name: string
-  code: string
-  children?: DepartmentTreeResponse[]
-}
-
 // 部门创建请求类型
 export interface DepartmentCreateRequest {
   name: string

@@ -1,6 +1,6 @@
 <template>
   <div class="admin-dashboard dashboard-container">
-    <h2 class="dashboard-title">管理员仪表盘</h2>
+    <h2 class="dashboard-title">{{ dashboardTitle }}</h2>
     
     <!-- 统计卡片 -->
     <div class="stats-card">
@@ -52,7 +52,7 @@
           <div class="card-label">教师总数</div>
         </div>
       </el-card>
-      <el-card class="card-item" shadow="hover">
+      <el-card v-if="isSystemAdmin" class="card-item" shadow="hover">
         <div class="card-content">
           <div class="card-value text-info">
             {{ dashboardData.totalDepartments || 0 }}
@@ -65,7 +65,8 @@
     <!-- 选题进度 -->
     <div class="progress-section">
       <el-row :gutter="20">
-        <el-col :span="12">
+        <!-- 选题进度统计 - 根据用户类型动态调整列数 -->
+        <el-col :span="isDepartmentAdmin ? 12 : 24">
           <el-card>
             <template #header>
               <span>选题进度统计</span>
@@ -83,7 +84,8 @@
           </el-card>
         </el-col>
         
-        <el-col :span="12">
+        <!-- 待办事项（仅院系管理员显示） -->
+        <el-col :span="12" v-if="isDepartmentAdmin">
           <el-card>
             <template #header>
               <span>待办事项</span>
@@ -121,16 +123,36 @@
         </el-col>
       </el-row>
     </div>
-    <div class="notice-section">
+    
+    <!-- 通知公告（仅院系管理员显示） -->
+    <div v-if="isDepartmentAdmin" class="notice-section">
       <el-card>
         <template #header>
           <span>通知公告</span>
         </template>
         <div class="notice-content">
-          <el-empty description="暂无通知" />
+          <el-empty v-if="!notices.length" description="暂无通知" />
+          <el-timeline v-else>
+            <el-timeline-item
+              v-for="notice in notices"
+              :key="notice.id"
+              :timestamp="formatDate(notice.createdAt)"
+              placement="top"
+              :color="getNoticeColor(notice.priority)"
+              @dblclick="handleNoticeDoubleClick(notice)"
+            >
+              <el-card shadow="hover" class="notice-card">
+                <h4>{{ notice.title }}</h4>
+                <p>{{ notice.content }}</p>
+              </el-card>
+            </el-timeline-item>
+          </el-timeline>
         </div>
       </el-card>
     </div>
+
+    <!-- 公告详情对话框 -->
+    <NoticeSimpleDetail ref="noticeDetailRef" />
   </div>
 </template>
 
@@ -138,12 +160,32 @@
 import { ref, computed, onMounted } from 'vue'
 import type { AdminDashboardResponse } from '@/api/dashboard'
 import { dashboardApi } from '@/api/dashboard'
+import { noticeApi } from '@/api/notice'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores'
+import { USER_TYPE_ENUM, TOPIC_STATUS } from '@/constants'
 import GradeDistributionChart from '@/components/dashboard/GradeDistributionChart.vue'
 import SelectionProgressChart from '@/components/dashboard/SelectionProgressChart.vue'
+import NoticeSimpleDetail from '@/views/notice/NoticeSimpleDetail.vue'
 
 const router = useRouter()
+const authStore = useAuthStore()
+
+// 获取当前用户类型
+const userType = computed(() => authStore.userInfo?.userType)
+const isSystemAdmin = computed(() => userType.value === USER_TYPE_ENUM.SYSTEM_ADMIN)
+const isDepartmentAdmin = computed(() => userType.value === USER_TYPE_ENUM.DEPARTMENT_ADMIN)
+
+// 动态标题
+const dashboardTitle = computed(() => {
+  if (isSystemAdmin.value) {
+    return '系统管理员仪表盘'
+  } else if (isDepartmentAdmin.value) {
+    return '院系管理员仪表盘'
+  }
+  return '管理员仪表盘'
+})
 
 // 仪表盘数据
 const dashboardData = ref<AdminDashboardResponse>({
@@ -156,6 +198,17 @@ const dashboardData = ref<AdminDashboardResponse>({
   totalTopics: 0
 })
 
+// 通知公告数据（仅院系管理员需要）
+const notices = ref<any[]>([])
+
+// 公告详情对话框引用
+const noticeDetailRef = ref()
+
+// 双击公告打开详情
+const handleNoticeDoubleClick = (notice: any) => {
+  noticeDetailRef.value?.showModel(notice)
+}
+
 // 加载数据
 const loading = ref(false)
 const loadDashboardData = async () => {
@@ -167,6 +220,54 @@ const loadDashboardData = async () => {
     ElMessage.error(error.message || '加载仪表盘数据失败')
   } finally {
     loading.value = false
+  }
+}
+
+// 获取通知公告（仅院系管理员需要）
+const loadNotices = async () => {
+  if (!isDepartmentAdmin.value) {
+    return
+  }
+  try {
+    const res = await noticeApi.getLatestNotices(undefined, 5)
+    notices.value = res.data || []
+  } catch (error: any) {
+    console.error('加载通知公告失败:', error.message)
+    notices.value = []
+  }
+}
+
+// 跳转到题目审核（传递审核状态筛选参数）
+const goToTopicReview = () => {
+  // 传递审核状态：待审核
+  router.push({
+    path: '/topic/list',
+    query: {
+      reviewStatus: 'pending'
+    }
+  })
+}
+
+// 格式化日期
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+// 获取通知颜色
+const getNoticeColor = (priority?: number) => {
+  if (!priority) return '#409EFF'
+  switch (priority) {
+    case 1: return '#F56C6C' // 高优先级 - 红色
+    case 2: return '#E6A23C' // 中优先级 - 橙色
+    default: return '#409EFF' // 普通 - 蓝色
   }
 }
 
@@ -185,13 +286,9 @@ const getProgressColor = (percentage: number) => {
   return '#67C23A'
 }
 
-// 跳转到题目审核
-const goToTopicReview = () => {
-  router.push('/topics')
-}
-
 onMounted(() => {
   loadDashboardData()
+  loadNotices()
 })
 </script>
 
@@ -292,11 +389,13 @@ onMounted(() => {
   color: #909399;
 }
 
-.notice-section {
-  margin-bottom: 20px;
+.notice-card {
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
-.notice-content {
-  min-height: 150px;
+.notice-card:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 </style>

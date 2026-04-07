@@ -5,10 +5,22 @@
       :search-fields="searchFields"
       :table-columns="tableColumns"
       :show-add-button="false"
+      :show-delete-button="false"
+      :show-selection="false"
       @edit="update"
       @refresh="getList"
       ref="listRef"
     >
+      <template #extra-actions>
+        <el-button 
+          v-if="canExport" 
+          @click="handleExport" 
+          type="success" 
+          plain
+        >
+          导出Excel
+        </el-button>
+      </template>
       <template #operations="{ scope }">
         <el-button 
           @click="viewDetail(scope.row)" 
@@ -41,17 +53,20 @@ import { useRoute } from 'vue-router'
 import { gradeApi } from '@/api/grade'
 import AddOrUpdate from '@/views/grade/AddOrUpdate.vue'
 import GradeDetail from '@/views/grade/Detail.vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { MESSAGE } from '@/constants/user'
 import BaseList from '@/components/common/BaseList.vue'
-import { GRADE_TYPE_LABELS } from '@/constants/enums'
+import { GRADE_TYPE_LABELS, USER_TYPE_ENUM, GPA_OPTIONS } from '@/constants/enums'
 import { useAuthStore } from '@/stores/modules/auth'
-import { USER_TYPE_ENUM } from '@/constants/enums'
 
 // 获取用户信息
 const authStore = useAuthStore()
 const userType = computed(() => authStore.userInfo?.userType || '')
 const isTeacher = computed(() => userType.value === USER_TYPE_ENUM.TEACHER)
+const canExport = computed(() => 
+  userType.value === USER_TYPE_ENUM.SYSTEM_ADMIN || 
+  userType.value === USER_TYPE_ENUM.DEPARTMENT_ADMIN
+)
 
 // 获取路由参数
 const route = useRoute()
@@ -121,19 +136,70 @@ const searchFields = computed(() => {
     })
   }
   
-  // 添加其他搜索字段
+  // 新增搜索字段：学生姓名、学生学号
   fields.push(
     {
-      prop: 'studentId',
-      label: '学生 ID：',
+      prop: 'studentName',
+      label: '学生姓名：',
       component: 'el-input',
-      props: { placeholder: '请输入学生 ID' }
+      props: { placeholder: '请输入学生姓名' }
     },
     {
-      prop: 'topicId',
-      label: '课题 ID：',
+      prop: 'studentNumber',
+      label: '学生学号：',
       component: 'el-input',
-      props: { placeholder: '请输入课题 ID' }
+      props: { placeholder: '请输入学生学号' }
+    }
+  )
+  
+  // 教师相关字段：仅院系管理员和系统管理员可见
+  const isAdmin = userType.value === USER_TYPE_ENUM.SYSTEM_ADMIN || 
+                  userType.value === USER_TYPE_ENUM.DEPARTMENT_ADMIN
+  
+  if (isAdmin) {
+    fields.push(
+      {
+        prop: 'graderName',
+        label: '教师姓名：',
+        component: 'el-input',
+        props: { placeholder: '请输入教师姓名' }
+      },
+      {
+        prop: 'graderWorkNumber',
+        label: '教师工号：',
+        component: 'el-input',
+        props: { placeholder: '请输入教师工号' }
+      }
+    )
+  }
+  
+  // 成绩等级和绩点：所有用户可见
+  fields.push(
+    {
+      prop: 'gradeLevel',
+      label: '成绩等级：',
+      component: 'el-select',
+      props: { 
+        placeholder: '请选择成绩等级',
+        clearable: true,
+        options: [
+          { label: '优秀', value: '优秀' },
+          { label: '良好', value: '良好' },
+          { label: '中等', value: '中等' },
+          { label: '及格', value: '及格' },
+          { label: '不及格', value: '不及格' },
+        ],
+      },
+    },
+    {
+      prop: 'gpa',
+      label: '绩点：',
+      component: 'el-select',
+      props: { 
+        placeholder: '请选择绩点',
+        clearable: true,
+        options: GPA_OPTIONS,
+      },
     }
   )
   
@@ -218,5 +284,47 @@ function update(row: GradeRow) {
 // 用于刷新列表的方法
 function getList() {
   listRef.value?.getList && listRef.value.getList()
+}
+
+/**
+ * 导出成绩为 Excel
+ */
+async function handleExport() {
+  try {
+    await ElMessageBox.confirm('确定要导出当前查询条件下的成绩数据吗？', '提示', {
+      confirmButtonText: '确定导出',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+
+    // 获取当前的查询参数
+    const params = listRef.value?.getQueryParams() || {}
+    
+    // 如果有路由指定的成绩类型，添加到导出参数中（与列表查询保持一致）
+    if (gradeTypeFromRoute.value !== null) {
+      params.gradeType = gradeTypeFromRoute.value
+    }
+    
+    // 调用导出接口
+    const res = await gradeApi.exportGradeReport(params)
+    
+    // 创建 Blob 对象并触发下载
+    const blob = new Blob([res as any], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `成绩报表_${new Date().getTime()}.xlsx`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    
+    ElMessage.success('导出成功')
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      console.error('导出失败:', error)
+      ElMessage.error(error.message || '导出失败')
+    }
+  }
 }
 </script>

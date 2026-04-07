@@ -132,6 +132,15 @@ export const GRADE_LEVEL_LABELS = {
   [GRADE_LEVEL.FAIL]: '不及格'
 } as const
 
+// 绩点枚举（对应后端 GradeLevel 中的 GPA 值）
+export const GPA_OPTIONS = [
+  { label: '4.0', value: 4.0 },    // 优秀
+  { label: '3.0', value: 3.0 },    // 良好
+  { label: '2.0', value: 2.0 },    // 中等
+  { label: '1.0', value: 1.0 },    // 及格
+  { label: '0.0', value: 0.0 }     // 不及格
+] as const
+
 // 题目来源枚举 (对应后端 TopicSource)
 export const TOPIC_SOURCE = {
   TEACHING_PRACTICE: '教学实践',
@@ -242,6 +251,50 @@ export const GRADE_TYPE_LABELS = {
   [GRADE_TYPE.MIDTERM]: '中期报告',
   [GRADE_TYPE.THESIS]: '毕业论文',
   [GRADE_TYPE.COMPOSITE]: '综合成绩'
+} as const
+
+// 通知类型枚举 (对应后端 NoticeType: 1-系统通知, 2-公告, 3-提醒)
+export const NOTICE_TYPE_ENUM = {
+  SYSTEM_NOTICE: 1,
+  ANNOUNCEMENT: 2,
+  REMINDER: 3
+} as const
+
+// 通知类型标签映射
+export const NOTICE_TYPE_LABELS = {
+  [NOTICE_TYPE_ENUM.SYSTEM_NOTICE]: '系统通知',
+  [NOTICE_TYPE_ENUM.ANNOUNCEMENT]: '公告',
+  [NOTICE_TYPE_ENUM.REMINDER]: '提醒'
+} as const
+
+// 通知优先级枚举 (对应后端 NoticePriority: 1-低, 2-中, 3-高)
+export const NOTICE_PRIORITY_ENUM = {
+  LOW: 1,
+  MEDIUM: 2,
+  HIGH: 3
+} as const
+
+// 通知优先级标签映射
+export const NOTICE_PRIORITY_LABELS = {
+  [NOTICE_PRIORITY_ENUM.LOW]: '低',
+  [NOTICE_PRIORITY_ENUM.MEDIUM]: '中',
+  [NOTICE_PRIORITY_ENUM.HIGH]: '高'
+} as const
+
+// 目标范围枚举 (对应后端 TargetScope: 0-全体, 1-学生, 2-教师, 3-院系管理员)
+export const TARGET_SCOPE_ENUM = {
+  ALL: 0,
+  STUDENT: 1,
+  TEACHER: 2,
+  DEPARTMENT_ADMIN: 3
+} as const
+
+// 目标范围标签映射
+export const TARGET_SCOPE_LABELS = {
+  [TARGET_SCOPE_ENUM.ALL]: '全体',
+  [TARGET_SCOPE_ENUM.STUDENT]: '学生',
+  [TARGET_SCOPE_ENUM.TEACHER]: '教师',
+  [TARGET_SCOPE_ENUM.DEPARTMENT_ADMIN]: '院系管理员'
 } as const
 
 // 导出类型定义

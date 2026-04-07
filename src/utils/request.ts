@@ -19,6 +19,11 @@ let isAlreadyLoggingOut = false
 
 // 自定义 JSON 解析器，解决大数字精度丢失问题
 const customParse = (text: string): any => {
+  // 如果不是字符串（例如 Blob），直接返回原值
+  if (typeof text !== 'string') {
+    return text
+  }
+  
   // 在 JSON 解析前，使用正则表达式将所有大数字（雪花算法 ID）添加引号转为字符串
   // 匹配模式："key":1234567890123456789  -> "key":"1234567890123456789"
   const normalizedText = text.replace(/(:\s*)(\d{16,})/g, (match, prefix, numberStr) => {
@@ -99,10 +104,39 @@ service.interceptors.request.use(
 
 // 响应拦截器
 service.interceptors.response.use(
-  (response: AxiosResponse) => {
-    // Blob 数据处理
+  async (response: AxiosResponse) => {
+    // 检查 HTTP 状态码（Blob 响应也需要检查）
+    if (response.status >= 400) {
+      // Blob 响应中的错误信息处理
+      if (response.data instanceof Blob) {
+        try {
+          // 尝试解析 Blob 中的 JSON 错误信息
+          const text = await response.data.text()
+          const errorData = JSON.parse(text)
+          const error = new Error(errorData.message || '请求失败')
+          ;(error as any).response = { data: errorData, status: response.status }
+          handleHttpError(error as any)
+          return Promise.reject(error)
+        } catch (parseError) {
+          // 如果解析失败，使用默认错误信息
+          const error = new Error(`请求失败 (HTTP ${response.status})`)
+          ;(error as any).response = { status: response.status }
+          handleHttpError(error as any)
+          return Promise.reject(error)
+        }
+      }
+      
+      // 非 Blob 的错误响应（正常处理）
+      const res = response.data
+      const error = new Error(res.message || '请求失败，请稍后重试！')
+      ;(error as any).response = { data: res, status: res.code || response.status }
+      handleHttpError(error as any)
+      return Promise.reject(error)
+    }
+    
+    // Blob 数据处理（返回 Blob 对象本身，而不是整个 response）
     if (response.data instanceof Blob) {
-      return response
+      return response.data
     }
 
     // 非 JSON 数据处理
@@ -258,13 +292,15 @@ export const httpWithTimeout = <T = any>(
  * 通用 GET 请求方法
  * @param url 请求地址
  * @param params 可选查询参数
+ * @param config 可选配置（如 responseType）
  * @returns Promise<any>
  */
-export const get = <T = any>(url: string, params?: any): Promise<T> => {
+export const get = <T = any>(url: string, params?: any, config?: AxiosRequestConfig): Promise<T> => {
   return http<T>({
     url: url,
     method: 'get',
     params: params,
+    ...config,
   })
 }
 

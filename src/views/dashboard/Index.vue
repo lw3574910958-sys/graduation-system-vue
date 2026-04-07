@@ -33,7 +33,10 @@ const CurrentDashboard = computed(() => {
     return StudentDashboard
   } else if (userType === USER_TYPE.TEACHER) {
     return TeacherDashboard
-  } else if (userType === USER_TYPE.SYSTEM_ADMIN || userType === USER_TYPE.DEPARTMENT_ADMIN) {
+  } else if (userType === USER_TYPE.SYSTEM_ADMIN) {
+    return AdminDashboard
+  } else if (userType === USER_TYPE.DEPARTMENT_ADMIN) {
+    // 院系管理员也使用 AdminDashboard，但后端会过滤公告
     return AdminDashboard
   }
   

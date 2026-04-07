@@ -11,15 +11,19 @@ export interface NoticeResponse {
   priorityDesc: string
   publisherId: string
   publisherName: string
+  publisherAdminId?: string
   publishedAt: string
-  startTime: string
-  endTime: string
+  startTime?: string // 可能为 null/undefined
+  endTime?: string   // 可能为 null/undefined
   status: number
   statusDesc: string
   isSticky: number
   readCount: number
   targetScope: number
   targetScopeDesc: string
+  departmentId?: string
+  departmentName?: string
+  departmentCode?: string
   attachmentUrl?: string
   createdAt: string
   updatedAt: string
@@ -35,6 +39,7 @@ export interface NoticeCreateRequest {
   endTime?: string
   isSticky?: number
   targetScope?: number
+  departmentId?: string
   attachmentUrl?: string
   publishNow?: boolean
 }
@@ -49,6 +54,7 @@ export interface NoticeUpdateRequest {
   endTime?: string
   isSticky?: number
   targetScope?: number
+  departmentId?: string
   attachmentUrl?: string
 }
 
@@ -97,8 +103,8 @@ export enum NoticeStatusEnum {
 
 // 目标范围枚举
 export enum TargetScopeEnum {
-  ALL = 0,      // 全体
-  STUDENT = 1,  // 学生
-  TEACHER = 2,  // 教师
-  ADMIN = 3     // 管理员
+  ALL = 0,              // 全体
+  STUDENT = 1,          // 学生
+  TEACHER = 2,          // 教师
+  DEPARTMENT_ADMIN = 3  // 院系管理员
 }

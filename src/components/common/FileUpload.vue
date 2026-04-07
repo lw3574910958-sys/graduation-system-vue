@@ -4,30 +4,57 @@
     <el-upload
       :file-list="fileList"
       :list-type="listType"
-      :on-preview="handlePictureCardPreview"
       :on-remove="handleRemove"
       :on-change="handleChange"
       :class="{ disabled: maxLimit }"
       :http-request="handleUpload"
       :before-upload="beforeUpload"
       :auto-upload="autoUpload"
-      multiple
+      :multiple="multiple"
+      :limit="maxUploadSize"
+      :on-exceed="handleExceed"
+      v-if="showUploadBtn"
     >
-      <template v-if="listType === 'picture-card'">
-        <div class="upload-text">
-          <el-icon>
-            <Plus />
-          </el-icon>
-          <div>{{ buttonText }}</div>
+      <!-- 上传按钮：只在未达到限制时显示 -->
+      <template v-if="!maxLimit">
+        <template v-if="listType === 'picture-card'">
+          <div class="upload-text">
+            <el-icon>
+              <Plus />
+            </el-icon>
+            <div>{{ buttonText }}</div>
+          </div>
+        </template>
+        <template v-if="listType === 'text'">
+          <el-button link type="primary"> {{ buttonText }} </el-button>
+        </template>
+      </template>
+      
+      <!-- 自定义文件列表项：添加预览按钮 -->
+      <template #file="{ file }">
+        <div class="upload-file-item">
+          <span class="file-name">{{ file.name }}</span>
+          <el-button 
+            link 
+            type="primary" 
+            size="small" 
+            @click.stop="handleFilePreview(file)"
+            class="preview-btn"
+          >
+            预览
+          </el-button>
         </div>
       </template>
-      <template v-if="listType === 'text'">
-        <el-button link type="primary"> {{ buttonText }} </el-button>
-      </template>
     </el-upload>
-    <el-dialog :footer="null" v-model="previewVisible" @close="handleCancel">
-      <img :src="previewUrl" alt="预览图片" style="width: 100%" />
-    </el-dialog>
+    <!-- 已达到上传限制时的提示 -->
+    <div v-if="maxLimit && showUploadBtn" class="upload-limit-tip">
+      <el-text type="info" size="small">已达到最大上传数量</el-text>
+    </div>
+    <!-- 文件预览对话框：支持多格式预览 -->
+    <FilePreview
+      v-model="previewVisible"
+      :file-info="previewFileInfo"
+    />
   </div>
 </template>
 
@@ -39,6 +66,7 @@ import { commonApi } from '@/api/common'
 import { getFileUrl } from '@/utils/utils'
 import { MESSAGE } from '@/constants/user'
 import constants from '@/utils/constants'
+import FilePreview from '@/components/common/FilePreview.vue'
 
 const props = defineProps({
   value: String,
@@ -92,6 +120,11 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  // 文件分类（用于指定存储路径）
+  category: {
+    type: String,
+    default: 'general',
+  },
 })
 
 // 允许上传的文件类型
@@ -134,6 +167,12 @@ const isFileTypeAllowed = (file: File): boolean => {
 const uploadingCount = ref(0)
 // 上传前检查
 const beforeUpload = (file: File) => {
+  // 检查是否已达到最大上传数量
+  if (fileList.value.length >= props.maxUploadSize) {
+    ElMessage.warning(`最多只能上传 ${props.maxUploadSize} 个文件`)
+    return false
+  }
+
   const isLtMaxSize = file.size / 1024 / 1024 < props.maxSize
   if (!isLtMaxSize) {
     ElMessage.error(`上传文件大小不能超过 ${props.maxSize}MB!`)
@@ -219,7 +258,14 @@ const emit = defineEmits(['update:value'])
 
 const fileList = ref<any[]>([])
 const previewVisible = ref(false)
-const previewUrl = ref('')
+const previewFileInfo = ref<any>({})
+
+// 解析文件名和扩展名
+const parseFileInfo = (url: string) => {
+  const fileName = url.split('/').pop() || 'unknown'
+  const extension = fileName.split('.').pop()?.toLowerCase() || ''
+  return { name: fileName, extension }
+}
 
 // ✅ 借鉴 my-admin：监听 defaultFileList 而不是 value
 // 这样可以避免上传成功后 updateValue() 触发 watch 导致重复
@@ -247,15 +293,33 @@ function clear() {
   fileList.value = []
 }
 
-// 处理图片预览
-const handlePictureCardPreview = (file: { url: string }) => {
-  previewUrl.value = file.url
-  previewVisible.value = true
+// 处理文件预览（支持多格式）
+const handleFilePreview = (file: any) => {
+  const url = file.url || file.response?.data
+  if (url) {
+    // 构造完整的预览文件信息
+    const { name, extension } = parseFileInfo(url)
+    previewFileInfo.value = {
+      id: file.id || 0,  // 上传文件可能没有 id
+      filename: name,
+      fileExtension: extension,
+      url: url
+    }
+    previewVisible.value = true
+  } else {
+    ElMessage.warning('文件尚未上传完成')
+  }
 }
 
 // 取消预览
 const handleCancel = () => {
   previewVisible.value = false
+  previewFileInfo.value = {}
+}
+
+// 处理超出文件数量限制
+const handleExceed = () => {
+  ElMessage.warning(`最多只能上传 ${props.maxUploadSize} 个文件`)
 }
 
 // 处理上传
@@ -264,6 +328,8 @@ const handleUpload = async (options: { file: any; onError: Function; onSuccess: 
   const { file, onError, onSuccess } = options
   const formData = new FormData()
   formData.append('file', file)
+  // 添加 category 参数
+  formData.append('category', props.category)
 
   let loadingInstance: any = null
 
@@ -375,5 +441,49 @@ watch(
 <style scoped>
 ::v-deep(.disabled .el-upload--picture-card) {
   display: none;
+}
+
+/* 自定义文件列表项样式 */
+.upload-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--el-border-color);
+  border-radius: 4px;
+  background-color: var(--el-fill-color-lighter);
+  transition: all 0.3s;
+}
+
+.upload-file-item:hover {
+  background-color: var(--el-fill-color);
+  border-color: var(--el-color-primary-light-5);
+}
+
+.file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--el-text-color-regular);
+  font-size: 14px;
+}
+
+.preview-btn {
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* 文本列表模式样式调整 */
+::v-deep(.el-upload-list--text .upload-file-item) {
+  margin-bottom: 8px;
+}
+
+/* 图片卡片模式保持原有样式 */
+::v-deep(.el-upload-list--picture-card) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 </style>

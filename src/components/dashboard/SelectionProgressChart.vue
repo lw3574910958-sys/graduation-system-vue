@@ -3,12 +3,15 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>选题进度统计</span>
-          <el-select v-model="departmentId" size="small" @change="loadData" placeholder="选择院系">
+          <span>题目统计</span>
+          <el-select v-model="departmentId" size="small" @change="loadData" placeholder="选择院系" clearable>
             <el-option label="全部院系" value="" />
-            <el-option label="计算机学院" :value="1" />
-            <el-option label="软件学院" :value="2" />
-            <el-option label="信息学院" :value="3" />
+            <el-option 
+              v-for="dept in departmentList" 
+              :key="dept.id" 
+              :label="dept.name" 
+              :value="dept.id" 
+            />
           </el-select>
         </div>
       </template>
@@ -23,9 +26,14 @@ import * as echarts from 'echarts'
 import type { EChartsOption } from 'echarts'
 import type { TopicProgressResponse } from '@/api/dashboard'
 import { dashboardApi } from '@/api/dashboard'
+import { departmentApi } from '@/api/department'
+import type { DepartmentResponse } from '@/types/api/department'
 
 // 院系选择
-const departmentId = ref<number | string>('')
+const departmentId = ref<string>('')
+
+// 院系列表
+const departmentList = ref<DepartmentResponse[]>([])
 
 // 图表实例
 const chartRef = ref<HTMLElement>()
@@ -39,13 +47,24 @@ const selectionData = ref({
   closed: 0       // 关闭
 })
 
+// 加载院系列表
+const loadDepartmentList = async () => {
+  try {
+    const res = await departmentApi.getAllDepartments()
+    departmentList.value = res.data || []
+  } catch (error: any) {
+    console.error('加载院系列表失败:', error.message)
+    departmentList.value = []
+  }
+}
+
 // 加载数据
 const loadData = async () => {
   try {
-    // 空字符串转换为 undefined 传递给后端（表示不传参数）
-    const deptId = departmentId.value === '' ? undefined : Number(departmentId.value)
-    // 确保不会传递 NaN
-    const validDeptId = (deptId !== undefined && !isNaN(deptId)) ? deptId : undefined
+    // 直接使用字符串，避免大数字精度丢失
+    // 注意：雪花算法生成的 ID 是 18-19 位，超出 JavaScript Number 的安全范围
+    const validDeptId = departmentId.value === '' ? undefined : departmentId.value
+    
     const res = await dashboardApi.getTopicProgress(validDeptId)
     const data: TopicProgressResponse = res.data
     
@@ -58,7 +77,7 @@ const loadData = async () => {
     
     updateChart()
   } catch (error: any) {
-    console.error('加载选题进度数据失败:', error.message)
+    console.error('[选题进度] 加载选题进度数据失败:', error.message)
     // 使用模拟数据作为降级方案
     selectionData.value = {
       open: Math.floor(Math.random() * 50) + 20,
@@ -154,6 +173,7 @@ watch(departmentId, () => {
 
 onMounted(() => {
   initChart()
+  loadDepartmentList()  // 加载院系列表
   loadData()
 })
 </script>

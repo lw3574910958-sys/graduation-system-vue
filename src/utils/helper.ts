@@ -176,3 +176,53 @@ export function getUrlParam(name: string, url?: string): string | null {
   const result = reg.exec(targetUrl);
   return result && result[1] ? decodeURIComponent(result[1]) : null;
 }
+
+/**
+ * 确认对话框选项
+ */
+export interface ConfirmOptions {
+  /** 标题 */
+  title?: string
+  /** 消息内容 */
+  message?: string
+  /** 确认按钮文本 */
+  confirmButtonText?: string
+  /** 取消按钮文本 */
+  cancelButtonText?: string
+  /** 类型：warning/success/info/error */
+  type?: 'warning' | 'success' | 'info' | 'error'
+}
+
+/**
+ * 通用确认话框函数
+ * @param options 配置选项
+ * @returns Promise<void>
+ * 
+ * @example
+ * // 基本用法
+ * await showConfirm({ message: '确定要删除吗？' })
+ * 
+ * // 自定义配置
+ * await showConfirm({
+ *   title: '提示',
+ *   message: '确定要发布该通知吗？',
+ *   type: 'warning'
+ * })
+ */
+export async function showConfirm(options: ConfirmOptions = {}): Promise<void> {
+  const { ElMessageBox } = await import('element-plus')
+  
+  const {
+    title = '提示',
+    message = '确定要执行此操作吗？',
+    confirmButtonText = '确定',
+    cancelButtonText = '取消',
+    type = 'warning'
+  } = options
+
+  await ElMessageBox.confirm(message, title, {
+    confirmButtonText,
+    cancelButtonText,
+    type
+  })
+}

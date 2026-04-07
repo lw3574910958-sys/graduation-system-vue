@@ -163,6 +163,7 @@ async function handleCopy() {
   user-select: text; /* 允许用户选中文本 */
   position: relative;
   z-index: 1;
+  display: block;
 }
 
 .ellipsis-text:hover {

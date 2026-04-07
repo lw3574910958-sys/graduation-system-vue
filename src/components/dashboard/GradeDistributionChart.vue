@@ -4,10 +4,13 @@
       <template #header>
         <div class="card-header">
           <span>成绩分布统计</span>
-          <el-select v-model="year" size="small" @change="loadData">
-            <el-option label="2026 年" :value="2026" />
-            <el-option label="2025 年" :value="2025" />
-            <el-option label="2024 年" :value="2024" />
+          <el-select v-model="year" size="small" @change="loadData" placeholder="选择年份" clearable>
+            <el-option 
+              v-for="yearOption in yearList" 
+              :key="yearOption" 
+              :label="`${yearOption}年`" 
+              :value="yearOption" 
+            />
           </el-select>
         </div>
       </template>
@@ -25,7 +28,10 @@ import type { GradeDistributionResponse } from '@/api/dashboard'
 import { dashboardApi } from '@/api/dashboard'
 
 // 年份选择
-const year = ref<number>(2026)
+const year = ref<number>()
+
+// 年份列表
+const yearList = ref<number[]>([])
 
 // 图表实例
 const chartRef = ref<HTMLElement>()
@@ -39,6 +45,23 @@ const gradeData = ref({
   pass: 0,         // 及格 (60-69)
   fail: 0          // 不及格 (<60)
 })
+
+// 加载年份列表
+const loadYearList = async () => {
+  try {
+    const res = await dashboardApi.getAvailableGradeYears()
+    yearList.value = res.data || []
+    // 默认选择第一个（最近的）年份
+    if (yearList.value.length > 0) {
+      year.value = yearList.value[0]
+    }
+  } catch (error: any) {
+    console.error('加载年份列表失败:', error.message)
+    // 降级方案：使用默认年份
+    yearList.value = [2026, 2025, 2024]
+    year.value = 2026
+  }
+}
 
 // 加载数据
 const loadData = async () => {
@@ -153,6 +176,7 @@ watch(year, () => {
 
 onMounted(() => {
   initChart()
+  loadYearList()
   loadData()
 })
 </script>

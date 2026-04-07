@@ -241,7 +241,7 @@ const getReviewStatusLabel = (row: TopicRow): string => {
     if (row.lastReviewOutcome !== null && row.lastReviewOutcome !== undefined) {
       return '已审核'
     } else if (row.status === TOPIC_STATUS.REVIEWING) {
-      return '未审核'
+      return '待审核'
     } else {
       return '-'
     }
@@ -261,6 +261,33 @@ const getReviewStatusLabel = (row: TopicRow): string => {
   
   // 其他角色显示原始审核结果
   return getTopicReviewOutcomeLabel(row.lastReviewOutcome)
+}
+
+/**
+ * 获取审核状态搜索选项（根据用户类型动态返回）
+ * - 教师：审核通过(1)、审核驳回(2)
+ * - 院系管理员/系统管理员：待审核(null)、已审核(has_reviewed)
+ */
+const getReviewStatusOptions = () => {
+  const userType = currentUserType.value
+  
+  // 教师视角：审核通过、审核驳回
+  if (userType === USER_TYPE_ENUM.TEACHER) {
+    return [
+      { label: '审核通过', value: 1 },
+      { label: '审核驳回', value: 2 }
+    ]
+  }
+  
+  // 院系管理员/系统管理员视角：待审核、已审核
+  if (userType === USER_TYPE_ENUM.DEPARTMENT_ADMIN || userType === USER_TYPE_ENUM.SYSTEM_ADMIN) {
+    return [
+      { label: '待审核', value: 'pending' },
+      { label: '已审核', value: 'reviewed' }
+    ]
+  }
+  
+  return []
 }
 
 // 是否显示申请题目按钮（教师 + 草稿状态）
@@ -364,7 +391,12 @@ const listRef = ref()
 
 // 搜索字段配置（使用 computed 实现动态显示）
 const searchFields = computed(() => {
-  return [
+  const userType = authStore.userInfo?.userType
+  const isTeacher = userType === USER_TYPE_ENUM.TEACHER
+  const isDepartmentAdmin = userType === USER_TYPE_ENUM.DEPARTMENT_ADMIN
+  const isSystemAdmin = userType === USER_TYPE_ENUM.SYSTEM_ADMIN
+  
+  const fields: any[] = [
     {
       prop: 'title',
       label: '课题标题：',
@@ -446,6 +478,21 @@ const searchFields = computed(() => {
       }
     }
   ]
+  
+  // 仅教师、院系管理员、系统管理员显示审核状态搜索字段
+  if (isTeacher || isDepartmentAdmin || isSystemAdmin) {
+    fields.push({
+      prop: 'reviewStatus',
+      label: '审核状态：',
+      component: 'el-select',
+      props: { 
+        placeholder: '请选择审核状态',
+        options: getReviewStatusOptions()
+      }
+    })
+  }
+  
+  return fields
 })
 
 // 表格列配置（计算属性）

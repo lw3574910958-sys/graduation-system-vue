@@ -56,7 +56,6 @@ export type {
   DepartmentUpdateRequest,
   DepartmentPageResponse,
   DepartmentQueryParams,
-  DepartmentTreeResponse
 } from './api/department'
 
 // 通知相关类型

@@ -111,16 +111,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, shallowRef, markRaw } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Picture } from '@element-plus/icons-vue'
 import storageUtil from '@/utils/storage'
 import { SYSTEM_CONSTANTS } from '@/constants'
-import * as PDFJS from 'pdfjs-dist'
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist'
 import mammoth from 'mammoth'
+import PdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url'
+import { downloadFile as downloadFileUtil } from '@/utils/download'
 
-// 设置 PDF.js worker
-PDFJS.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.3.4/pdf.worker.min.js'
+// 设置 PDF.js worker（使用 Vite 的 URL 导入，确保本地构建和部署都能正确加载）
+// 注意：主库和 worker 必须使用相同版本，且同时使用 .mjs 或同时使用 .min.mjs
+GlobalWorkerOptions.workerSrc = PdfWorker
 
 // 定义 props
 const props = defineProps({
@@ -151,7 +154,8 @@ const pdfContainer = ref<HTMLElement | null>(null)
 const wordContainer = ref<HTMLElement | null>(null)
 
 // PDF 相关状态
-const pdfDoc = ref<any>(null)
+// 注意：必须使用 shallowRef，避免 Vue 响应式系统破坏 PDF.js 5.x 的私有字段（#pagesNumber）访问
+const pdfDoc = shallowRef<any>(null)
 const currentPage = ref(1)
 const totalPages = ref(0)
 const scale = 1.5
@@ -197,12 +201,27 @@ watch(visible, (val) => {
 // 加载文件
 async function loadFile() {
   try {
-    if (!props.fileInfo?.id) return
+    // 支持两种模式：
+    // 1. 通过文档 ID 预览（文档列表）
+    // 2. 通过 URL 直接预览（公告附件等）
     
-    // 构造文件 URL（使用预览接口）
-    // 使用完整的 API 基础 URL，而不是相对路径
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
-    fileUrl.value = `${apiBaseUrl}/api/documents/${props.fileInfo.id}/preview`
+    
+    if (props.fileInfo?.id) {
+      // 模式 1：通过文档 ID 预览（使用文档预览接口）
+      fileUrl.value = `${apiBaseUrl}/api/documents/${props.fileInfo.id}/preview`
+    } else if (props.fileInfo?.url) {
+      // 模式 2：通过 URL 直接预览（公告附件等）
+      // 如果是相对路径，转换为完整 URL
+      if (props.fileInfo.url.startsWith('http://') || props.fileInfo.url.startsWith('https://')) {
+        fileUrl.value = props.fileInfo.url
+      } else {
+        fileUrl.value = `${apiBaseUrl}/files/${props.fileInfo.url}`
+      }
+    } else {
+      console.warn('FilePreview: 缺少文件 ID 或 URL')
+      return
+    }
     
     if (isPDF.value) {
       await loadPDF()
@@ -254,8 +273,11 @@ async function loadPDF() {
     
     const arrayBuffer = await blob.arrayBuffer()
     
-    // 使用 PDF.js 加载文档
-    pdfDoc.value = await PDFJS.getDocument({ data: arrayBuffer }).promise
+// 使用 PDF.js 加载文档
+    const loadingTask = getDocument({ data: arrayBuffer })
+    const pdf = await loadingTask.promise
+    // 使用 markRaw 标记为非响应式，避免 Vue 破坏 PDF.js 的私有字段
+    pdfDoc.value = markRaw(pdf)
     totalPages.value = pdfDoc.value.numPages
     
     // 渲染第一页
@@ -372,7 +394,8 @@ async function loadTextFile() {
     const token = storageUtil.get(SYSTEM_CONSTANTS.TOKEN_NAME)
     const response = await fetch(fileUrl.value, {
       headers: {
-        'Authorization': token ? `${SYSTEM_CONSTANTS.TOKEN_PREFIX}${token.replace(/^Bearer\s*/i, '').trim()}` : ''
+        // 使用配置的 TOKEN_NAME 作为 header 名称，与后端 Sa-Token 配置一致
+        [SYSTEM_CONSTANTS.TOKEN_NAME]: token ? `${SYSTEM_CONSTANTS.TOKEN_PREFIX}${token.replace(/^Bearer\s*/i, '').trim()}` : ''
       }
     })
     
@@ -396,9 +419,26 @@ function onImageLoad() {
 }
 
 // 下载文件
-function downloadFile() {
-  // 触发自定义事件，通知父组件执行下载
-  emit('download', props.fileInfo.id)
+async function downloadFile() {
+  if (props.fileInfo?.id) {
+    // 通过文档 ID 下载（文档列表）
+    emit('download', props.fileInfo.id)
+  } else if (props.fileInfo?.url) {
+    // 通过 URL 直接下载（公告附件等），使用通用下载工具确保 Token 认证和 Blob 下载
+    try {
+      const url = props.fileInfo.url
+      // 修复 URL 拼接问题：相对路径需添加 /files/ 前缀，避免缺少斜杠导致 fetch 解析失败
+      const downloadUrl = url.startsWith('http') ? url : `/files/${url}`
+      await downloadFileUtil(downloadUrl, {
+        loadingText: '正在下载文件...',
+        successText: '文件下载成功'
+      })
+    } catch (error) {
+      console.error('下载失败:', error)
+    }
+  } else {
+    ElMessage.warning('无法获取文件下载链接')
+  }
 }
 
 // 关闭对话框

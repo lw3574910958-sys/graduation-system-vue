@@ -206,6 +206,7 @@ a {
   flex-direction: column;
   padding: 15px;
   background: #f5f5f5;
+  height: 100%; /* ✅ 确保内容区撑满父容器 */
   &_wrapper {
     position: relative;
     width: calc(100% - @pdm--sidebar-width);
@@ -214,21 +215,23 @@ a {
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    padding-top: 15px; // 与 padding 保持一致
-    padding-bottom: 0; // ✅ 移除底部 padding，让 footer 固定定位
-    overflow: hidden; // ✅ 防止内容溢出产生滚动条
+    padding-top: 15px;
+    padding-bottom: 50px; /* ✅ 为底部 Footer 预留空间，防止遮挡内容 */
+    overflow: hidden;
   }
   &-card {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-height: 0; /* ✅ Flex 子元素必须设置 min-height: 0 才能正确收缩 */
+    height: 100%; /* ✅ 确保卡片撑满父容器 */
     :deep(.el-card__body) {
       height: 100%;
-      overflow-y: auto;
-      overflow-x: hidden; // ✅ 防止横向滚动
+      overflow: hidden; /* ✅ 删除外层滚动条，由表格内部处理滚动 */
       display: flex;
       flex-direction: column;
+      padding: 20px; /* ✅ 统一内边距 */
     }
   }
 }
@@ -237,20 +240,19 @@ a {
 .layout-footer {
   position: fixed;
   bottom: 0;
-  left: @pdm--sidebar-width; // ✅ 从侧边栏右侧开始，避免被遮挡
+  left: @pdm--sidebar-width;
   right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: auto; // ✅ 改为 auto，让 left/right 控制宽度
-  height: auto;
-  min-height: 30px;
-  padding: 10px 0px;
+  width: auto;
+  height: 50px; /* ✅ 固定高度，与 padding-bottom 保持一致 */
+  padding: 0 20px;
   font-size: 14px;
   color: rgba(0, 0, 0, 0.88);
   background: #f5f5f5;
   z-index: 100;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05); // ✅ 添加阴影增强层次感
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
   
   .version {
     display: flex;

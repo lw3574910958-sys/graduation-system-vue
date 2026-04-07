@@ -2,7 +2,6 @@ import { get, post, put, del } from '@/utils/request'
 import type {
   DepartmentResponse,
   DepartmentPageResponse,
-  DepartmentTreeResponse,
   DepartmentCreateRequest,
   DepartmentUpdateRequest,
   DepartmentQueryParams,
@@ -34,11 +33,11 @@ export const departmentApi = {
   },
 
   /**
-   * 获取部门树形结构
-   * @returns 部门树
+   * 获取部门树形结构（实际使用扁平列表，前端转换为树形）
+   * @returns 部门列表
    */
   getDepartmentTree: () => {
-    return get<ApiResponse<DepartmentTreeResponse[]>>('/api/departments/tree', {})
+    return get<ApiResponse<DepartmentResponse[]>>('/api/departments', {})
   },
 
   /**
